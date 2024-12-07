@@ -1,0 +1,192 @@
+[
+    {
+        "SeasonID": 41,
+        "Name": "2023/24",
+        "IsCurrentSeason": true
+    },
+    {
+        "SeasonID": 40,
+        "Name": "2022/23",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 39,
+        "Name": "2021/22",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 38,
+        "Name": "2020/21",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 37,
+        "Name": "2019/20",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 36,
+        "Name": "2018/19",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 35,
+        "Name": "2017/18",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 34,
+        "Name": "2016/17",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 33,
+        "Name": "2015/16",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 32,
+        "Name": "2014/15",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 31,
+        "Name": "2013/14",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 30,
+        "Name": "2012/13",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 29,
+        "Name": "2011/12",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 28,
+        "Name": "2010/11",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 27,
+        "Name": "2009/10",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 26,
+        "Name": "2008/09",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 24,
+        "Name": "2007/08",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 23,
+        "Name": "2006/07",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 25,
+        "Name": "2005/06",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 22,
+        "Name": "2004/05",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 21,
+        "Name": "2003/04",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 20,
+        "Name": "2002/03",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 19,
+        "Name": "2001/02",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 18,
+        "Name": "2000/01",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 17,
+        "Name": "1999/00",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 16,
+        "Name": "1998/99",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 15,
+        "Name": "1997/98",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 14,
+        "Name": "1996/97",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 13,
+        "Name": "1995/96",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 12,
+        "Name": "1994/95",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 11,
+        "Name": "1993/94",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 10,
+        "Name": "1992/93",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 9,
+        "Name": "1991/92",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 8,
+        "Name": "1990/91",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 7,
+        "Name": "1989/90",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 6,
+        "Name": "1988/89",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 5,
+        "Name": "1987/88",
+        "IsCurrentSeason": false
+    },
+    {
+        "SeasonID": 4,
+        "Name": "1986/87",
+        "IsCurrentSeason": false
+    }
+]
