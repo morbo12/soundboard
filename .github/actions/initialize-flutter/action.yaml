@@ -1,0 +1,15 @@
+name: "Init Flutter"
+description: "Initializes Flutter repo"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - name: Install Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.4'
+        channel: 'stable'
+        architecture: x64
+    - name: Generate code
+      shell: bash
+      run: dart run build_runner build
