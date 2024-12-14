@@ -118,7 +118,7 @@ jobs:
           path: ./CHANGELOG.md
   
       - name: Publish archives and packages
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ steps.changelog_reader.outputs.version }}
           tag_name: ${{ steps.changelog_reader.outputs.version }}
