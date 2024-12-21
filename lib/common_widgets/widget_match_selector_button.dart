@@ -21,9 +21,9 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
     final match = await matchService.getMatch(matchId: matchID);
 
     ref.read(selectedMatchProvider.notifier).state = match;
-    await ref.read(selectedMatchProvider.notifier).state.fetchLineup();
-    ref.read(lineupSsmlProvider.notifier).state =
-        ref.read(selectedMatchProvider.notifier).state.generateSsml();
+    ref.read(lineupProvider.notifier).state =
+        await match.getLineupByMatchId(matchID);
+    ref.read(lineupSsmlProvider.notifier).state = match.generateSsml();
   }
 
   @override
@@ -47,8 +47,8 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
               _getMatch(widget.match.matchId);
               // selectedMatch = widget.match;
               // print(selectedMatch.matchId);
-              super.setState(() {});
-              setState(() {});
+              // super.setState(() {});
+              // setState(() {});
             },
             style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.only(left: 40, right: 40),

@@ -29,6 +29,25 @@ final lineupSsmlProvider = StateProvider<String>((ref) {
   return '';
 });
 
+final lineupProvider = StateProvider<IbyMatchLineup>((ref) {
+  // Initialize with default values.
+  return IbyMatchLineup(
+    matchId: 0,
+    homeTeamId: 1,
+    homeTeam: 'N/A',
+    homeTeamShortName: '',
+    homeTeamLogotypeUrl: '',
+    awayTeamId: 1,
+    awayTeam: 'N/A',
+    awayTeamShortName: '',
+    awayTeamLogotypeUrl: '',
+    homeTeamPlayers: [],
+    awayTeamPlayers: [],
+    homeTeamTeamPersons: [],
+    awayTeamTeamPersons: [],
+  );
+});
+
 IbyMatchLineup lineup = IbyMatchLineup(
   awayTeam: 'N/A',
   homeTeam: 'N/A',

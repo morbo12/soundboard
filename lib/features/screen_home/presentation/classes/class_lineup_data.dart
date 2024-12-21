@@ -16,6 +16,7 @@ class LineupData extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMatch = ref.watch(selectedMatchProvider);
+    final selectedMatchLineup = ref.watch(lineupProvider);
 
     if (selectedMatch.matchId == 0) {
       return const Center(child: Text("No Data"));
@@ -31,7 +32,7 @@ class LineupData extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTeamColumn(context, ref, selectedMatch.homeTeam,
-              selectedMatch.lineup?.homeTeamPlayers, teamWidth),
+              selectedMatchLineup.homeTeamPlayers, teamWidth),
           SizedBox(
               width: 10,
               height: 650,
@@ -39,7 +40,7 @@ class LineupData extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.onInverseSurface,
               )),
           _buildTeamColumn(context, ref, selectedMatch.awayTeam,
-              selectedMatch.lineup?.awayTeamPlayers, teamWidth),
+              selectedMatchLineup.awayTeamPlayers, teamWidth),
         ],
       ),
     );
