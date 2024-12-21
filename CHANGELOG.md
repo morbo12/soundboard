@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.13] - 2024-12-21
+- Fix: Update list of venues in Stockholm
+- Fix: Lineup is now displayed automatically
+- Update: flutter pub update
+
 ## [0.3.12] - 2024-12-07
 
 ### Added
