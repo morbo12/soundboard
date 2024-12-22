@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support flac encoding (Windows, Android)
+- Support ogg encofing (Android)
+
 ## [0.3.13] - 2024-12-21
 - Fix: Update list of venues in Stockholm
 - Fix: Lineup is now displayed automatically

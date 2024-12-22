@@ -24,16 +24,7 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
   Future<void> _copyFileToDestination(String? filePath) async {
     if (filePath == null) return;
 
-    // final Directory appSupportDir = await getApplicationCacheDirectory();
-    // final Directory targetDir = Directory(widget.audiofile.filePath);
-
-    // if (!await targetDir.exists()) {
-    //   await targetDir.create(recursive: true);
-    // }
-
     final File sourceFile = File(filePath);
-    // final String targetPath =
-    //     '${targetDir.path}/${sourceFile.path.split('\\').last}';
 
     try {
       await sourceFile.copy(widget.audiofile.filePath);
@@ -64,7 +55,8 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
         showMaterialFilePicker(
           context: context,
           fileType: FileType.custom,
-          allowedExtensions: ['mp3'],
+          allowedExtensions:
+              Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg'],
           onChanged: (value) async {
             // Check if mounted is needed here, depends on what showMaterialFilePicker does
             if (!mounted) return;
@@ -72,8 +64,10 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
             if (kDebugMode) {
               print("VALUE: ${value.path}");
             }
+            final allowedExtensions = ['.mp3', '.flac'];
             // If not a zip file, directly copy the file
-            if (value.path!.endsWith('.mp3')) {
+            if (allowedExtensions
+                .any((ext) => value.path!.toLowerCase().endsWith(ext))) {
               await _copyFileToDestination(selectedPath.value);
             }
             jingleManager.initialize();

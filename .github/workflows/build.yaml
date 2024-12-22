@@ -76,37 +76,6 @@ jobs:
             echo "IS_PRERELEASE=true" >> $env:GITHUB_OUTPUT
           }
 
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     draft: false
-      #     prerelease: ${{ steps.release_type.outputs.IS_PRERELEASE }}
-      #     release_name: ${{ steps.extract_info.outputs.VERSION }}${{ steps.release_type.outputs.IS_PRERELEASE == 'true' && ' (Pre-release)' || '' }}
-      #     tag_name: v${{ steps.extract_info.outputs.VERSION }}${{ steps.release_type.outputs.IS_PRERELEASE == 'true' && '-pre' || '' }}
-      #     body_path: CHANGELOG.md
-
-      # - name: Upload Windows Artifact
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./build/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip
-      #     asset_name: ${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip
-      #     asset_content_type: application/zip
-  
-      # - name: Upload Android Artifact
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./build/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk
-      #     asset_name: ${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk
-      #     asset_content_type: application/vnd.android.package-archive
       - name: "Archive artifacts"
         uses: actions/upload-artifact@v4
         with:
@@ -124,7 +93,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ steps.changelog_reader.outputs.version }}
-          tag_name: ${{ steps.changelog_reader.outputs.version }}
+          tag_name: "v${{ steps.changelog_reader.outputs.version }}"
           body: ${{ steps.changelog_reader.outputs.changes }}
           prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
           draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
@@ -132,84 +101,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
-  # release-job:
-  #   name: Publish
-  #   needs: build-job
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     VERSION: ${{needs.build-job.outputs.VERSION}}
-  #     NAME: ${{needs.build-job.outputs.NAME}}
-  #     IS_PRERELEASE: ${{needs.build-job.outputs.IS_PRERELEASE}}
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #     - name: Download packages
-  #       uses: actions/download-artifact@v4.1.7
-  #     # - name: Get release version
-  #     #   id: release_version
-  #     #   run: |
-  #     #     echo "VERSION=${{needs.build_job.outputs.VERSION}}" >> $GITHUB_ENV
-  #     #     echo "prerelease=$( [[ ${GITHUB_REF#refs/*/} == *alpha* || ${GITHUB_REF#refs/*/} == *beta* ]] && echo True || echo False )" >> $GITHUB_ENV
-
-  #     - name: Get Changelog  Entry
-  #       id: changelog_reader
-  #       uses: mindsers/changelog-reader-action@v2
-  #       with:
-  #         validation_level: warn
-  #         version: ${{ env.VERSION }}
-  #         path: ./CHANGELOG.md
-
-  #     - name: Publish archives and packages
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         name: Release ${{ steps.changelog_reader.outputs.version }}
-  #         tag_name: ${{ steps.changelog_reader.outputs.version }}
-  #         body: ${{ steps.changelog_reader.outputs.changes }}
-  #         prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
-  #         draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
-  #         allowUpdates: true
-  #         files: release*/*
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
-  # release-job:
-  #   name: Publish
-  #   needs: build-job
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     VERSION: ${{needs.build-job.outputs.VERSION}}
-  #     NAME: ${{needs.build-job.outputs.NAME}}
-  #     IS_PRERELEASE: ${{needs.build-job.outputs.IS_PRERELEASE}}
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #     - name: Download packages
-  #       uses: actions/download-artifact@v4.1.7
-  #     # - name: Get release version
-  #     #   id: release_version
-  #     #   run: |
-  #     #     echo "VERSION=${{needs.build_job.outputs.VERSION}}" >> $GITHUB_ENV
-  #     #     echo "prerelease=$( [[ ${GITHUB_REF#refs/*/} == *alpha* || ${GITHUB_REF#refs/*/} == *beta* ]] && echo True || echo False )" >> $GITHUB_ENV
-
-  #     - name: Get Changelog  Entry
-  #       id: changelog_reader
-  #       uses: mindsers/changelog-reader-action@v2
-  #       with:
-  #         validation_level: warn
-  #         version: ${{ env.VERSION }}
-  #         path: ./CHANGELOG.md
-
-  #     - name: Publish archives and packages
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         name: Release ${{ steps.changelog_reader.outputs.version }}
-  #         tag_name: ${{ steps.changelog_reader.outputs.version }}
-  #         body: ${{ steps.changelog_reader.outputs.changes }}
-  #         prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
-  #         draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
-  #         allowUpdates: true
-  #         files: release*/*
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

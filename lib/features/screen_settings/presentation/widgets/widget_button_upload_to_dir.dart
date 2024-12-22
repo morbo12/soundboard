@@ -90,7 +90,8 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
         FilePickerResult? result = await FilePicker.platform.pickFiles(
             allowMultiple: true,
             type: FileType.custom,
-            allowedExtensions: ['mp3']);
+            allowedExtensions:
+                Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg']);
         if (result != null) {
           List<File> files = result.paths.map((path) => File(path!)).toList();
           if (kDebugMode) {
@@ -103,26 +104,6 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
         } else {
           // User canceled the picker
         }
-        // showMaterialFilePicker(
-        //   context: context,
-        //   fileType: FileType.custom,
-        //   allowedExtensions: ['mp3', 'zip'],
-        //   onChanged: (value) async {
-        //     // Check if mounted is needed here, depends on what showMaterialFilePicker does
-        //     if (!mounted) return;
-        //     selectedPath.value = value.path;
-        //     if (kDebugMode) {
-        //       print("VALUE: ${value.path}");
-        //     }
-        //     if (value.path!.endsWith('.zip')) {
-        //       await _unzipFile(file: selectedPath.value);
-        //     } else {
-        //       // If not a zip file, directly copy the file
-        //       await _copyFileToDestination(selectedPath.value);
-        //     }
-        //     jingleManager.initialize();
-        //   },
-        // );
       },
       secondaryText: 'N/A',
       primaryText:
