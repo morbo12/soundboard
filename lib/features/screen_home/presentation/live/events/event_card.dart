@@ -56,7 +56,7 @@ class EventCard extends ConsumerWidget {
           "${MatchEventTypes.getEventName(data.matchEventTypeID)} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize, fontWeight: FontWeight.bold),
+              fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
         ),
         AutoSizeText(
           "${data.minute}:${data.second.toString().padLeft(2, '0')} | ",
@@ -71,14 +71,15 @@ class EventCard extends ConsumerWidget {
             style: const TextStyle(
                 fontSize: _smallFontSize, fontWeight: FontWeight.bold),
           ),
-        if (_isGoalEvent())
-          AutoSizeText(
+        AutoSizeText(
             data.matchTeamName.length < 20
                 ? data.matchTeamName
-                : "${data.matchTeamName.substring(0, 22) + "..."}",
+                : "| ${data.matchTeamName.substring(0, 22) + "..."}",
             minFontSize: _smallFontSize,
-            style: const TextStyle(fontSize: _smallFontSize),
-          ),
+            style: const TextStyle(
+                fontSize: _smallFontSize + 2,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic)),
       ],
     );
   }
