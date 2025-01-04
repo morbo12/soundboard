@@ -24,6 +24,11 @@ Features on Windows platform
 - TTS requires an Azure Speech Service, which you need to provide yourself
 - No jingles included
 
+## Pre-req
+Windows 10 needs a VC Redist update to run this program. 
+Here is the lastest ones
+https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022
+
 ---------------------
 
 ### ⬇️ Downloads

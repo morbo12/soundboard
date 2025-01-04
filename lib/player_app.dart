@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -98,8 +99,9 @@ class _PlayerState extends ConsumerState<Player> {
                     SettingsTtsScreen(),
                   ],
                 ),
-                if (selectedIndex == 0) // Only show on Home screen
-                  FloatingCameraWindow(),
+                // if (selectedIndex == 0 &&
+                //     Platform.isWindows) // Only show on Home screen on Windows
+                //   FloatingCameraWindow(),
               ],
             )
           : const Center(child: CircularProgressIndicator()),
