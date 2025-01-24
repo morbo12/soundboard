@@ -6,16 +6,17 @@ import 'package:intl/intl.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/properties.dart';
 
-class SsmlPeriodEvent {
-  final MatchEvent matchEvent;
+class SsmlPenaltyEvent {
+  final IbyMatchEvent matchEvent;
   final NumberFormat formatter = NumberFormat("0");
   final WidgetRef ref;
 
-  SsmlPeriodEvent({
+  SsmlPenaltyEvent({
     required this.ref,
     required this.matchEvent,
   });
@@ -25,30 +26,6 @@ class SsmlPeriodEvent {
     return (matchEvent.matchTeamName == selectedMatch.homeTeam)
         ? "hemmalaget"
         : "bortalaget";
-  }
-
-  String whoIsInLead() {
-    final selectedMatch = ref.read(selectedMatchProvider);
-    if (selectedMatch.goalsHomeTeam! > selectedMatch.goalsAwayTeam!) {
-      return "${selectedMatch.goalsHomeTeam}-${selectedMatch.goalsAwayTeam} till hemmalaget.";
-    } else if (selectedMatch.goalsHomeTeam! < selectedMatch.goalsAwayTeam!) {
-      return "${selectedMatch.goalsAwayTeam}-${selectedMatch.goalsHomeTeam} till bortalaget.";
-    } else {
-      // Om antalet mål är lika för båda lagen
-      return "oavgjort ${selectedMatch.goalsHomeTeam}-${selectedMatch.goalsAwayTeam}.";
-    }
-  }
-
-  String whoWonIntermediate() {
-    // Kontrollerar vem som vann eller om det blev oavgjort
-    if (matchEvent.goalsHomeTeam > matchEvent.goalsAwayTeam) {
-      return "${matchEvent.goalsHomeTeam}-${matchEvent.goalsAwayTeam} till hemmalaget.";
-    } else if (matchEvent.goalsHomeTeam < matchEvent.goalsAwayTeam) {
-      return "${matchEvent.goalsAwayTeam}-${matchEvent.goalsHomeTeam} till bortalaget.";
-    } else {
-      // Om antalet mål är lika för båda lagen
-      return "oavgjort ${matchEvent.goalsHomeTeam}-${matchEvent.goalsAwayTeam}.";
-    }
   }
 
   String homeOrAwayScore() {
@@ -63,17 +40,42 @@ class SsmlPeriodEvent {
     return score;
   }
 
-  // <hemma/bortalaget> vinner perioden med x-y. Ställningen i matchen efter x perioder är 1-0
-  // Perioden slutar 2-1 till hemmalaget. Ställnigen efter den x:a periden är x-y
+  String penaltyName() {
+    Map<String, String> penaltyInfo =
+        PenaltyTypes.getPenaltyInfo(matchEvent.penaltyCode);
+    if (kDebugMode) {
+      print("penaltyName: ${penaltyInfo['time']} för ${penaltyInfo['name']}");
+    }
+    String penaltyString = "";
+    if (penaltyInfo['time'] != "Unknown") {
+      penaltyString =
+          "${penaltyInfo['time']} för <break time='200ms' /> ${penaltyInfo['name']}";
+    }
+    return penaltyString;
+  }
+
+  // Nummer z i <laget> utvisas x minuter för <penaltyname>
+  // String who = whoScored(matchTeamName: matchEvent.matchTeamName);
+  // Kvitterar
+  // 1-0 till hemmalaget – målskytt nr 12 Pelle Karlsson – assist nr 11 Kent Persson och 9 Sven Hansson – Tid 11:04.
+  // <lag> <händelse> med <1-0,0-1>
+  String whatWasTheTime() {
+    return matchEvent.minute != 0
+        ? "${formatter.format(matchEvent.minute)}:${formatter.format(matchEvent.second)}"
+        : "${formatter.format(matchEvent.second)} sekunder";
+  }
+
+  String stripTeamSuffix(String teamName) {
+    return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
+  }
 
   Future<bool> getSay(BuildContext context) async {
     // String say = matchEvent.matchTeamName;
     String say =
-        "Perioden slutar ${whoWonIntermediate()}. Ställningen i matchen är ${whoIsInLead()}";
+        "Nummer ${matchEvent.playerShirtNo}, ${matchEvent.playerName} i ${stripTeamSuffix(matchEvent.matchTeamName)} utvisas ${penaltyName()}. Tid: <say-as interpret-as='duration' format='ms'>${whatWasTheTime()}</say-as> ";
     if (kDebugMode) {
       print("SAY: $say");
     }
-
     FlutterToastr.show(say, context,
         duration: FlutterToastr.lengthLong,
         position: FlutterToastr.bottom,
@@ -82,7 +84,9 @@ class SsmlPeriodEvent {
     final textToSpeechService = ref.read(textToSpeechServiceProvider);
     final ssml = await textToSpeechService.getTtsNoFile(text: say);
     ref.read(azCharCountProvider.notifier).state += say.length;
-    SettingsBox().azCharCount += say.length;
+    SettingsBox().azCharCount +=
+        say.length; // TODO: Should check if getTts was successful
+
     // await eventAudioPlayer.setVolume(1.0);
     await jingleManager.audioManager
         .playBytes(audio: ssml.audio.buffer.asUint8List(), ref: ref);

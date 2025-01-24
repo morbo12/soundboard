@@ -10,8 +10,7 @@ import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_volume_control.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/player_fade.dart';
 import 'package:flutter/foundation.dart';
 import 'package:soundboard/properties.dart';
@@ -21,6 +20,7 @@ enum AudioChannel { channel1, channel2 }
 class AudioManager {
   final List<AudioFile> audioInstances = [];
   WidgetRef? _ref;
+  Map<AudioCategory, int> _currentPlayIndex = {};
 
   final AudioPlayer channel1 = AudioPlayer();
   final AudioPlayer channel2 = AudioPlayer();
@@ -98,6 +98,16 @@ class AudioManager {
     }
   }
 
+// Add this method to reset the sequential playback index for a category
+  void resetSequentialIndex(AudioCategory category) {
+    _currentPlayIndex[category] = 0;
+  }
+
+  // Add this method to reset all sequential playback indices
+  void resetAllSequentialIndices() {
+    _currentPlayIndex.clear();
+  }
+
   Future<void> _setChannelVolume(
       WidgetRef ref, AudioChannel channel, double volume) async {
     AudioPlayer player = channel == AudioChannel.channel1 ? channel1 : channel2;
@@ -115,6 +125,7 @@ class AudioManager {
     AudioCategory category,
     WidgetRef ref, {
     bool random = false,
+    bool sequential = false, // Add this parameter
     bool shortFade = true,
     bool isBackgroundMusic = false,
   }) async {
@@ -123,9 +134,30 @@ class AudioManager {
         .toList();
     if (categoryInstances.isEmpty) return;
 
-    AudioFile audioFile = random
-        ? categoryInstances[Random().nextInt(categoryInstances.length)]
-        : categoryInstances[0];
+    AudioFile audioFile;
+
+    if (random) {
+      audioFile = categoryInstances[Random().nextInt(categoryInstances.length)];
+      print("Playing random file: ${audioFile.filePath}");
+    } else if (sequential) {
+      // Initialize the index for this category if it doesn't exist
+      if (!_currentPlayIndex.containsKey(category)) {
+        _currentPlayIndex[category] = 0;
+      }
+
+      // Get the current index for this category
+      int currentIndex = _currentPlayIndex[category]!;
+
+      // Play the current index
+      audioFile = categoryInstances[currentIndex];
+      print("Playing sequential index: ${currentIndex}");
+      // Increment the index for next time
+      _currentPlayIndex[category] =
+          (currentIndex + 1) % categoryInstances.length;
+    } else {
+      audioFile = categoryInstances[0];
+    }
+
     AudioChannel channel = _getAvailableChannel();
 
     int fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;

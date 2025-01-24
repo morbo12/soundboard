@@ -1,11 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:soundboard/constants/matchstatus.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 class MatchReferee extends StatelessWidget {
   const MatchReferee({super.key, required this.match, this.readonly});
-  final IbyVenueMatch match;
+  final IbyMatch match;
   final bool? readonly;
 
   @override

@@ -8,7 +8,6 @@ import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
-import 'package:soundboard/features/screen_home/presentation/classes/class_camera_widget.dart';
 import 'package:soundboard/features/screen_tts_settings/presentation/screen_settings_tts.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';

@@ -1,5 +1,6 @@
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+// import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
 import 'package:dart_date/dart_date.dart';
 
 import 'api_client.dart';
@@ -10,7 +11,7 @@ class MatchService {
 
   MatchService(this._apiClient);
 
-  Future<List<IbyVenueMatch>> getMatchesInVenue({
+  Future<List<IbyMatch>> getMatchesInVenue({
     required int seasonId,
     required int venueId,
     required String date,
@@ -29,7 +30,7 @@ class MatchService {
 
     if (response.statusCode == 200) {
       return (response.data as List)
-          .map((json) => IbyVenueMatch.fromJson(json))
+          .map((json) => IbyMatch.fromJson(json))
           .toList();
     } else {
       throw Exception("Failed to get matches in venue");
@@ -48,12 +49,12 @@ class MatchService {
     }
   }
 
-  Future<IbyVenueMatch> getMatch({required int matchId}) async {
+  Future<IbyMatch> getMatch({required int matchId}) async {
     final path = APIConstants.match.replaceAll('{matchId}', matchId.toString());
     final response = await _apiClient.authenticatedGet(path);
 
     if (response.statusCode == 200) {
-      return IbyVenueMatch.fromJson(response.data);
+      return IbyMatch.fromJson(response.data);
     } else {
       throw Exception("Failed to get match");
     }

@@ -2,8 +2,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
-import 'package:soundboard/features/screen_home/presentation/classes/class_color_state_notifier.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+// import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 // Assume TeamPlayer is imported from the appropriate file
 
 class LineupData extends ConsumerWidget {

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 class MatchSelectorButton extends ConsumerStatefulWidget {
   const MatchSelectorButton({super.key, required this.match});
-  final IbyVenueMatch match;
+  final IbyMatch match;
 
   @override
   ConsumerState<MatchSelectorButton> createState() =>
@@ -23,6 +23,7 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
     ref.read(selectedMatchProvider.notifier).state = match;
     ref.read(lineupProvider.notifier).state =
         await match.getLineupByMatchId(matchID);
+    await ref.read(selectedMatchProvider.notifier).state.fetchLineup();
     ref.read(lineupSsmlProvider.notifier).state = match.generateSsml();
   }
 

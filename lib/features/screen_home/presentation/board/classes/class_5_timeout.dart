@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 
 class Row3timeout extends ConsumerWidget {
   const Row3timeout({super.key});

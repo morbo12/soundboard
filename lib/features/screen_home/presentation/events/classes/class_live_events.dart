@@ -7,10 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 
-import '../live/widget_event.dart';
+import '../../live/widget_event.dart';
 
 Timer? _timer;
 
@@ -23,11 +24,12 @@ class LiveEvents extends ConsumerStatefulWidget {
 
 class _LiveEventsState extends ConsumerState<LiveEvents> {
   bool streamerRunning = false;
-  StreamController<List<MatchEvent>> streamController =
-      StreamController<List<MatchEvent>>();
-  late Stream<List<MatchEvent>>? userStream;
-  late IbyVenueMatch updatedMatch;
-  late List<MatchEvent> matchEventList;
+  StreamController<List<IbyMatchEvent>> streamController =
+      StreamController<List<IbyMatchEvent>>();
+  late Stream<List<IbyMatchEvent>>? userStream;
+  late IbyMatch updatedMatch;
+  late List<IbyMatchEvent> matchEventList;
+
   late int liveindex;
 
   @override
@@ -50,7 +52,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
     final selectedMatch = ref.watch(selectedMatchProvider);
 
     return SizedBox(
-      width: 300,
+      width: 350,
       child: Padding(
         padding: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),
         child: Column(
@@ -106,9 +108,16 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                             "Matchhändelser",
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.surfaceTint),
+                    ),
+                  ),
+                  const PeriodScores()
                 ],
               ),
             ),
@@ -124,14 +133,14 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
             SizedBox(
               height: MediaQuery.of(context).size.height > 600
                   ? MediaQuery.of(context).size.height -
-                      150 -
+                      157 -
                       DefaultConstants().appBarHeight
                   : 500,
               child: StreamBuilder(
                   stream: userStream,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      List<MatchEvent>? data = snapshot.data;
+                      List<IbyMatchEvent>? data = snapshot.data;
                       return ListView.separated(
                         controller: widget.scrollController,
                         // reverse: true,
@@ -179,6 +188,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
 
       matchEventList = updatedMatch.events!;
       streamController.add(matchEventList);
+      ref.read(selectedMatchProvider.notifier).state = updatedMatch;
     } catch (e) {
       // Handle errors, e.g., log or show a message
       if (kDebugMode) {
@@ -198,6 +208,8 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
         updatedMatch = await matchService.getMatch(matchId: matchId);
 
         matchEventList = updatedMatch.events!;
+        ref.read(selectedMatchProvider.notifier).state = updatedMatch;
+
         // Update the UI with the new match data
         // Assuming you have a function to update the UI, replace with actual code
         // updateUI(updatedMatch);

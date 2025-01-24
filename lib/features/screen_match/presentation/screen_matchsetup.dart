@@ -10,7 +10,7 @@ import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/application/season_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/innebandy_api/data/providers.dart';
 import 'package:soundboard/features/screen_match/presentation/providers.dart';
 import 'package:soundboard/features/screen_match/presentation/selector_federationselector.dart';
@@ -27,7 +27,7 @@ class MatchSetupScreen extends ConsumerStatefulWidget {
 
 class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
   // List<IbyVenueMatch> matches = [selectedMatch];
-  List<IbyVenueMatch> matches = [];
+  List<IbyMatch> matches = [];
 
   // IbyMatchLineup lineup = [];
   // final double fontSize = 16;

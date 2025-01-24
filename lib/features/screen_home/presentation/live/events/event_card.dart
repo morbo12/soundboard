@@ -1,15 +1,16 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_colors.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
-import 'package:soundboard/features/screen_home/presentation/ssml/class_pre_ssml.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
 
 class EventCard extends ConsumerWidget {
   const EventCard({super.key, required this.data});
-  final MatchEvent data;
+  final IbyMatchEvent data;
 
   static const double _smallFontSize = 11.0;
 
@@ -17,20 +18,20 @@ class EventCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       isThreeLine: true,
-      dense: true,
-      // visualDensity: VisualDensity.compact,
+      // dense: true,
+      visualDensity: VisualDensity.compact,
       onTap: () {
-        PreSsml(ref: ref, data: data).getEventText(context);
+        EventCardSsml(ref: ref, data: data).getEventText(context);
         if (kDebugMode) {
           print("Button pressed");
         }
       },
       leading: Icon(
-        _getEventIcon(data.matchEventTypeID),
+        _getEventIcon(data.matchEventTypeId),
         color: Theme.of(context).colorScheme.onPrimary,
       ),
-      textColor: MatchEventColors(data.matchEventTypeID).getTextColor(context),
-      tileColor: MatchEventColors(data.matchEventTypeID).getColor(context),
+      textColor: MatchEventColors(data.matchEventTypeId).getTextColor(context),
+      tileColor: MatchEventColors(data.matchEventTypeId).getTileColor(context),
       shape: RoundedRectangleBorder(
         side: BorderSide(
           color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -53,7 +54,7 @@ class EventCard extends ConsumerWidget {
     return Row(
       children: [
         AutoSizeText(
-          "${MatchEventTypes.getEventName(data.matchEventTypeID)} | ",
+          "${MatchEventTypes.getEventName(data.matchEventTypeId)} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
               fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
@@ -66,7 +67,7 @@ class EventCard extends ConsumerWidget {
         ),
         if (_isGoalEvent())
           AutoSizeText(
-            "${data.goalsHomeTeam} - ${data.goalsAwayTeam} ",
+            "${data.goalsHomeTeam} - ${data.goalsAwayTeam} | ",
             minFontSize: _smallFontSize,
             style: const TextStyle(
                 fontSize: _smallFontSize, fontWeight: FontWeight.bold),
@@ -99,12 +100,12 @@ class EventCard extends ConsumerWidget {
   }
 
   bool _isGoalEvent() {
-    return data.matchEventTypeID == MatchEventType.mal ||
-        data.matchEventTypeID == MatchEventType.straffmal;
+    return data.matchEventTypeId == MatchEventType.mal ||
+        data.matchEventTypeId == MatchEventType.straffmal;
   }
 
   String _buildSubTitle() {
-    switch (data.matchEventTypeID) {
+    switch (data.matchEventTypeId) {
       case MatchEventType.mal:
       case MatchEventType.straffmal:
         return _isAssist();
@@ -124,20 +125,25 @@ class EventCard extends ConsumerWidget {
   }
 
   String _isPenalty() {
-    return data.penaltyName;
+    const int maxLength = 43;
+    if (data.penaltyName.isEmpty) return '';
+
+    return data.penaltyName.length > maxLength
+        ? '${data.penaltyName.substring(0, math.min(maxLength, data.penaltyName.length))}...'
+        : data.penaltyName;
   }
 }
 
 class EventCardSubTile extends StatelessWidget {
   const EventCardSubTile({super.key, required this.data});
-  final MatchEvent data;
+  final IbyMatchEvent data;
 
   static const double _mediumFontSize = 6.0;
   static const double _smallFontSize = 11.0;
 
   @override
   Widget build(BuildContext context) {
-    switch (data.matchEventTypeID) {
+    switch (data.matchEventTypeId) {
       case MatchEventType.mal:
       case MatchEventType.straffmal:
       // return _buildAssistText();
