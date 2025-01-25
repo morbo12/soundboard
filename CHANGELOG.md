@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Rearranged buttons
+- Flutter version 3.27.3
 #### Flutter Pub upgrades
 ##### Major
 - Updated syncfusion_flutter_sliders from 27.1.52 to 28.1.41
