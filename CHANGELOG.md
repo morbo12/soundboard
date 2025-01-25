@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Button for sequential play of jingle list
 - Intermediate scores and ssml for vocies
-
+- "Notepad" to display time, goal, assist and penalty in lineup
 ### Changed
 - Rearranged buttons
 - Flutter version 3.27.3

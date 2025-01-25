@@ -133,7 +133,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
             SizedBox(
               height: MediaQuery.of(context).size.height > 600
                   ? MediaQuery.of(context).size.height -
-                      157 -
+                      158 -
                       DefaultConstants().appBarHeight
                   : 500,
               child: StreamBuilder(

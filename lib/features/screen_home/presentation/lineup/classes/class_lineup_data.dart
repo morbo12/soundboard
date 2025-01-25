@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 // import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
@@ -70,7 +71,7 @@ class LineupData extends ConsumerWidget {
     if (players == null || players.isEmpty) {
       return const Center(child: Text("No players"));
     }
-    final buttonStates = ref.watch(buttonStatesProvider);
+    final buttonStates = ref.watch(playerStatesProvider);
     final Map<String, String> positionMapping = {
       'Målvakt': 'MV',
       'Forward': 'F',
@@ -81,6 +82,7 @@ class LineupData extends ConsumerWidget {
       'Vänsterback': 'VB',
       'Högerback': 'HB',
     };
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -88,41 +90,49 @@ class LineupData extends ConsumerWidget {
       itemBuilder: (context, index) {
         final player = players[index];
         final playerId = '${player.shirtNo}-${player.name}';
-        final buttonState = buttonStates[playerId] ?? ButtonState.normal;
+        var buttonState = buttonStates[playerId] ?? PlayerState.normal;
+        // Auto-highlight based on entered numbers
+
         Color getButtonColor() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return Theme.of(context).colorScheme.surface;
-            case ButtonState.selected:
+            case PlayerState.goal:
               return Theme.of(context).colorScheme.primaryContainer;
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return Theme.of(context)
                   .colorScheme
                   .secondaryContainer; // You can change this to any color you prefer for long press
+            case PlayerState.penalty:
+              return Theme.of(context).colorScheme.errorContainer;
           }
         }
 
         Color getTextColor() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return Theme.of(context).colorScheme.onSurface;
-            case ButtonState.selected:
+            case PlayerState.goal:
               return Theme.of(context).colorScheme.onPrimaryContainer;
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return Theme.of(context)
                   .colorScheme
                   .onSecondaryContainer; // Adjust this based on your long press color
+            case PlayerState.penalty:
+              return Theme.of(context).colorScheme.onErrorContainer;
           }
         }
 
         String getButtonStateText() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return '';
-            case ButtonState.selected:
+            case PlayerState.goal:
               return 'MÅL';
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return 'ASSIST';
+            case PlayerState.penalty:
+              return 'UTVISNING';
           }
         }
 
@@ -162,13 +172,13 @@ class LineupData extends ConsumerWidget {
                       ),
                       onPressed: () {
                         ref
-                            .read(buttonStatesProvider.notifier)
-                            .toggleState(playerId);
+                            .read(playerStatesProvider.notifier)
+                            .setGoalState(playerId);
                       },
                       onLongPress: () {
                         ref
-                            .read(buttonStatesProvider.notifier)
-                            .setLongPressedState(playerId);
+                            .read(playerStatesProvider.notifier)
+                            .setAssistState(playerId);
                       },
                       child: Row(
                         children: [
