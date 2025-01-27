@@ -2,6 +2,7 @@ name: "Build and Release"
 
 permissions:
   contents: write
+  packages: read
 
 on:
   push:
@@ -9,8 +10,29 @@ on:
       - main
   workflow_dispatch:
 
-jobs:  
-  build-job:      
+env:
+  FLUTTER_VERSION: '3.27.3'
+  JAVA_VERSION: '21'
+
+jobs:
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+          
+  build-job:
+    timeout-minutes: 60
     name: Build Release Packages
     runs-on: windows-latest 
     outputs:
@@ -25,14 +47,14 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
  
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         env:
             PUB_CACHE: 'D:\a\pub_cache'
         with:
-          flutter-version: '3.27.3'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           architecture: x64
           cache: true
@@ -85,7 +107,6 @@ jobs:
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
         with:
-          validation_level: warn
           version: ${{ steps.extract_info.outputs.VERSION }}
           path: ./CHANGELOG.md
   
