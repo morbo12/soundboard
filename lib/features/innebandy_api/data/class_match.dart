@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
+import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
@@ -262,17 +263,19 @@ class IbyMatch {
   //   );
   // }
 
-  Future<void> fetchLineup() async {
+  Future<void> fetchLineup(WidgetRef ref) async {
     // Assuming you have a function getLineupByMatchId that makes the API call.
-    lineup = await getLineupByMatchId(matchId);
+    lineup = await getLineupByMatchId(matchId, ref);
   }
 
-  Future<IbyMatchLineup> getLineupByMatchId(int matchId) async {
+  Future<IbyMatchLineup> getLineupByMatchId(int matchId, ref) async {
     if (kDebugMode) {
       print("_getLineup");
     }
 
-    final apiClient = APIClient();
+    // final apiClient = APIClient();
+    final apiClient = ref.watch(apiClientProvider);
+
     final matchService = MatchService(apiClient);
 
     //  apiService = APIService();

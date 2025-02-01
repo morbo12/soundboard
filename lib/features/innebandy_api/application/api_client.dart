@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'dart:convert';
 import 'api_constants.dart';
 import 'api_config.dart';
@@ -7,9 +9,9 @@ import 'access_token_data.dart';
 
 class APIClient {
   late Dio _dio;
-  AccessTokenData? _token;
+  final Ref _ref;
 
-  APIClient() {
+  APIClient(this._ref) {
     _dio = Dio(BaseOptions(
       baseUrl: APIConstants.baseUrl,
       connectTimeout: Duration(milliseconds: APIConfig.connectionTimeout),
@@ -21,12 +23,14 @@ class APIClient {
   }
 
   Future<AccessTokenData> getAccessToken() async {
-    if (_token != null &&
+    final cachedToken = _ref.read(accessTokenProvider);
+
+    if (cachedToken != null &&
         DateTime.now()
-            .isBefore(DateTime.parse(_token!.accessTokenExpiration))) {
+            .isBefore(DateTime.parse(cachedToken.accessTokenExpiration))) {
       APIConfig.log(
-          "Token is NOT expired: NOW: ${DateTime.now()} - Token: ${_token!.accessTokenExpiration}");
-      return _token!;
+          "Token is NOT expired: NOW: ${DateTime.now()} - Token: ${cachedToken.accessTokenExpiration}");
+      return cachedToken;
     }
 
     APIConfig.log("Token is expired or null. Fetching new token.");
@@ -34,9 +38,10 @@ class APIClient {
         .get(Uri.parse('${APIConstants.baseUrl}${APIConstants.startKit}'));
 
     if (response.statusCode == 200) {
-      _token = AccessTokenData.fromJson(json.decode(response.body));
-      APIConfig.log('New access token: ${_token!.accessToken}');
-      return _token!;
+      final newToken = AccessTokenData.fromJson(json.decode(response.body));
+      _ref.read(accessTokenProvider.notifier).state = newToken;
+      APIConfig.log('New access token: ${newToken.accessToken}');
+      return newToken;
     } else {
       throw Exception(
           'Failed to get access token : ${response.body} ${response.request}');

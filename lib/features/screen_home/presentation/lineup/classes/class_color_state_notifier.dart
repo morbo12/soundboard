@@ -57,7 +57,7 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     // Then set the new assist state
     state = {
       ...clearedAssistStates,
-      playerId: state[playerId] == PlayerState.assist
+      playerId: state[playerId] = PlayerState.assist == PlayerState.assist
           ? PlayerState.normal
           : PlayerState.assist,
     };

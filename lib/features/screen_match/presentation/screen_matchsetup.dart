@@ -8,6 +8,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
+import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/application/season_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
@@ -39,7 +40,8 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     if (kDebugMode) {
       print("_getMatches");
     }
-    final apiClient = APIClient();
+    // final apiClient = APIClient(ref);
+    final apiClient = ref.watch(apiClientProvider);
     final seasonService = SeasonService(apiClient);
     final matchService = MatchService(apiClient);
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client.dart';
+import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
@@ -16,14 +16,16 @@ class MatchSelectorButton extends ConsumerStatefulWidget {
 
 class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
   void _getMatch(int matchID) async {
-    final apiClient = APIClient();
+    // final apiClient = APIClient();
+    final apiClient = ref.watch(apiClientProvider);
+
     final matchService = MatchService(apiClient);
     final match = await matchService.getMatch(matchId: matchID);
 
     ref.read(selectedMatchProvider.notifier).state = match;
     ref.read(lineupProvider.notifier).state =
-        await match.getLineupByMatchId(matchID);
-    await ref.read(selectedMatchProvider.notifier).state.fetchLineup();
+        await match.getLineupByMatchId(matchID, ref);
+    await ref.read(selectedMatchProvider.notifier).state.fetchLineup(ref);
     ref.read(lineupSsmlProvider.notifier).state = match.generateSsml();
   }
 

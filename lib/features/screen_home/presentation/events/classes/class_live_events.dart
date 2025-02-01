@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client.dart';
+import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
@@ -182,7 +183,9 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
     try {
       // Call the getMatch API and update the UI
       // final accessToken = await APIService().getAccessToken();
-      final apiClient = APIClient();
+      // final apiClient = APIClient();
+      final apiClient = ref.watch(apiClientProvider);
+
       final matchService = MatchService(apiClient);
       updatedMatch = await matchService.getMatch(matchId: matchId);
 
@@ -203,7 +206,9 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
     _timer = Timer.periodic(refreshInterval, (Timer timer) async {
       try {
         // Call the getMatch API and update the UI
-        final apiClient = APIClient();
+        // final apiClient = APIClient();
+        final apiClient = ref.watch(apiClientProvider);
+
         final matchService = MatchService(apiClient);
         updatedMatch = await matchService.getMatch(matchId: matchId);
 
