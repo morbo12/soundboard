@@ -31,7 +31,7 @@ class Row3timeout extends ConsumerWidget {
                 .playAudio(AudioCategory.timeoutJingle, ref);
           },
           primaryText: 'Timeout',
-          secondaryText: '(45s)',
+          secondaryText: 'N/A',
         ),
 
         const Gap(10),

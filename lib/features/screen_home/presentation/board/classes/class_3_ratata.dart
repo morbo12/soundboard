@@ -24,7 +24,7 @@ class Row1Ratata extends ConsumerWidget {
           jingleManager.audioManager.playAudio(AudioCategory.ratataJingle, ref);
         },
         primaryText: 'RATATA',
-        secondaryText: '(60s)',
+        secondaryText: 'N/A',
       ),
       const Gap(10),
       // Button to play a random clap jingle

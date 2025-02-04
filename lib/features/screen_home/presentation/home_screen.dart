@@ -49,9 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 2.0,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  LineupSection(
-                      availableWidth:
-                          constraints.maxWidth), // 502 = 400 + 100 + 2
+                  LineupSection(), // 502 = 400 + 100 + 2
                 ],
               ],
             );

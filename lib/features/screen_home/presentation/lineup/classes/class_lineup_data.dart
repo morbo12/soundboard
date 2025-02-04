@@ -1,19 +1,18 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-// import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
-// Assume TeamPlayer is imported from the appropriate file
 
 class LineupData extends ConsumerWidget {
   final double availableWidth;
+  final double availableHeight;
 
-  const LineupData({super.key, required this.availableWidth});
+  const LineupData(
+      {required this.availableWidth, required this.availableHeight});
 
-  static const double _smallFontSize = 10.0;
+  static const double _smallFontSize = 15.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,18 +28,19 @@ class LineupData extends ConsumerWidget {
 
     return SizedBox(
       width: availableWidth,
+      height: availableHeight - 153,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTeamColumn(context, ref, selectedMatch.homeTeam,
               selectedMatchLineup.homeTeamPlayers, teamWidth),
-          SizedBox(
-              width: 10,
-              height: 650,
-              child: VerticalDivider(
-                color: Theme.of(context).colorScheme.onInverseSurface,
-              )),
+          Container(
+            height: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            width: 1,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           _buildTeamColumn(context, ref, selectedMatch.awayTeam,
               selectedMatchLineup.awayTeamPlayers, teamWidth),
         ],
@@ -161,49 +161,46 @@ class LineupData extends ConsumerWidget {
                     ),
                   ],
                 ),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: getButtonColor(),
-                        foregroundColor: getTextColor(),
-                        padding:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: getButtonColor(),
+                    foregroundColor: getTextColor(),
+                    // padding: EdgeInsets.zero,
+                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    minimumSize: Size(0, 30),
+                  ),
+                  onPressed: () {
+                    ref
+                        .read(playerStatesProvider.notifier)
+                        .setGoalState(playerId);
+                  },
+                  onLongPress: () {
+                    ref
+                        .read(playerStatesProvider.notifier)
+                        .setAssistState(playerId);
+                  },
+                  child: Row(
+                    children: [
+                      AutoSizeText(
+                        '${player.shirtNo}.  ${player.name} ',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: _smallFontSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        maxLines: 1,
                       ),
-                      onPressed: () {
-                        ref
-                            .read(playerStatesProvider.notifier)
-                            .setGoalState(playerId);
-                      },
-                      onLongPress: () {
-                        ref
-                            .read(playerStatesProvider.notifier)
-                            .setAssistState(playerId);
-                      },
-                      child: Row(
-                        children: [
-                          AutoSizeText(
-                            '${player.shirtNo}. ${player.name} ',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: _smallFontSize,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            maxLines: 1,
-                          ),
-                          AutoSizeText(
-                            getButtonStateText(),
-                            style: TextStyle(
-                              color: Colors.lime,
-                              fontSize: _smallFontSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
+                      AutoSizeText(
+                        getButtonStateText(),
+                        style: TextStyle(
+                          color: Colors.lime,
+                          fontSize: _smallFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -211,7 +208,7 @@ class LineupData extends ConsumerWidget {
         );
       },
       separatorBuilder: (context, index) => Divider(
-        height: 1,
+        height: 0,
         color: Theme.of(context).colorScheme.onInverseSurface,
       ),
     );

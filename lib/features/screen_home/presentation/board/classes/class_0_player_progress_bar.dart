@@ -27,26 +27,24 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
       jingleManager.audioManager.channel1.onDurationChanged
           .listen((Duration d) {
         //get the duration of audio
-        ref.read(maxdurationProvider.notifier).state = d;
-
-        // setState(() {
-        //   // maxduration = d.inMilliseconds;
-        //   maxduration = d;
-        //   // print("ONDURATIONCHANGED" + d.toString());
-        // });
+        ref.read(maxdurationProviderC1.notifier).state = d;
       });
 
       jingleManager.audioManager.channel1.onPositionChanged
           .listen((Duration p) {
         // currentpos =
-        // p.inMilliseconds; //get the current position of playing audio
-        ref.read(currentposProvider.notifier).state = p;
-        // setState(() {
-        //   // currentpos = p;
-        //   // Duration sec = Duration(milliseconds: maxduration - currentpos);
-        //   // currentpostlabel = "${sec.inMilliseconds} ms";
-        //   // print("ONPOSCHANGED" + p.toString());
-        // });
+        ref.read(currentposProviderC1.notifier).state = p;
+      });
+
+      jingleManager.audioManager.channel2.onDurationChanged
+          .listen((Duration d) {
+        //get the duration of audio
+        ref.read(maxdurationProviderC2.notifier).state = d;
+      });
+
+      jingleManager.audioManager.channel2.onPositionChanged
+          .listen((Duration p) {
+        ref.read(currentposProviderC2.notifier).state = p;
       });
     });
   }
@@ -54,8 +52,10 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
   @override
   Widget build(BuildContext context) {
     // AudioPlayer.global.changeLogLevel(LogLevel.none);
-    final currentPos = ref.watch(currentposProvider);
-    final maxduration = ref.watch(maxdurationProvider);
+    final currentPosC1 = ref.watch(currentposProviderC1);
+    final maxdurationC1 = ref.watch(maxdurationProviderC1);
+    final currentPosC2 = ref.watch(currentposProviderC2);
+    final maxdurationC2 = ref.watch(maxdurationProviderC2);
 
     return Column(
       children: [
@@ -77,9 +77,9 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
               // child: Text(currentpos.inMilliseconds.toString()),
               child: ProgressBar(
                 thumbRadius: 4,
-                progress: currentPos,
+                progress: currentPosC1,
                 // buffered: buffered,
-                total: maxduration,
+                total: maxdurationC1,
                 onSeek: (duration) {},
                 progressBarColor:
                     Theme.of(context).colorScheme.onSecondaryContainer,
@@ -87,7 +87,8 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
                 timeLabelLocation: TimeLabelLocation.sides,
                 timeLabelTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.surface, fontSize: 10),
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 14),
               ),
               // child: Slider(
               //   value: double.parse(currentpos.toString()),
@@ -98,6 +99,27 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
               //   activeColor: Theme.of(context).colorScheme.onBackground,
               //   onChanged: (double value) {},
               // ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: ProgressBar(
+                thumbRadius: 4,
+                progress: currentPosC2,
+                // buffered: buffered,
+                total: maxdurationC2,
+                onSeek: (duration) {},
+                progressBarColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
+                thumbColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
+                timeLabelLocation: TimeLabelLocation.sides,
+                timeLabelTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 14),
+              ),
             ),
           ],
         ),

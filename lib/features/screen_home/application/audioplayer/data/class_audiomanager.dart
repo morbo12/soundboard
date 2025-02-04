@@ -1,6 +1,7 @@
 // ignore_for_file: unused_import
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,8 @@ class AudioManager {
   final List<AudioFile> audioInstances = [];
   WidgetRef? _ref;
   Map<AudioCategory, int> _currentPlayIndex = {};
+  final int _memorySize = 10; // Avoid repeating last 5 played songs
+  final Map<AudioCategory, Queue<String>> _recentlyPlayed = {};
 
   final AudioPlayer channel1 = AudioPlayer();
   final AudioPlayer channel2 = AudioPlayer();
@@ -125,7 +128,7 @@ class AudioManager {
     AudioCategory category,
     WidgetRef ref, {
     bool random = false,
-    bool sequential = false, // Add this parameter
+    bool sequential = false,
     bool shortFade = true,
     bool isBackgroundMusic = false,
   }) async {
@@ -137,21 +140,46 @@ class AudioManager {
     AudioFile audioFile;
 
     if (random) {
-      audioFile = categoryInstances[Random().nextInt(categoryInstances.length)];
-      print("Playing random file: ${audioFile.filePath}");
+      // Initialize queue for this category if it doesn't exist
+      if (!_recentlyPlayed.containsKey(category)) {
+        _recentlyPlayed[category] = Queue<String>();
+      }
+
+      // Get the queue for this category
+      Queue<String> recentQueue = _recentlyPlayed[category]!;
+
+      // Try to find a song that hasn't been played recently
+      int attempts = 0;
+      const maxAttempts = 50;
+      String filePath;
+
+      do {
+        int index = Random().nextInt(categoryInstances.length);
+        audioFile = categoryInstances[index];
+        filePath = audioFile.filePath;
+        attempts++;
+
+        // If we've tried too many times, just use the last generated index
+        if (attempts >= maxAttempts) break;
+      } while (recentQueue.contains(filePath));
+
+      // Add to recently played and remove oldest if exceeding memory size
+      recentQueue.addLast(filePath);
+      if (recentQueue.length > _memorySize) {
+        recentQueue.removeFirst();
+      }
+
+      if (kDebugMode) {
+        print("Playing random file: ${audioFile.filePath}");
+        print("Recent queue size: ${recentQueue.length}");
+      }
     } else if (sequential) {
-      // Initialize the index for this category if it doesn't exist
+      // ... existing sequential logic ...
       if (!_currentPlayIndex.containsKey(category)) {
         _currentPlayIndex[category] = 0;
       }
-
-      // Get the current index for this category
       int currentIndex = _currentPlayIndex[category]!;
-
-      // Play the current index
       audioFile = categoryInstances[currentIndex];
-      print("Playing sequential index: ${currentIndex}");
-      // Increment the index for next time
       _currentPlayIndex[category] =
           (currentIndex + 1) % categoryInstances.length;
     } else {
@@ -159,7 +187,6 @@ class AudioManager {
     }
 
     AudioChannel channel = _getAvailableChannel();
-
     int fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
 
     await _playAudioFile(
@@ -169,6 +196,14 @@ class AudioManager {
       fadeDuration: fadeDuration,
       isBackgroundMusic: isBackgroundMusic,
     );
+  }
+
+  void clearPlayHistory() {
+    _recentlyPlayed.clear();
+  }
+
+  void clearPlayHistoryForCategory(AudioCategory category) {
+    _recentlyPlayed.remove(category);
   }
 
   AudioChannel _getAvailableChannel() {

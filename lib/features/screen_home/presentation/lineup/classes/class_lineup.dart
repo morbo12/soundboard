@@ -9,7 +9,6 @@ import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
-import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_notepad.dart';
 import 'package:soundboard/properties.dart';
 // [Keep other imports...]
 
@@ -18,8 +17,9 @@ enum MatchEventType { goal, penalty }
 
 class Lineup extends ConsumerStatefulWidget {
   final double availableWidth;
+  final double availableHeight;
 
-  const Lineup({super.key, required this.availableWidth});
+  const Lineup({required this.availableWidth, required this.availableHeight});
 
   @override
   ConsumerState<Lineup> createState() => _LineupState();
@@ -36,13 +36,16 @@ class _LineupState extends ConsumerState<Lineup> {
 
     return SizedBox(
       width: widget.availableWidth,
+      height: widget.availableHeight,
       child: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Column(
           children: [
             _buildHeader(theme, lineupSsml, selectedMatch),
             _buildDivider(theme),
-            LineupData(availableWidth: widget.availableWidth)
+            LineupData(
+                availableWidth: widget.availableWidth,
+                availableHeight: widget.availableHeight),
           ],
         ),
       ),

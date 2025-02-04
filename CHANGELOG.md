@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Scratchpad look and functionality updated
+- Random jingles has now a memory of the last 10 jingles to avoid playing the same jingle too often
+- Minor adjustments to Lineup data for better visibility
+- Playing channels now shows duration clock
 
 ### Fixed
 - Fix: API Token is now caching properly

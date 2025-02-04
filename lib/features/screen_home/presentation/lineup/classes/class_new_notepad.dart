@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 class GoalInputWidget extends ConsumerStatefulWidget {
   final String team;
@@ -19,6 +17,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
   String _scorer = '';
   String _assist = '';
   String _errorMessage = '';
+  static const double _smallFontSize = 16.0;
 
   String _parseTime(String timeStr) {
     if (timeStr.isEmpty) return '';
@@ -113,15 +112,14 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
   Widget build(BuildContext context) {
     // final playerState = ref.watch(playerStatesProvider.notifier);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        // crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          TextField(
+    return Column(
+      // crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: TextField(
             onTap: () {
-              // playerState.clearAllStates();
               _assist = '';
               _scorer = '';
             },
@@ -134,24 +132,18 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
             keyboardType: TextInputType.number,
             onChanged: (input) {
               _parseInput(input);
-              // setState(() {});
-              // if (_scorer.isNotEmpty) {
-              // print("Setting Scorer: $_scorer");
-              // playerState.setGoalState(_scorer);
-              // }
-              // if (_assist.isNotEmpty) {
-              // print("Setting Assist: $_assist");
-              // playerState.setAssistState(_assist);
-              // }
             },
           ),
-          SizedBox(height: 20),
-          Card(
-            color: Theme.of(context).colorScheme.secondaryContainer,
+        ),
+        SizedBox(height: 10),
+        Card(
+          color: Theme.of(context).colorScheme.secondaryContainer,
+          child: Container(
+            width: double.infinity,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                // crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(6.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_time.isNotEmpty)
                     Text('Tid: $_time',
@@ -159,23 +151,28 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer,
-                            fontWeight: FontWeight.bold)),
+                            fontWeight: FontWeight.bold,
+                            fontSize: _smallFontSize)),
                   if (_scorer.isNotEmpty)
                     Text(
-                      '  |  Mål: $_scorer',
+                      'Mål: $_scorer',
                       style: TextStyle(
-                          color: Colors.lime, fontWeight: FontWeight.bold),
+                          color: Colors.lime,
+                          fontWeight: FontWeight.bold,
+                          fontSize: _smallFontSize),
                     ),
                   if (_assist.isNotEmpty)
-                    Text('  |  Assist: $_assist',
+                    Text('Assist: $_assist',
                         style: TextStyle(
-                            color: Colors.lime, fontWeight: FontWeight.bold)),
+                            color: Colors.lime,
+                            fontWeight: FontWeight.bold,
+                            fontSize: _smallFontSize)),
                 ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
