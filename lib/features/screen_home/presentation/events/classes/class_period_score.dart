@@ -60,8 +60,16 @@ class PeriodScores extends ConsumerWidget {
 
   Widget _buildPeriodButton(
       BuildContext context, WidgetRef ref, int period, IbyMatch match) {
-    final hasResults = match.intermediateResults != null &&
-        match.intermediateResults!.length > period;
+    // final hasResults = match.intermediateResults != null &&
+    // match.intermediateResults!.length > period;
+
+    final hasResults = match.events != null &&
+        match.events!
+            .where((test) => test.matchEventType == "Periodstart")
+            .isNotEmpty &&
+        match.events!
+            .where((element) => element.periodName == "Period ${period}")
+            .isNotEmpty;
 
     return Expanded(
       child: TextButton(
@@ -89,7 +97,7 @@ class PeriodScores extends ConsumerWidget {
               ),
               hasResults
                   ? "${match.intermediateResults!.elementAt(period).goalsHomeTeam} - ${match.intermediateResults!.elementAt(period).goalsAwayTeam}"
-                  : "",
+                  : "0 - 0",
             ),
           ],
         ),

@@ -16,7 +16,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.3.14-beta3+9
+version: 0.3.14-beta4+10
 
 environment:
   sdk: ^3.5.3
@@ -39,7 +39,7 @@ dependencies:
   dart_random_choice: ^0.2.0
   dart_date: ^1.1.1
   permission_handler: ^11.0.0
-  flex_color_scheme: ^8.0.0
+  flex_color_scheme: ^8.1.0
   intl: ^0.19.0
   auto_size_text: ^3.0.0
   url_launcher: ^6.1.8
@@ -77,8 +77,8 @@ dependencies:
   # _fe_analyzer_shared: ^74.0.0
   # analyzer: ^6.9.0
 
-dev_dependencies:
-  msix: ^3.16.7
+# dev_dependencies:
+#   msix: ^3.16.7
 
 #   flutter_test:
 #     # sdk: flutter
@@ -141,17 +141,17 @@ flutter_launcher_icons:
     generate: true
     image_path: "assets/icon/icon.jpg"
   
-msix_config:
-  display_name: soundboard
-  identity_name: io.lyxell.soundboard
-  # msix_version: 1.0.0.0
-  languages: sv-se
-  logo_path: assets/icon/icon.jpg
-  capabilities: internetClient
-  certificate_path: C:\users\lars\flutter_code\cert\cert.pfx
-  certificate_password: Key123
-  install_certificate: false
-  sign_msix: true
-  # signtool_options: /fd SHA256 /f "C:\users\lars\flutter_code\cert.pfx" /p Key123
-  app_installer:
-    publish_folder_path: C:\Users\lars\OneDrive\Soundboard\Releases\io.lyxell.soundboard\windows
+# msix_config:
+#   display_name: soundboard
+#   identity_name: io.lyxell.soundboard
+#   # msix_version: 1.0.0.0
+#   languages: sv-se
+#   logo_path: assets/icon/icon.jpg
+#   capabilities: internetClient
+#   certificate_path: C:\users\lars\flutter_code\cert\cert.pfx
+#   certificate_password: Key123
+#   install_certificate: false
+#   sign_msix: true
+#   # signtool_options: /fd SHA256 /f "C:\users\lars\flutter_code\cert.pfx" /p Key123
+#   app_installer:
+#     publish_folder_path: C:\Users\lars\OneDrive\Soundboard\Releases\io.lyxell.soundboard\windows

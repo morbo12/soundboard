@@ -71,8 +71,10 @@ class SsmlPenaltyEvent {
 
   Future<bool> getSay(BuildContext context) async {
     // String say = matchEvent.matchTeamName;
+
     String say =
         "Nummer ${matchEvent.playerShirtNo}, ${matchEvent.playerName} i ${stripTeamSuffix(matchEvent.matchTeamName)} utvisas ${penaltyName()}. Tid: <say-as interpret-as='duration' format='ms'>${whatWasTheTime()}</say-as> ";
+
     if (kDebugMode) {
       print("SAY: $say");
     }

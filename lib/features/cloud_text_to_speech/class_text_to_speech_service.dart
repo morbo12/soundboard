@@ -135,7 +135,7 @@ class TextToSpeechService {
 
     final params = TtsParamsMicrosoft(
       voice: selectedVoice,
-      audioFormat: AudioOutputFormatMicrosoft.audio48Khz192kBitrateMonoMp3,
+      audioFormat: AudioOutputFormatMicrosoft.Webm24Khz16Bit24KbpsMonoOpus,
       text: text,
       rate: 'default',
       pitch: 'default',
