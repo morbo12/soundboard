@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 
@@ -326,7 +325,7 @@ class _NotepadState extends ConsumerState<Notepad> {
         orElse: () => TeamPlayer(shirtNo: null, name: '', position: ''),
       );
 
-      if (awayPlayer?.shirtNo == number) {
+      if (awayPlayer.shirtNo == number) {
         return '${awayPlayer.shirtNo}-${awayPlayer.name}';
       }
     }

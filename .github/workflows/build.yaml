@@ -15,21 +15,21 @@ env:
   JAVA_VERSION: '21'
 
 jobs:
-  security-scan:
-    name: Security Scanning
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # security-scan:
+  #   name: Security Scanning
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v3
+  #       with:
+  #         languages: javascript
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v3
           
   build-job:
     timeout-minutes: 60

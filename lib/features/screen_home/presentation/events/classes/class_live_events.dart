@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';

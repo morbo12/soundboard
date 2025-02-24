@@ -199,7 +199,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
         orElse: () => TeamPlayer(shirtNo: null, name: '', position: ''),
       );
 
-      if (awayPlayer?.shirtNo == number) {
+      if (awayPlayer.shirtNo == number) {
         return '${awayPlayer.shirtNo}-${awayPlayer.name}';
       }
     }

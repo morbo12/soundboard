@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:animated_introduction/animated_introduction.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
@@ -36,7 +37,23 @@ class _PlayerState extends ConsumerState<Player> {
     installerStore: 'Unknown',
   );
   bool isJingleManagerInitialized = false;
-
+  bool _isIntroCompleted = false;
+  static const String _introCompletedKey = 'intro_completed';
+  bool _isLoading = true;
+  final List<SingleIntroScreen> pages = [
+    const SingleIntroScreen(
+      title: 'Ny features #1',
+      description:
+          'Lineup är flyttad upp till höger\nPeriodstatistik visas och är klickbar för att spela upp ljud i högtalarna',
+      imageAsset: 'assets/intros/intro1.png',
+    ),
+    const SingleIntroScreen(
+      title: 'Ny feature #2 - scratchpad',
+      description:
+          "Här kan man skriva ner domarens information vid mål, berörda spelare higlightas i lineup",
+      imageAsset: 'assets/intros/intro2.png',
+    ),
+  ];
   void launchSpotify() async {
     final Uri url = Uri.parse(SettingsBox().spotifyUri);
     await launchUrl(url);
@@ -44,11 +61,12 @@ class _PlayerState extends ConsumerState<Player> {
 
   @override
   void initState() {
-    _initPackageInfo();
+    // _initPackageInfo();
     // jingleManager = JingleManager(context);
     // jingleManager.audioManager.setRef(ref);
-    _initJingleManager();
+    // _initJingleManager();
     super.initState();
+    _initializeApp();
   }
 
   @override
@@ -56,14 +74,39 @@ class _PlayerState extends ConsumerState<Player> {
     super.dispose();
   }
 
+  Future<void> _initializeApp() async {
+    try {
+      await Future.wait([
+        _initPackageInfo(),
+        _loadIntroState(),
+        _initJingleManager(),
+      ]);
+    } catch (e) {
+      showMessage(
+        message: 'Error initializing app: ${e.toString()}',
+        type: MsgType.error,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _initJingleManager() async {
-    jingleManager = JingleManager(showMessageCallback: showMessage);
-    await jingleManager.initialize();
-    jingleManager.audioManager.setRef(ref);
-    setState(() {
-      // Set the flag to indicate that JingleManager is initialized
-      isJingleManagerInitialized = true;
-    });
+    try {
+      jingleManager = JingleManager(showMessageCallback: showMessage);
+      await jingleManager.initialize();
+      jingleManager.audioManager.setRef(ref);
+      setState(() {
+        isJingleManagerInitialized = true;
+      });
+    } catch (e) {
+      showMessage(
+        message: 'Failed to initialize audio system: ${e.toString()}',
+        type: MsgType.error,
+      );
+    }
   }
 
   Future<void> _initPackageInfo() async {
@@ -81,28 +124,70 @@ class _PlayerState extends ConsumerState<Player> {
         textStyle: const TextStyle(color: Colors.white));
   }
 
+  Widget _buildMainContent(int currentIndex) {
+    return Stack(
+      children: [
+        IndexedStack(
+          index: currentIndex,
+          children: const [
+            HomeScreen(),
+            MatchSetupScreen(),
+            SettingsScreen(),
+            SettingsTtsScreen(),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _loadIntroState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isIntroCompleted = prefs.getBool(_introCompletedKey) ?? false;
+    });
+  }
+
+  Future<void> _setIntroCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_introCompletedKey, true);
+    setState(() {
+      _isIntroCompleted = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedIndexProvider);
-
+    if (_isLoading) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+    // If intro is not completed, show intro screens
+    if (!_isIntroCompleted) {
+      return AnimatedIntroduction(
+        doneText: "Done",
+        slides: pages,
+        containerBg: Theme.of(context).colorScheme.surface,
+        footerBgColor: Theme.of(context).colorScheme.primaryContainer,
+        textColor: Theme.of(context).colorScheme.onPrimaryContainer,
+        activeDotColor: Theme.of(context).colorScheme.onPrimaryContainer,
+        inactiveDotColor: Theme.of(context).colorScheme.onPrimaryFixed,
+        indicatorType: IndicatorType.circle,
+        onDone: () {
+          setState(() {
+            _setIntroCompleted();
+          });
+        },
+      );
+    }
     return Scaffold(
       body: isJingleManagerInitialized
-          ? Stack(
-              children: [
-                IndexedStack(
-                  index: selectedIndex,
-                  children: const [
-                    HomeScreen(),
-                    MatchSetupScreen(),
-                    SettingsScreen(),
-                    SettingsTtsScreen(),
-                  ],
-                ),
-                // if (selectedIndex == 0 &&
-                //     Platform.isWindows) // Only show on Home screen on Windows
-                //   FloatingCameraWindow(),
-              ],
-            )
+          ? _buildMainContent(selectedIndex)
           : const Center(child: CircularProgressIndicator()),
       appBar: AppBar(
           toolbarHeight: DefaultConstants().appBarHeight,

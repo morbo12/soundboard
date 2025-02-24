@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
@@ -37,7 +36,7 @@ class _FloatingCameraWindowState extends State<FloatingCameraWindow> {
     if (cameras.isNotEmpty) {
       _controller = CameraController(cameras[0], ResolutionPreset.medium);
       try {
-        await _controller!.initialize();
+        await _controller.initialize();
         setState(() {
           _isInitialized = true;
         });
@@ -56,26 +55,6 @@ class _FloatingCameraWindowState extends State<FloatingCameraWindow> {
   //     _processImage();
   //   });
   // }
-
-  Future<void> _processImage() async {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return;
-    }
-
-    try {
-      final image = await _controller!.takePicture();
-      Uint8List imageBytes = await image.readAsBytes();
-
-      setState(() {
-        _recognizedText = "#";
-      });
-
-      print('Recognized Text: $_recognizedText');
-      // Here you can implement logic to extract and process the time from the recognized text
-    } catch (e) {
-      print('Error processing image: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +82,7 @@ class _FloatingCameraWindowState extends State<FloatingCameraWindow> {
             Container(
               width: 200,
               padding: EdgeInsets.all(8),
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               child: Text(
                 'Recognized: $_recognizedText',
                 style: TextStyle(color: Colors.white),
@@ -127,7 +106,7 @@ class _FloatingCameraWindowState extends State<FloatingCameraWindow> {
         borderRadius: BorderRadius.circular(6),
         child: Transform.scale(
           scaleX: -1, // This will mirror the image horizontally
-          child: CameraPreview(_controller!),
+          child: CameraPreview(_controller),
         ),
       ),
     );

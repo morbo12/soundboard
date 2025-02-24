@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
@@ -292,6 +291,24 @@ class IbyMatch {
     return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
   }
 
+  // Getter for the full SSML content
+  String get ssml {
+    return generateSsml();
+  }
+
+  // Getters for the three SSML parts
+  String get introSsml {
+    return _generateWelcomeMessage();
+  }
+
+  String get homeTeamSsml {
+    return _generateHomeTeamLineup();
+  }
+
+  String get awayTeamSsml {
+    return _generateAwayTeamLineup();
+  }
+
   String generateSsml() {
     String ssml;
     if (lineup == null) {
@@ -303,6 +320,9 @@ class IbyMatch {
     } else {
       // ssml =
       // '<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="sv-SE">\n<lang xml:lang="sv-SE">';
+
+// Split into intro ssml, home ssml and away ssml
+// sync run of home and away tts to jingles.
 
       ssml = _generateWelcomeMessage();
       ssml += _generateAwayTeamLineup();
@@ -328,63 +348,98 @@ Välkomna! Testtext är nu slut
   }
 
   String _generateWelcomeMessage() {
-    return """
+    final String ssml;
+    if (lineup == null) {
+      ssml = """
+    Välkomna till Testhallen!
+    <break time="1000ms" />
+    Testlaget hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan Hemmalaget och Bortalaget
+    <break time="1000ms" />
+    """;
+    } else {
+      ssml = """
     Välkomna till $venue!
     <break time="1000ms" />
     ${stripTeamSuffix(homeTeam)} hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan ${stripTeamSuffix(homeTeam)} och ${stripTeamSuffix(awayTeam)}
     <break time="1000ms" />
     """;
+    }
+    return ssml;
   }
 
   String _generateHomeTeamLineup() {
-    String ssml =
-        "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />";
-    String homeGoalie =
-        "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
-    for (TeamPlayer player in lineup!.homeTeamPlayers) {
-      if (player.position == "Målvakt") {
-        homeGoalie =
-            "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
-      } else {
-        ssml += player.shirtNo == null
-            ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-            : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+    String ssml;
+    if (lineup == null) {
+      ssml = """
+    Hemmalaget ställer upp med följande spelare<break time='750ms' />
+    Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
+    Nummer 27, <say-as interpret-as='name'>Eddie Rylin</say-as>,
+    Nummer 42, <say-as interpret-as='name'>Henry Dahlström</say-as>,
+    Nummer 82, <say-as interpret-as='name'>Liam Sandberg</say-as>,
+    Välkomna! Testtext är nu slut
+    """;
+    } else {
+      ssml =
+          "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />";
+      String homeGoalie =
+          "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
+      for (TeamPlayer player in lineup!.homeTeamPlayers) {
+        if (player.position == "Målvakt") {
+          homeGoalie =
+              "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
+        } else {
+          ssml += player.shirtNo == null
+              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+        }
       }
-    }
-    ssml += homeGoalie;
-    ssml += "<break time=\"500ms\" />\n";
-    ssml += "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />";
-    for (TeamTeamPerson teamPerson in lineup!.homeTeamTeamPersons) {
+      ssml += homeGoalie;
+      ssml += "<break time=\"500ms\" />\n";
       ssml +=
-          "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='1000ms' />\n";
+          "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />";
+      for (TeamTeamPerson teamPerson in lineup!.homeTeamTeamPersons) {
+        ssml +=
+            "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='1000ms' />\n";
+      }
+      ssml += "<break time=\"1000ms\" />\n";
     }
-    ssml += "<break time=\"1000ms\" />\n";
     return ssml;
   }
 
   String _generateAwayTeamLineup() {
-    String ssml =
-        "${stripTeamSuffix(awayTeam)} ställer upp med följande spelare<break time='750ms' />\n";
-    String awayGoalie =
-        "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
-    for (TeamPlayer player in lineup!.awayTeamPlayers) {
-      if (player.position == "Målvakt") {
-        awayGoalie =
-            "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
-      } else {
-        ssml += player.shirtNo == null
-            ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-            : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+    String ssml;
+    if (lineup == null) {
+      ssml = """
+    Bortalaget ställer upp med följande spelare<break time='750ms' />
+    Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
+    Nummer 27, <say-as interpret-as='name'>Eddie Rylin</say-as>,
+    Nummer 42, <say-as interpret-as='name'>Henry Dahlström</say-as>,
+    Nummer 82, <say-as interpret-as='name'>Liam Sandberg</say-as>,
+    """;
+    } else {
+      ssml =
+          "${stripTeamSuffix(awayTeam)} ställer upp med följande spelare<break time='750ms' />\n";
+      String awayGoalie =
+          "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
+      for (TeamPlayer player in lineup!.awayTeamPlayers) {
+        if (player.position == "Målvakt") {
+          awayGoalie =
+              "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
+        } else {
+          ssml += player.shirtNo == null
+              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+        }
       }
+      ssml += awayGoalie;
+      ssml += "<break time=\"500ms\" />\n";
+      ssml += "Ledare för ${stripTeamSuffix(awayTeam)} är,";
+      for (TeamTeamPerson teamPerson in lineup!.awayTeamTeamPersons) {
+        ssml +=
+            "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='750ms' />\n";
+      }
+      ssml += "<break time=\"1000ms\" />\n";
     }
-    ssml += awayGoalie;
-    ssml += "<break time=\"500ms\" />\n";
-    ssml += "Ledare för ${stripTeamSuffix(awayTeam)} är,";
-    for (TeamTeamPerson teamPerson in lineup!.awayTeamTeamPersons) {
-      ssml +=
-          "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='750ms' />\n";
-    }
-    ssml += "<break time=\"1000ms\" />\n";
     return ssml;
   }
 

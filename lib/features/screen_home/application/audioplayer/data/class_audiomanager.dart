@@ -43,6 +43,15 @@ class AudioManager {
     await _fadeAndStop(ref, AudioChannel.channel2);
   }
 
+  Future<void> fadeOutNoStop(WidgetRef ref, AudioChannel channel) async {
+    await _fadeNoStop(ref, channel);
+  }
+
+  Future<void> _fadeNoStop(WidgetRef ref, AudioChannel channel,
+      {int fadeDuration = _longFadeDuration}) async {
+    await _fadeChannel(ref, channel, 0.0, fadeDuration);
+  }
+
   Future<void> _fadeAndStop(WidgetRef ref, AudioChannel channel,
       {int fadeDuration = _longFadeDuration}) async {
     await _fadeChannel(ref, channel, 0.0, fadeDuration);
@@ -83,12 +92,9 @@ class AudioManager {
     AudioPlayer player = channel == AudioChannel.channel1 ? channel1 : channel2;
     await player.play(DeviceFileSource(filePath));
 
-    // Fade in to full volume
-    await _fadeChannel(ref, channel, 1.0, fadeDuration);
-
     if (isBackgroundMusic) {
       // Wait for 5 seconds
-      await Future.delayed(Duration(seconds: 5));
+      // await Future.delayed(Duration(seconds: 5));
 
       // Fade down to background music level
       await _fadeChannel(
@@ -98,6 +104,9 @@ class AudioManager {
       player.onPlayerComplete.listen((_) async {
         await _setChannelVolume(ref, channel, 0.0);
       });
+    } else {
+      // Fade in to full volume
+      await _fadeChannel(ref, channel, 1.0, fadeDuration);
     }
   }
 
@@ -170,8 +179,8 @@ class AudioManager {
       }
 
       if (kDebugMode) {
-        print("Playing random file: ${audioFile.filePath}");
-        print("Recent queue size: ${recentQueue.length}");
+        print("[playAudio] Playing random file: ${audioFile.filePath}");
+        print("[playAudio] Recent queue size: ${recentQueue.length}");
       }
     } else if (sequential) {
       // ... existing sequential logic ...
@@ -186,7 +195,8 @@ class AudioManager {
       audioFile = categoryInstances[0];
     }
 
-    AudioChannel channel = _getAvailableChannel();
+    AudioChannel channel =
+        isBackgroundMusic ? AudioChannel.channel1 : _getAvailableChannel();
     int fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
 
     await _playAudioFile(
@@ -245,5 +255,38 @@ class AudioManager {
     ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
 
     await channel2.play(BytesSource(audio));
+  }
+
+  Future<void> playBytesAndWait(
+      {required Uint8List audio, required WidgetRef ref}) async {
+    if (kDebugMode) {
+      print("[playBytesAndWait] Length is ${audio.length}");
+    }
+
+    if (channel2.state == PlayerState.playing) {
+      await channel2.stop(); // Stop the currently playing instance
+    }
+    print("[playBytesAndWait] Setting volume to 1.0");
+    await channel2.setVolume(1.0);
+    ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+
+    // Create a completer to handle the completion
+    final completer = Completer<void>();
+
+    // Set up player state stream subscription
+    StreamSubscription? subscription;
+    subscription = channel2.onPlayerStateChanged.listen((PlayerState state) {
+      if (state == PlayerState.completed) {
+        subscription?.cancel();
+        completer.complete();
+      }
+    });
+    print("[playBytesAndWait] Playing audio");
+    // Play the audio
+    await channel2.play(BytesSource(audio));
+
+    print("[playBytesAndWait] Returning completer");
+    // Wait for completion
+    return completer.future;
   }
 }

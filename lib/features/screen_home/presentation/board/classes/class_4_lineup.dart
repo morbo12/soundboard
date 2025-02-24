@@ -1,16 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-// import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/properties.dart';
 
 class Row2lineup extends ConsumerWidget {
   const Row2lineup({super.key});
@@ -18,8 +11,8 @@ class Row2lineup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // lineupFile = ref.watch(lineupFileProvider);
-    final lineupSsml = ref.watch(lineupSsmlProvider);
-    final selectedMatch = ref.read(selectedMatchProvider);
+    // final lineupSsml = ref.watch(lineupSsmlProvider);
+    // final selectedMatch = ref.read(selectedMatchProvider);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

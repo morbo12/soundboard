@@ -14,7 +14,7 @@ class EventCardSsml {
 
   String getEventText(BuildContext context) {
     String string = "";
-    final selectedMatch = ref.read(selectedMatchProvider);
+    ref.read(selectedMatchProvider);
     // final lineupSsml = ref.read(lineupSsmlProvider);
 
     switch (data.matchEventTypeId) {
