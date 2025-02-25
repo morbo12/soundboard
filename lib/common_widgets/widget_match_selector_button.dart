@@ -23,10 +23,13 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
     final match = await matchService.getMatch(matchId: matchID);
 
     ref.read(selectedMatchProvider.notifier).state = match;
+    // await ref.read(selectedMatchProvider.notifier).state.fetchLineup(ref);
+    await match.fetchLineup(ref);
+    ref.read(lineupProvider.notifier).state = match.lineup!;
+
     ref.read(lineupProvider.notifier).state =
         await match.getLineupByMatchId(matchID, ref);
-    await ref.read(selectedMatchProvider.notifier).state.fetchLineup(ref);
-    ref.read(lineupSsmlProvider.notifier).state = match.generateSsml();
+    // ref.read(lineupSsmlProvider.notifier).state = match.generateSsml();
   }
 
   @override

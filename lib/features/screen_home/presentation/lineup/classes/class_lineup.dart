@@ -74,7 +74,7 @@ class _LineupState extends ConsumerState<Lineup> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedMatch = ref.read(selectedMatchProvider);
+    final selectedMatch = ref.watch(selectedMatchProvider);
     final isLoading = ref.watch(isLoadingProvider);
     final theme = Theme.of(context);
 
