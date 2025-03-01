@@ -261,6 +261,15 @@ class IbyMatch {
   //     ),
   //   );
   // }
+// In your IbyMatch class
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is IbyMatch && other.matchId == matchId;
+  }
+
+  @override
+  int get hashCode => matchId.hashCode;
 
   Future<void> fetchLineup(WidgetRef ref) async {
     // Assuming you have a function getLineupByMatchId that makes the API call.

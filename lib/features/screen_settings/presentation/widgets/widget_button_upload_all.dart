@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_pickers/flutter_material_pickers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 
 class UploadButtonAll extends StatefulWidget {
   const UploadButtonAll({super.key}); // Updated constructor
@@ -56,22 +56,21 @@ class UploadButtonToDirState extends State<UploadButtonAll> {
       noLines: 1,
       isSelected: true,
       onTap: () async {
-        // Invoke the file picker UI function
-        showMaterialFilePicker(
-          context: context,
-          fileType: FileType.custom,
+        pickFile(
           allowedExtensions: ['zip'],
-          onChanged: (value) async {
-            // Check if mounted is needed here, depends on what showMaterialFilePicker does
+          onFileSelected: (filePath) async {
             if (!mounted) return;
-            selectedPath.value = value.path;
-            if (kDebugMode) {
-              print("VALUE: ${value.path}");
-            }
-            if (value.path!.endsWith('.zip')) {
+
+            selectedPath.value = filePath;
+
+            if (filePath.endsWith('.zip')) {
               await _unzipFile(file: selectedPath.value);
             }
+
             jingleManager.initialize();
+          },
+          onError: (errorMessage) {
+            // Handle error, maybe show a snackbar
           },
         );
       },

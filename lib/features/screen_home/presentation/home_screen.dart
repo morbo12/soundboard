@@ -33,6 +33,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Scaffold(
         body: LayoutBuilder(
           builder: (context, constraints) {
+            // On Android, use a single column layout with full width BoardSection
+            if (Platform.isAndroid) {
+              return BoardSection(width: constraints.maxWidth);
+            }
             return Row(
               children: [
                 BoardSection(width: 400),

@@ -34,33 +34,31 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
         .key;
   }
 
-  // New methods for goal and assist
   void setGoalState(String playerId) {
-    // First, clear any existing goal states
-    final clearedGoalStates = Map<String, PlayerState>.from(state)
+    if (playerId.isEmpty) return;
+
+    // Clear any existing goal states
+    final updatedState = Map<String, PlayerState>.from(state)
       ..removeWhere((key, value) => value == PlayerState.goal);
 
     // Then set the new goal state
-    state = {
-      ...clearedGoalStates,
-      playerId: state[playerId] == PlayerState.goal
-          ? PlayerState.normal
-          : PlayerState.goal,
-    };
+    updatedState[playerId] = PlayerState.goal;
+
+    state = updatedState;
   }
 
   void setAssistState(String playerId) {
-    // First, clear any existing assist states
-    final clearedAssistStates = Map<String, PlayerState>.from(state)
+    if (playerId.isEmpty) return;
+
+    // Clear any existing assist states
+    final updatedState = Map<String, PlayerState>.from(state)
       ..removeWhere((key, value) => value == PlayerState.assist);
 
     // Then set the new assist state
-    state = {
-      ...clearedAssistStates,
-      playerId: state[playerId] = PlayerState.assist == PlayerState.assist
-          ? PlayerState.normal
-          : PlayerState.assist,
-    };
+    updatedState[playerId] = PlayerState.assist;
+
+    state = updatedState;
+    print("Assist state: ${state[playerId]}");
   }
 
   void setPenaltyState(String playerId) {

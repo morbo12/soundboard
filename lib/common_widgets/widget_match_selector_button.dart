@@ -25,7 +25,7 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
     ref.read(selectedMatchProvider.notifier).state = match;
     // await ref.read(selectedMatchProvider.notifier).state.fetchLineup(ref);
     await match.fetchLineup(ref);
-    ref.read(lineupProvider.notifier).state = match.lineup!;
+    // ref.read(lineupProvider.notifier).state = match.lineup!;
 
     ref.read(lineupProvider.notifier).state =
         await match.getLineupByMatchId(matchID, ref);
@@ -37,10 +37,12 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
     Color normalColor = Theme.of(context).colorScheme.secondaryContainer;
     final selectedMatch = ref.watch(selectedMatchProvider);
 
+    // Check if this button's match is selected based on matchId
+    final isSelected = widget.match.matchId == selectedMatch.matchId;
+
     return Container(
       decoration: BoxDecoration(
           color: normalColor,
-          // border: Border.all(width: 2, color: Colors.white),
           borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(10),
               bottomRight: Radius.circular(10))),
@@ -51,23 +53,20 @@ class _MatchSelectorButtonState extends ConsumerState<MatchSelectorButton> {
           ElevatedButton(
             onPressed: () {
               _getMatch(widget.match.matchId);
-              // selectedMatch = widget.match;
-              // print(selectedMatch.matchId);
-              // super.setState(() {});
-              // setState(() {});
             },
             style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(left: 40, right: 40),
-                foregroundColor: widget.match == selectedMatch
-                    ? Theme.of(context).colorScheme.onSecondaryContainer
-                    : Theme.of(context).colorScheme.onPrimary,
-                backgroundColor: widget.match == selectedMatch
-                    ? Theme.of(context).colorScheme.tertiaryContainer
-                    : normalColor,
-                side: BorderSide(
-                    width: 2,
-                    color: Theme.of(context).colorScheme.surfaceTint)),
-            child: Text(widget.match == selectedMatch ? "VALD" : "VÄLJ"),
+              padding: const EdgeInsets.only(left: 40, right: 40),
+              foregroundColor: isSelected
+                  ? Theme.of(context).colorScheme.onSecondaryContainer
+                  : Theme.of(context).colorScheme.onSurface,
+              backgroundColor: isSelected
+                  ? Theme.of(context).colorScheme.tertiaryContainer
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+              // side: BorderSide(
+              //     width: 2,
+              //     color: Theme.of(context).colorScheme.surfaceContainer)
+            ),
+            child: Text(isSelected ? "VALD" : "VÄLJ"),
           ),
         ],
       ),

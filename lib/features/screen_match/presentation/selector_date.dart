@@ -1,7 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_pickers/helpers/show_date_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/features/screen_match/presentation/providers.dart';
@@ -30,20 +29,8 @@ class _DateSelectorState extends ConsumerState<DateSelector> {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: () async {
-              final DateTime? pickedDate = await showMaterialDatePicker(
-                // locale: const Locale("sv"),
-                firstDate: DateTime(1990, 1, 1),
-                lastDate: DateTime(2050, 12, 31),
-                selectedDate: DateTime.now(),
-                title: "Välj Datum",
-                context: context,
-              );
-              if (pickedDate != null && pickedDate != selectedDate) {
-                ref.read(selectedDateProvider.notifier).state = pickedDate;
-              }
-              widget.callback();
-            },
+            onPressed: () =>
+                _selectDate(context, ref, selectedDate, widget.callback),
             child: selectedDate
                         .compareTo(DateTime.fromMillisecondsSinceEpoch(0)) !=
                     0
@@ -53,7 +40,7 @@ class _DateSelectorState extends ConsumerState<DateSelector> {
                   )
                 : const AutoSizeText(
                     "Välj Datum",
-                    // minFontSize: 24,
+                    textAlign: TextAlign.center,
                   ),
           ),
         ),
@@ -108,5 +95,25 @@ class _DateSelectorState extends ConsumerState<DateSelector> {
     //     );
     //   },
     // );
+  }
+
+  Future<void> _selectDate(BuildContext context, WidgetRef ref,
+      DateTime selectedDate, Function callback) async {
+    final initialDate =
+        selectedDate.compareTo(DateTime.fromMillisecondsSinceEpoch(0)) != 0
+            ? selectedDate
+            : DateTime.now();
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1990, 1, 1),
+      lastDate: DateTime(2050, 12, 31),
+    );
+
+    if (pickedDate != null && pickedDate != selectedDate) {
+      ref.read(selectedDateProvider.notifier).state = pickedDate;
+      callback();
+    }
   }
 }

@@ -68,11 +68,10 @@ dependencies:
   syncfusion_flutter_core: ^28.1.41
   riverpod_annotation: ^2.3.3
   flutter_riverpod: ^2.4.9
-  flutter_material_pickers: ^3.7.0
   easy_localization: ^3.0.4
-  file_picker: ^8.0.7
-  camera_windows: ^0.2.6+1
-  camera: ^0.11.0+2
+  file_picker: ^9.0.2
+  # camera_windows: ^0.2.6+1
+  # camera: ^0.11.0+2
   animated_introduction: ^1.0.4
   shared_preferences: ^2.5.2
   

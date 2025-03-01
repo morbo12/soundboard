@@ -75,7 +75,7 @@ class EventCard extends ConsumerWidget {
         AutoSizeText(
             data.matchTeamName.length < 20
                 ? data.matchTeamName
-                : "| ${data.matchTeamName.substring(0, 22) + "..."}",
+                : "${data.matchTeamName.substring(0, 17) + "..."}",
             minFontSize: _smallFontSize,
             style: const TextStyle(
                 fontSize: _smallFontSize + 2,

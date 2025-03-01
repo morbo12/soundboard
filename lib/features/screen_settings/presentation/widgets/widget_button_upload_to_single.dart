@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_pickers/flutter_material_pickers.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 
 class UploadButtonToSingle extends StatefulWidget {
   final AudioFile audiofile; // Updated to be more descriptive
@@ -51,26 +51,28 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
       noLines: 1,
       isSelected: true,
       onTap: () async {
-        // Invoke the file picker UI function
-        showMaterialFilePicker(
-          context: context,
-          fileType: FileType.custom,
+        pickFile(
           allowedExtensions:
               Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg'],
-          onChanged: (value) async {
-            // Check if mounted is needed here, depends on what showMaterialFilePicker does
+          onFileSelected: (filePath) async {
             if (!mounted) return;
-            selectedPath.value = value.path;
-            if (kDebugMode) {
-              print("VALUE: ${value.path}");
+
+            selectedPath.value = filePath;
+
+            final validExtensions = ['.mp3', '.flac'];
+            if (Platform.isAndroid || Platform.isIOS || Platform.isLinux) {
+              validExtensions.add('.ogg');
             }
-            final allowedExtensions = ['.mp3', '.flac'];
-            // If not a zip file, directly copy the file
-            if (allowedExtensions
-                .any((ext) => value.path!.toLowerCase().endsWith(ext))) {
+
+            if (validExtensions
+                .any((ext) => filePath.toLowerCase().endsWith(ext))) {
               await _copyFileToDestination(selectedPath.value);
             }
+
             jingleManager.initialize();
+          },
+          onError: (errorMessage) {
+            // Handle error, maybe show a snackbar
           },
         );
       },

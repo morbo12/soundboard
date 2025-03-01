@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 
 class UploadButtonToDir extends StatefulWidget {
   final String directoryName; // Updated to be more descriptive
@@ -86,24 +87,29 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
       noLines: 1,
       isSelected: true,
       onTap: () async {
-        // Invoke the file picker UI function
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-            allowMultiple: true,
-            type: FileType.custom,
-            allowedExtensions:
-                Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg']);
-        if (result != null) {
-          List<File> files = result.paths.map((path) => File(path!)).toList();
-          if (kDebugMode) {
-            print("VALUE: ${files}");
-          }
-          // If copy the file to cache
-          await _copyFileToDestination(files);
+        pickFile(
+          allowedExtensions:
+              Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg'],
+          allowMultiple: true,
+          onMultipleFilesSelected: (files) async {
+            if (!mounted) return;
 
-          jingleManager.initialize();
-        } else {
-          // User canceled the picker
-        }
+            if (kDebugMode) {
+              print("VALUE: $files");
+            }
+
+            // Copy the files to destination
+            await _copyFileToDestination(files);
+
+            jingleManager.initialize();
+          },
+          onError: (errorMessage) {
+            // Handle error, maybe show a snackbar
+          },
+          onCancelled: () {
+            // Handle cancellation if needed
+          },
+        );
       },
       secondaryText: 'N/A',
       primaryText:

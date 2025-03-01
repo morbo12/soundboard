@@ -60,20 +60,32 @@ class PeriodScores extends ConsumerWidget {
 
   Widget _buildPeriodButton(
       BuildContext context, WidgetRef ref, int period, IbyMatch match) {
-    // final hasResults = match.intermediateResults != null &&
-    // match.intermediateResults!.length > period;
+    // Check if events exist and have the required period data
+    final hasEvents = match.events != null &&
+        match.events!.isNotEmpty &&
+        match.events!.any((test) => test.matchEventType == "Periodstart") &&
+        match.events!
+            .any((element) => element.periodName == "Period ${period + 1}");
 
-    final hasResults = match.events != null &&
-        match.events!
-            .where((test) => test.matchEventType == "Periodstart")
-            .isNotEmpty &&
-        match.events!
-            .where((element) => element.periodName == "Period ${period}")
-            .isNotEmpty;
+    // Check if intermediate results exist and have data for this period
+    final hasIntermediateResults = match.intermediateResults != null &&
+        match.intermediateResults!.length > period;
+
+    // Only enable the button if both conditions are met
+    final buttonEnabled = hasEvents && hasIntermediateResults;
+
+    // Safely get the period score text
+    String getPeriodScore() {
+      if (hasIntermediateResults) {
+        final periodResult = match.intermediateResults![period];
+        return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+      }
+      return "0 - 0";
+    }
 
     return Expanded(
       child: TextButton(
-        onPressed: hasResults
+        onPressed: buttonEnabled
             ? () => SsmlPeriodEvent(period: period, ref: ref).getSay(context)
             : null,
         child: Column(
@@ -92,12 +104,9 @@ class PeriodScores extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
-                // fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-              hasResults
-                  ? "${match.intermediateResults!.elementAt(period).goalsHomeTeam} - ${match.intermediateResults!.elementAt(period).goalsAwayTeam}"
-                  : "0 - 0",
+              getPeriodScore(),
             ),
           ],
         ),
