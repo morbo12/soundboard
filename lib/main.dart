@@ -144,7 +144,7 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
 
-      home: Player(),
+      home: const Player(),
     );
   }
 }

@@ -14,9 +14,9 @@ class APIClient {
   APIClient(this._ref) {
     _dio = Dio(BaseOptions(
       baseUrl: APIConstants.baseUrl,
-      connectTimeout: Duration(milliseconds: APIConfig.connectionTimeout),
-      receiveTimeout: Duration(milliseconds: APIConfig.receiveTimeout),
-      sendTimeout: Duration(milliseconds: APIConfig.sendTimeout),
+      connectTimeout: const Duration(milliseconds: APIConfig.connectionTimeout),
+      receiveTimeout: const Duration(milliseconds: APIConfig.receiveTimeout),
+      sendTimeout: const Duration(milliseconds: APIConfig.sendTimeout),
     ));
 
     _dio.interceptors.add(LogInterceptor(responseBody: true));

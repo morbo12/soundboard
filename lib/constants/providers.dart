@@ -59,11 +59,11 @@ final c2VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
 );
 
 final c1ColorProvider = StateProvider<Color>((ref) {
-  return Color(0xffe3e2e6);
+  return const Color(0xffe3e2e6);
 });
 
 final c2ColorProvider = StateProvider<Color>((ref) {
-  return Color(0xffe3e2e6);
+  return const Color(0xffe3e2e6);
 });
 
 final colorThemeProvider = StateProvider<FlexScheme>((ref) {

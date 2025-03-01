@@ -266,7 +266,9 @@ class AudioManager {
     if (channel2.state == PlayerState.playing) {
       await channel2.stop(); // Stop the currently playing instance
     }
-    print("[playBytesAndWait] Setting volume to 1.0");
+    if (kDebugMode) {
+      print("[playBytesAndWait] Setting volume to 1.0");
+    }
     await channel2.setVolume(1.0);
     ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
 
@@ -281,11 +283,15 @@ class AudioManager {
         completer.complete();
       }
     });
-    print("[playBytesAndWait] Playing audio");
+    if (kDebugMode) {
+      print("[playBytesAndWait] Playing audio");
+    }
     // Play the audio
     await channel2.play(BytesSource(audio));
 
-    print("[playBytesAndWait] Returning completer");
+    if (kDebugMode) {
+      print("[playBytesAndWait] Returning completer");
+    }
     // Wait for completion
     return completer.future;
   }

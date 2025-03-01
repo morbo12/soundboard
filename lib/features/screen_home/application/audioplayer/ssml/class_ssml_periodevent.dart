@@ -40,6 +40,15 @@ class SsmlPeriodEvent {
   }
 
   String whoWonIntermediate() {
+    final hasIntermediateResults = selectedMatch.intermediateResults != null &&
+        selectedMatch.intermediateResults!.length > period;
+    if (hasIntermediateResults) {
+      final periodResult = selectedMatch.intermediateResults![period];
+      // return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+    } else {
+      return "<say-as interpret-as='number'>0</say-as> <say-as interpret-as='number'>0</say-as>.";
+    }
+
     // Kontrollerar vem som vann eller om det blev oavgjort
     if (selectedMatch.intermediateResults!
             .elementAt(this.period)

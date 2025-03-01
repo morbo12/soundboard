@@ -1,4 +1,5 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/foundation.dart';
 
 class AppThemes {
   // Keep the original constants for reference
@@ -174,7 +175,9 @@ class AppThemes {
       }
     }
 
-    print("ERROR ${name.toLowerCase()}");
+    if (kDebugMode) {
+      print("[AppThemes] ERROR ${name.toLowerCase()}");
+    }
     throw ArgumentError('Unknown theme name: $name');
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
@@ -32,17 +33,27 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
       });
 
       // Debugging
-      print('Scorer: $_scorer');
-      print('Assist: $_assist');
+      if (kDebugMode) {
+        if (kDebugMode) {
+          print('Scorer: $_scorer');
+        }
+      }
+      if (kDebugMode) {
+        print('Assist: $_assist');
+      }
 
       // Update player states if valid
       final playerState = ref.read(playerStatesProvider.notifier);
       if (_scorer.isNotEmpty) {
-        print('Setting scorer state: $_scorer');
+        if (kDebugMode) {
+          print('Setting scorer state: $_scorer');
+        }
         playerState.setGoalState(_scorer);
       }
       if (_assist.isNotEmpty) {
-        print('Setting assist state: $_assist');
+        if (kDebugMode) {
+          print('Setting assist state: $_assist');
+        }
         playerState.setAssistState(_assist);
       }
     });

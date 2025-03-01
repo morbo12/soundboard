@@ -39,7 +39,7 @@ class BoardSection extends ConsumerWidget {
                 const Gap(10),
                 const StopGoalRow(),
                 const Gap(10),
-                RowPlayerPresentation(),
+                const RowPlayerPresentation(),
                 const Gap(10),
                 const Row1Ratata(),
                 const Gap(10),

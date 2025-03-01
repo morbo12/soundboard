@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_mainvolume.dart';
@@ -27,7 +28,9 @@ class Fade {
       int steps = ((to - from) / VOLUME_STEP).abs().ceil();
       int stepDuration = math.max(MIN_STEP_DURATION, duration ~/ steps);
 
-      print('[Fade] Starting fade from $from to $to over $duration ms');
+      if (kDebugMode) {
+        print('[Fade] Starting fade from $from to $to over $duration ms');
+      }
 
       for (int i = 0; i < steps; i++) {
         await Future.delayed(Duration(milliseconds: stepDuration));

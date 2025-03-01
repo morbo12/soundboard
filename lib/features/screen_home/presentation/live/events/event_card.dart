@@ -62,7 +62,7 @@ class EventCard extends ConsumerWidget {
         AutoSizeText(
           "${data.minute}:${data.second.toString().padLeft(2, '0')} | ",
           minFontSize: _smallFontSize,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
         ),
         if (_isGoalEvent())

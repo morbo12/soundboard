@@ -154,7 +154,7 @@ class _LineupState extends ConsumerState<Lineup> {
         children: [
           _buildPlayButton(theme, selectedMatch),
           _buildDivider(theme),
-          Row(
+          const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: GoalInputWidget(team: "homeTeam")),
@@ -205,59 +205,83 @@ class _LineupState extends ConsumerState<Lineup> {
       SettingsBox().azCharCount += selectedMatch.ssml.length as int;
 
       // Play background music
-      print("[_handlePlayLineup] Starting background music");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Starting background music");
+      }
       await jingleManager.audioManager.playAudio(
           AudioCategory.awayTeamJingle, ref,
           shortFade: true, isBackgroundMusic: true);
 
       // wait for 10 seconds
-      print("[_handlePlayLineup] Waiting 7 seconds");
-      await Future.delayed(Duration(seconds: 7));
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Waiting 7 seconds");
+      }
+      await Future.delayed(const Duration(seconds: 7));
 
       // Play welcome message
-      print("[_handlePlayLineup] Playing welcome message");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Playing welcome message");
+      }
       await jingleManager.audioManager.playBytesAndWait(
           audio: welcomeTTS.audio.buffer.asUint8List(), ref: ref);
 
       // Play away team lineup with background music
-      print("[_handlePlayLineup] Playing Away team background music");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Playing Away team background music");
+      }
       await jingleManager.audioManager.playBytesAndWait(
           audio: awayTeamTTS.audio.buffer.asUint8List(), ref: ref);
 
       // wait for 10 seconds
-      print("[_handlePlayLineup] Waiting 2 seconds");
-      await Future.delayed(Duration(seconds: 2));
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Waiting 2 seconds");
+      }
+      await Future.delayed(const Duration(seconds: 2));
 
       // Stop all audio
       // await jingleManager.audioManager.stopAll(ref);
-      print("[_handlePlayLineup] Fading out background music");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Fading out background music");
+      }
       await jingleManager.audioManager
           .fadeOutNoStop(ref, AudioChannel.channel1);
 
-      print("[_handlePlayLineup] Stopping channel2");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Stopping channel2");
+      }
       await jingleManager.audioManager.channel2.stop();
 
       // Play home team lineup with background music
-      print("[_handlePlayLineup] Playing Home team background music");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Playing Home team background music");
+      }
       await jingleManager.audioManager.playAudio(
           AudioCategory.homeTeamJingle, ref,
           shortFade: true, isBackgroundMusic: true);
 
       // wait for 10 seconds
-      print("[_handlePlayLineup] Waiting 10 seconds");
-      await Future.delayed(Duration(seconds: 10));
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Waiting 10 seconds");
+      }
+      await Future.delayed(const Duration(seconds: 10));
 
       // Play home team lineup with background music
-      print("[_handlePlayLineup] Playing Home team lineup");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Playing Home team lineup");
+      }
       await jingleManager.audioManager.playBytesAndWait(
           audio: homeTeamTTS.audio.buffer.asUint8List(), ref: ref);
 
       // wait for 10 seconds
-      print("[_handlePlayLineup] Waiting 5 seconds");
-      await Future.delayed(Duration(seconds: 5));
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Waiting 5 seconds");
+      }
+      await Future.delayed(const Duration(seconds: 5));
 
       // Stop all audio
-      print("[_handlePlayLineup] Stopping all audio");
+      if (kDebugMode) {
+        print("[_handlePlayLineup] Stopping all audio");
+      }
       await jingleManager.audioManager.stopAll(ref);
 
       // await jingleManager.audioManager

@@ -72,7 +72,8 @@ class PeriodScores extends ConsumerWidget {
         match.intermediateResults!.length > period;
 
     // Only enable the button if both conditions are met
-    final buttonEnabled = hasEvents && hasIntermediateResults;
+    // final buttonEnabled = hasEvents && hasIntermediateResults;
+    final buttonEnabled = true;
 
     // Safely get the period score text
     String getPeriodScore() {
