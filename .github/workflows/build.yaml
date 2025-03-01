@@ -47,6 +47,11 @@ jobs:
         with:
           fetch-depth: 0 
 
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -75,11 +80,6 @@ jobs:
 
       - name: Build APK
         run: flutter build apk --release
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Extract version and name from pubspec.yaml
         id: extract_info
