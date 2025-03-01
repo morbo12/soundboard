@@ -47,11 +47,6 @@ jobs:
         with:
           fetch-depth: 0 
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -74,7 +69,12 @@ jobs:
         run: |
           flutter clean
           flutter pub get
-        
+      
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Build Windows App
         run: flutter build windows --release
 
