@@ -21,7 +21,7 @@ class VoiceManager {
     Voice(
         id: 4,
         name: "Shimmer Multilingual (experimental)",
-        shortName: "en-US-ShimmerMultilingualNeuralHD")
+        shortName: "en-US-SerenaMultilingualNeural")
   ];
 
   // Method to get a list of all names

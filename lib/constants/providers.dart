@@ -12,11 +12,19 @@ final lineupFileProvider = StateProvider<String>((ref) {
 final azCharCountProvider =
     StateProvider<int>((ref) => SettingsBox().azCharCount);
 
-final maxdurationProvider = StateProvider<Duration>((ref) {
+final maxdurationProviderC1 = StateProvider<Duration>((ref) {
   return const Duration(seconds: 0);
 });
 
-final currentposProvider = StateProvider<Duration>((ref) {
+final maxdurationProviderC2 = StateProvider<Duration>((ref) {
+  return const Duration(seconds: 0);
+});
+
+final currentposProviderC1 = StateProvider<Duration>((ref) {
+  return const Duration(seconds: 0);
+});
+
+final currentposProviderC2 = StateProvider<Duration>((ref) {
   return const Duration(seconds: 0);
 });
 

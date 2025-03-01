@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 
 class AudioConfigurations {
   static late String basePath;

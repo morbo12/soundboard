@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 class MatchTitleRow extends StatelessWidget {
   const MatchTitleRow({super.key, required this.match});
-  final IbyVenueMatch match;
+  final IbyMatch match;
 
   @override
   Widget build(BuildContext context) {

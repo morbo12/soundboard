@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 
 void playGoal2(WidgetRef ref) async {
   // Play horn

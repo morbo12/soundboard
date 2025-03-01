@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'widget_match_row_1.dart';
 import 'widget_match_selector_button.dart';
 import 'widget_match_title_row.dart';
@@ -7,7 +7,7 @@ import 'widget_matchreferee.dart';
 import 'widget_match_row_2.dart';
 
 class MatchButton2 extends StatefulWidget {
-  final IbyVenueMatch match;
+  final IbyMatch match;
   final bool? readonly;
 
   const MatchButton2({super.key, required this.match, this.readonly});

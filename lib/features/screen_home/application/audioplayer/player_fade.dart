@@ -27,7 +27,7 @@ class Fade {
       int steps = ((to - from) / VOLUME_STEP).abs().ceil();
       int stepDuration = math.max(MIN_STEP_DURATION, duration ~/ steps);
 
-      print('Starting fade from $from to $to over $duration ms');
+      print('[Fade] Starting fade from $from to $to over $duration ms');
 
       for (int i = 0; i < steps; i++) {
         await Future.delayed(Duration(milliseconds: stepDuration));

@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_pickers/helpers/show_scroll_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_arena.dart';
 import 'package:soundboard/features/innebandy_api/data/providers.dart';
@@ -16,26 +15,13 @@ class VenueSelector extends ConsumerStatefulWidget {
 class _VenueSelectorState extends ConsumerState<VenueSelector> {
   @override
   Widget build(BuildContext context) {
-    // Use Lyckeby as default
-    // final selectedVenue = ref.watch(selectedVenueProvider);
-    // ref.read(selectedVenueProvider.notifier).state =
-    //     ArenasInStockholm.getIdByName("Lyckeby Sporthall");
     final venueID = ref.watch(selectedVenueProvider);
+
     return Row(
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: () => showMaterialScrollPicker<String>(
-              title: "Välj hall",
-              context: context,
-              items: ArenasInStockholm.getFacilitiesList(),
-              onChanged: (value) {
-                ref.read(selectedVenueProvider.notifier).state =
-                    ArenasInStockholm.getIdByName(value);
-                SettingsBox().venueId = ArenasInStockholm.getIdByName(value);
-              },
-              selectedItem: ArenasInStockholm.getNameById(venueID),
-            ),
+            onPressed: () => _selectVenue(context),
             child: venueID != 0
                 ? AutoSizeText(
                     ArenasInStockholm.getNameById(venueID),
@@ -43,11 +29,39 @@ class _VenueSelectorState extends ConsumerState<VenueSelector> {
                   )
                 : const AutoSizeText(
                     "Välj Anläggning",
-                    // minFontSize: 24,
+                    textAlign: TextAlign.center,
                   ),
           ),
         ),
       ],
+    );
+  }
+
+  void _selectVenue(BuildContext context) {
+    final venueList = ArenasInStockholm.getFacilitiesList();
+    final currentVenueId = ref.read(selectedVenueProvider);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => ListView.builder(
+        itemCount: venueList.length,
+        itemBuilder: (context, index) {
+          final venue = venueList[index];
+          final isSelected =
+              ArenasInStockholm.getIdByName(venue) == currentVenueId;
+
+          return ListTile(
+            title: Text(venue),
+            selected: isSelected,
+            onTap: () {
+              final id = ArenasInStockholm.getIdByName(venue);
+              ref.read(selectedVenueProvider.notifier).state = id;
+              SettingsBox().venueId = id;
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
     );
   }
 }

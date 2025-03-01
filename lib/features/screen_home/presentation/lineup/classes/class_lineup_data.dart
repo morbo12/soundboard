@@ -2,16 +2,17 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
-import 'package:soundboard/features/screen_home/presentation/classes/class_color_state_notifier.dart';
-// Assume TeamPlayer is imported from the appropriate file
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 class LineupData extends ConsumerWidget {
   final double availableWidth;
+  final double availableHeight;
 
-  const LineupData({super.key, required this.availableWidth});
+  const LineupData(
+      {required this.availableWidth, required this.availableHeight});
 
-  static const double _smallFontSize = 10.0;
+  static const double _smallFontSize = 15.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,18 +28,19 @@ class LineupData extends ConsumerWidget {
 
     return SizedBox(
       width: availableWidth,
+      height: availableHeight - 153,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTeamColumn(context, ref, selectedMatch.homeTeam,
               selectedMatchLineup.homeTeamPlayers, teamWidth),
-          SizedBox(
-              width: 10,
-              height: 650,
-              child: VerticalDivider(
-                color: Theme.of(context).colorScheme.onInverseSurface,
-              )),
+          Container(
+            height: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            width: 1,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           _buildTeamColumn(context, ref, selectedMatch.awayTeam,
               selectedMatchLineup.awayTeamPlayers, teamWidth),
         ],
@@ -69,7 +71,7 @@ class LineupData extends ConsumerWidget {
     if (players == null || players.isEmpty) {
       return const Center(child: Text("No players"));
     }
-    final buttonStates = ref.watch(buttonStatesProvider);
+    final buttonStates = ref.watch(playerStatesProvider);
     final Map<String, String> positionMapping = {
       'Målvakt': 'MV',
       'Forward': 'F',
@@ -80,6 +82,7 @@ class LineupData extends ConsumerWidget {
       'Vänsterback': 'VB',
       'Högerback': 'HB',
     };
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -87,41 +90,49 @@ class LineupData extends ConsumerWidget {
       itemBuilder: (context, index) {
         final player = players[index];
         final playerId = '${player.shirtNo}-${player.name}';
-        final buttonState = buttonStates[playerId] ?? ButtonState.normal;
+        var buttonState = buttonStates[playerId] ?? PlayerState.normal;
+        // Auto-highlight based on entered numbers
+
         Color getButtonColor() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return Theme.of(context).colorScheme.surface;
-            case ButtonState.selected:
+            case PlayerState.goal:
               return Theme.of(context).colorScheme.primaryContainer;
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return Theme.of(context)
                   .colorScheme
                   .secondaryContainer; // You can change this to any color you prefer for long press
+            case PlayerState.penalty:
+              return Theme.of(context).colorScheme.errorContainer;
           }
         }
 
         Color getTextColor() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return Theme.of(context).colorScheme.onSurface;
-            case ButtonState.selected:
+            case PlayerState.goal:
               return Theme.of(context).colorScheme.onPrimaryContainer;
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return Theme.of(context)
                   .colorScheme
                   .onSecondaryContainer; // Adjust this based on your long press color
+            case PlayerState.penalty:
+              return Theme.of(context).colorScheme.onErrorContainer;
           }
         }
 
         String getButtonStateText() {
           switch (buttonState) {
-            case ButtonState.normal:
+            case PlayerState.normal:
               return '';
-            case ButtonState.selected:
+            case PlayerState.goal:
               return 'MÅL';
-            case ButtonState.longPressed:
+            case PlayerState.assist:
               return 'ASSIST';
+            case PlayerState.penalty:
+              return 'UTVISNING';
           }
         }
 
@@ -150,49 +161,46 @@ class LineupData extends ConsumerWidget {
                     ),
                   ],
                 ),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: getButtonColor(),
-                        foregroundColor: getTextColor(),
-                        padding:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: getButtonColor(),
+                    foregroundColor: getTextColor(),
+                    // padding: EdgeInsets.zero,
+                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    minimumSize: Size(0, 30),
+                  ),
+                  onPressed: () {
+                    ref
+                        .read(playerStatesProvider.notifier)
+                        .setGoalState(playerId);
+                  },
+                  onLongPress: () {
+                    ref
+                        .read(playerStatesProvider.notifier)
+                        .setAssistState(playerId);
+                  },
+                  child: Row(
+                    children: [
+                      AutoSizeText(
+                        '${player.shirtNo}.  ${player.name} ',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: _smallFontSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        maxLines: 1,
                       ),
-                      onPressed: () {
-                        ref
-                            .read(buttonStatesProvider.notifier)
-                            .toggleState(playerId);
-                      },
-                      onLongPress: () {
-                        ref
-                            .read(buttonStatesProvider.notifier)
-                            .setLongPressedState(playerId);
-                      },
-                      child: Row(
-                        children: [
-                          AutoSizeText(
-                            '${player.shirtNo}. ${player.name} ',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: _smallFontSize,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            maxLines: 1,
-                          ),
-                          AutoSizeText(
-                            getButtonStateText(),
-                            style: TextStyle(
-                              color: Colors.lime,
-                              fontSize: _smallFontSize,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
+                      AutoSizeText(
+                        getButtonStateText(),
+                        style: TextStyle(
+                          color: Colors.lime,
+                          fontSize: _smallFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -200,7 +208,7 @@ class LineupData extends ConsumerWidget {
         );
       },
       separatorBuilder: (context, index) => Divider(
-        height: 1,
+        height: 0,
         color: Theme.of(context).colorScheme.onInverseSurface,
       ),
     );

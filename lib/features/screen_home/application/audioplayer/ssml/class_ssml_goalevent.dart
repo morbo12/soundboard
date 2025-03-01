@@ -8,8 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/properties.dart';
 
 class Team {
@@ -19,7 +19,7 @@ class Team {
 
 class SsmlGoalEvent {
   final WidgetRef ref;
-  final MatchEvent matchEvent;
+  final IbyMatchEvent matchEvent;
   SsmlGoalEvent({
     required this.matchEvent,
     required this.ref,
@@ -50,38 +50,60 @@ class SsmlGoalEvent {
     List<String> reduce = [
       "reducerar till",
       "minskar underläget till",
-      "tar ner resultatet till",
       "minskar siffrorna till",
     ];
     List<String> increaseMoreThanOne = [
       "utökar ledningen till",
-      "bygger på försprånget med",
-      "utökar ledningen till",
+      "bygger på försprånget till",
+      "drar ifrån ytterligare till",
+      "ökar på till",
+      "förstärker ledningen med",
     ];
-    List<String> increaseOne = ["går upp i ledning med"];
+    List<String> increaseOne = [
+      "går upp i ledning med",
+      "tar ledningen i matchen",
+      "går upp i ledning",
+      "vänder och tar ledningen",
+    ];
 
     List<String> equal = [
       "utjämnar till",
       "sätter ställningen till",
+      "kvitterar ställningen till"
     ];
-
+    // Lista för första målet i matchen
+    List<String> firstGoal = [
+      "går upp i ledning med",
+      "tar ledningen med",
+      "gör första målet i matchen med",
+      "tar ledningen i matchen med",
+    ];
     String say = "gör";
     String team = whichTeamScored(ref);
+    int totalGoals = matchEvent.goalsHomeTeam + matchEvent.goalsAwayTeam;
     int goalDifference = team == "hemmalaget"
         ? matchEvent.goalsHomeTeam - matchEvent.goalsAwayTeam
         : matchEvent.goalsAwayTeam - matchEvent.goalsHomeTeam;
 
-    if (goalDifference > 1) {
-      say = increaseMoreThanOne[Random().nextInt(increaseMoreThanOne.length)];
-    } else if (goalDifference == 1) {
-      say = increaseOne[Random().nextInt(increaseOne.length)];
-    } else if (goalDifference == 0) {
-      say = equal[Random().nextInt(equal.length)];
-    } else if (goalDifference < 1) {
-      say = reduce[Random().nextInt(reduce.length)];
+    if (totalGoals == 1) {
+      // Specialfall för 1-0 eller 0-1
+      say = firstGoal[Random().nextInt(firstGoal.length)];
+    } else {
+      if (goalDifference > 1) {
+        say = increaseMoreThanOne[Random().nextInt(increaseMoreThanOne.length)];
+      } else if (goalDifference == 1) {
+        say = increaseOne[Random().nextInt(increaseOne.length)];
+      } else if (goalDifference == 0) {
+        say = equal[Random().nextInt(equal.length)];
+      } else if (goalDifference < 1) {
+        say = reduce[Random().nextInt(reduce.length)];
+      }
     }
-
     return say;
+  }
+
+  String stripTeamSuffix(String teamName) {
+    return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
   }
 
   whoScored() {
@@ -98,7 +120,7 @@ class SsmlGoalEvent {
 
   Future<bool> getSay(BuildContext context) async {
     // String say = matchEvent.matchTeamName;
-    String say = "${whichTeamScored(ref)} ${randomSaying(
+    String say = "${stripTeamSuffix(matchEvent.matchTeamName)} ${randomSaying(
       goalsHomeTeam: matchEvent.goalsHomeTeam,
       goalsAwayTeam: matchEvent.goalsAwayTeam,
     )} <say-as interpret-as='number'>${matchEvent.goalsHomeTeam}</say-as>${matchEvent.goalsHomeTeam == 1 && matchEvent.goalsHomeTeam == 1 ? "," : ""} <say-as interpret-as='number'>${matchEvent.goalsAwayTeam}</say-as>, ${whoScored()} ${assistOrNot()}. Tid: <say-as interpret-as='duration' format='ms'>${whatWasTheTime()}</say-as>";

@@ -25,6 +25,8 @@ class SettingsScreenState extends State<SettingsScreen> {
           child: ListView(
             children: [
               settingsHeaderText("Färgschema"),
+              settingsHeader2Text(
+                  "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown"),
               MyColorScheme(),
 
               const Gap(10),
@@ -51,13 +53,13 @@ class SettingsScreenState extends State<SettingsScreen> {
               const Gap(10),
               settingsHeaderText("Ladda upp jinglar"),
               settingsHeader2Text(
-                  "Antingen välj en eller flera mp3-filer eller en zip-fil med flera mp3:er i."),
+                  "Antingen välj en eller flera flac eller mp3-filer."),
               const Gap(2),
               JingleSettings(),
               const Gap(5),
               settingsHeaderText("Ladda upp enskilda jinglar"),
               settingsHeader2Text(
-                  "Ladda upp en mp3-fil som kopplas till funktionen"),
+                  "Ladda upp en flac eller mp3-fil som kopplas till funktionen"),
               const Gap(2),
               JingleSingleSettings(),
               const Gap(5),

@@ -1,11 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 class MatchRow1 extends StatelessWidget {
   const MatchRow1({super.key, required this.match});
-  final IbyVenueMatch match;
+  final IbyMatch match;
 
   @override
   Widget build(BuildContext context) {

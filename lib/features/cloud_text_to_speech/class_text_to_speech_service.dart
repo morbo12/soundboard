@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 
 final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
   return VoicesSuccessMicrosoft(voices: []);
@@ -135,7 +135,7 @@ class TextToSpeechService {
 
     final params = TtsParamsMicrosoft(
       voice: selectedVoice,
-      audioFormat: AudioOutputFormatMicrosoft.audio48Khz192kBitrateMonoMp3,
+      audioFormat: AudioOutputFormatMicrosoft.Webm24Khz16Bit24KbpsMonoOpus,
       text: text,
       rate: 'default',
       pitch: 'default',

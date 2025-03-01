@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) {
   return DateTime.fromMillisecondsSinceEpoch(0);
 });
 
-final matchesProvider = StateProvider<List<IbyVenueMatch>>((ref) {
+final matchesProvider = StateProvider<List<IbyMatch>>((ref) {
   return [
-    IbyVenueMatch(
+    IbyMatch(
         matchId: 0,
         categoryName: 'Ingen match vald',
         competitionName: 'Ingen match vald',

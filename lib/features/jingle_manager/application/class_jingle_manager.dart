@@ -7,7 +7,7 @@ import 'package:soundboard/features/jingle_manager/application/class_filesystem_
 import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 
 class JingleManager {

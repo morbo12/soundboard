@@ -13,7 +13,7 @@ class RightTriangle extends StatelessWidget {
         child: Container(
           // width: 20,
           height: 30,
-          color: MatchEventColors(matchEventTypeID).getColor(context),
+          color: MatchEventColors(matchEventTypeID).getTileColor(context),
         ),
       ),
     );
@@ -32,7 +32,7 @@ class LeftTriangle extends StatelessWidget {
         child: Container(
           // width: 20,
           height: 30,
-          color: MatchEventColors(matchEventTypeID).getColor(context),
+          color: MatchEventColors(matchEventTypeID).getTileColor(context),
         ),
       ),
     );

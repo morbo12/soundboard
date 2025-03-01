@@ -1,36 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
+
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
-import 'package:soundboard/features/screen_home/presentation/ssml/class_ssml_periodevent.dart';
 import 'class_ssml_goalevent.dart';
 import 'class_ssml_penaltyevent.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
-class PreSsml {
-  final MatchEvent data;
+class EventCardSsml {
+  final dynamic data;
   final WidgetRef ref;
-  PreSsml({required this.ref, required this.data});
+  EventCardSsml({required this.ref, required this.data});
   // final BuildContext context;
 
   String getEventText(BuildContext context) {
     String string = "";
-    final selectedMatch = ref.read(selectedMatchProvider);
+    ref.read(selectedMatchProvider);
     // final lineupSsml = ref.read(lineupSsmlProvider);
 
-    switch (data.matchEventTypeID) {
+    switch (data.matchEventTypeId) {
       case MatchEventType.utvisning:
         SsmlPenaltyEvent(ref: ref, matchEvent: data).getSay(context);
       case MatchEventType.straffmal:
       case MatchEventType.mal:
         SsmlGoalEvent(ref: ref, matchEvent: data).getSay(context);
-      case MatchEventType.lineup:
-        // SsmlLineupEvent(ref: ref, matchEvent: data).getSay(context);
-        ref.read(lineupSsmlProvider.notifier).state =
-            selectedMatch.generateSsml();
-      case MatchEventType.periodslut:
-        SsmlPeriodEvent(ref: ref, matchEvent: data).getSay(context);
+      // case MatchEventType.lineup:
+      //   // SsmlLineupEvent(ref: ref, matchEvent: data).getSay(context);
+      //   ref.read(lineupSsmlProvider.notifier).state =
+      //       selectedMatch.generateSsml();
+      // case MatchEventType.periodslut:
+      //   SsmlPeriodEvent(ref: ref, matchEvent: data).getSay(context);
     }
     return string;
     // @override

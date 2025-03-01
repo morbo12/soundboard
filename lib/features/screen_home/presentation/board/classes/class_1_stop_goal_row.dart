@@ -18,7 +18,7 @@ class StopGoalRow extends ConsumerWidget {
           noLines: 1,
           onTap: () {
             if (kDebugMode) {
-              print("Foo");
+              print("[StopGoalRow] STOP");
             } // playerStop();
             jingleManager.audioManager.stopAll(ref);
           },

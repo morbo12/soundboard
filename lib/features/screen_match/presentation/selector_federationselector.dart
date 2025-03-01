@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_pickers/helpers/show_scroll_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_federations.dart';
 import 'package:soundboard/features/innebandy_api/data/providers.dart';
@@ -17,26 +16,13 @@ class FederationSelector extends ConsumerStatefulWidget {
 class _FederationSelectorState extends ConsumerState<FederationSelector> {
   @override
   Widget build(BuildContext context) {
-    // Use Lyckeby as default
-    // final selectedVenue = ref.watch(selectedVenueProvider);
-    // ref.read(selectedVenueProvider.notifier).state =
-    //     ArenasInStockholm.getIdByName("Lyckeby Sporthall");
     final federationId = ref.watch(selectedFederationProvider);
+
     return Row(
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: () => showMaterialScrollPicker<String>(
-              title: "Välj förbund",
-              context: context,
-              items: Federation.getFacilitiesList(),
-              onChanged: (value) {
-                ref.read(selectedVenueProvider.notifier).state =
-                    Federation.getIdByName(value);
-                SettingsBox().federationId = Federation.getIdByName(value);
-              },
-              selectedItem: Federation.getNameById(federationId),
-            ),
+            onPressed: () => _selectFederation(context),
             child: federationId != 0
                 ? AutoSizeText(
                     Federation.getNameById(federationId),
@@ -44,11 +30,39 @@ class _FederationSelectorState extends ConsumerState<FederationSelector> {
                   )
                 : const AutoSizeText(
                     "Välj förbund",
-                    // minFontSize: 24,
+                    textAlign: TextAlign.center,
                   ),
           ),
         ),
       ],
+    );
+  }
+
+  void _selectFederation(BuildContext context) {
+    final federationList = Federation.getFacilitiesList();
+    final currentFederationId = ref.read(selectedFederationProvider);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => ListView.builder(
+        itemCount: federationList.length,
+        itemBuilder: (context, index) {
+          final federation = federationList[index];
+          final isSelected =
+              Federation.getIdByName(federation) == currentFederationId;
+
+          return ListTile(
+            title: Text(federation),
+            selected: isSelected,
+            onTap: () {
+              final id = Federation.getIdByName(federation);
+              ref.read(selectedVenueProvider.notifier).state = id;
+              SettingsBox().federationId = id;
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
     );
   }
 }

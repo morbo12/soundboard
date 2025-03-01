@@ -29,14 +29,14 @@ class JingleSettings extends StatelessWidget {
             UploadButtonToDir(directoryName: "ClapJingles"),
           ],
         ),
-        Gap(5),
-        Row(
-          children: [
-            UploadButtonToDir(directoryName: "IntroJingles"),
-            Gap(5),
-            UploadButtonToDir(directoryName: "LineupJingles")
-          ],
-        ),
+        //   Gap(5),
+        //   Row(
+        //     children: [
+        //       UploadButtonToDir(directoryName: "IntroJingles"),
+        //       Gap(5),
+        //       // UploadButtonToDir(directoryName: "LineupJingles")
+        //     ],
+        //   ),
       ],
     );
   }
@@ -90,19 +90,15 @@ class JingleSingleSettings extends StatelessWidget {
           UploadButtonToSingle(
               audiofile: jingleManager.audioManager.audioInstances
                   .firstWhere((element) => element.displayName == "ThreeMin")),
+          // const Gap(5),
+          // UploadButtonToSingle(
+          //     audiofile: jingleManager.audioManager.audioInstances
+          //         .firstWhere((element) => element.displayName == "Lineup")),
           const Gap(5),
           UploadButtonToSingle(
               audiofile: jingleManager.audioManager.audioInstances
-                  .firstWhere((element) => element.displayName == "Lineup")),
+                  .firstWhere((element) => element.displayName == "Timeout")),
           const Gap(5),
-          UploadButtonToSingle(
-              audiofile: jingleManager.audioManager.audioInstances
-                  .firstWhere((element) => element.displayName == "Timeout"))
-        ],
-      ),
-      const Gap(5),
-      Row(
-        children: [
           UploadButtonToSingle(
               audiofile: jingleManager.audioManager.audioInstances.firstWhere(
                   (element) => element.displayName == "HomeJingle")),

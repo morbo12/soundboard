@@ -6,7 +6,7 @@ class MatchEventColors {
 
   MatchEventColors(this.matchEventTypeID);
 
-  Color getColor(BuildContext context) {
+  Color getTileColor(BuildContext context) {
     switch (matchEventTypeID) {
       case MatchEventType.mal:
         return Theme.of(context).colorScheme.primaryContainer;

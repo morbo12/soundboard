@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
-import 'package:soundboard/features/innebandy_api/data/class_matchevent.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/events/event_card.dart';
 import 'events/event_period.dart';
 
 const double containerWidth = 250;
 
 class EventWidget extends StatefulWidget {
-  final MatchEvent data;
+  final IbyMatchEvent data;
   const EventWidget({super.key, required this.data});
 
   @override
@@ -22,7 +22,7 @@ class _EventWidgetState extends State<EventWidget> {
 
   @override
   Widget build(BuildContext context) {
-    switch (widget.data.matchEventTypeID) {
+    switch (widget.data.matchEventTypeId) {
       case MatchEventType.mal:
         return EventCard(data: widget.data);
       case MatchEventType.utvisning:
