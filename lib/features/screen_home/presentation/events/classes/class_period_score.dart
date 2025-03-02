@@ -60,20 +60,9 @@ class PeriodScores extends ConsumerWidget {
 
   Widget _buildPeriodButton(
       BuildContext context, WidgetRef ref, int period, IbyMatch match) {
-    // Check if events exist and have the required period data
-    final hasEvents = match.events != null &&
-        match.events!.isNotEmpty &&
-        match.events!.any((test) => test.matchEventType == "Periodstart") &&
-        match.events!
-            .any((element) => element.periodName == "Period ${period + 1}");
-
     // Check if intermediate results exist and have data for this period
     final hasIntermediateResults = match.intermediateResults != null &&
         match.intermediateResults!.length > period;
-
-    // Only enable the button if both conditions are met
-    // final buttonEnabled = hasEvents && hasIntermediateResults;
-    final buttonEnabled = true;
 
     // Safely get the period score text
     String getPeriodScore() {
@@ -86,9 +75,8 @@ class PeriodScores extends ConsumerWidget {
 
     return Expanded(
       child: TextButton(
-        onPressed: buttonEnabled
-            ? () => SsmlPeriodEvent(period: period, ref: ref).getSay(context)
-            : null,
+        onPressed: () =>
+            SsmlPeriodEvent(period: period, ref: ref).getSay(context),
         child: Column(
           children: [
             Text(

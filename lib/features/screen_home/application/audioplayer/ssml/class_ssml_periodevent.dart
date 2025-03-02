@@ -42,10 +42,7 @@ class SsmlPeriodEvent {
   String whoWonIntermediate() {
     final hasIntermediateResults = selectedMatch.intermediateResults != null &&
         selectedMatch.intermediateResults!.length > period;
-    if (hasIntermediateResults) {
-      final periodResult = selectedMatch.intermediateResults![period];
-      // return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
-    } else {
+    if (!hasIntermediateResults) {
       return "<say-as interpret-as='number'>0</say-as> <say-as interpret-as='number'>0</say-as>.";
     }
 
