@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
@@ -25,7 +27,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
           ),
           noLines: 1,
           isSelected: true,
-          onTap: _isLoading ? null : () => _handleCacheDeletion(context),
+          onTap: _isLoading ? null : () => _handleCacheDeletion(),
           secondaryText: 'N/A',
           primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",
         ),
@@ -33,37 +35,31 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     );
   }
 
-  Future<void> _handleCacheDeletion(BuildContext context) async {
+  // Note: No BuildContext parameter here
+  Future<void> _handleCacheDeletion() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Get cache directory
+      // Get cache directory and size
       final cacheDir = await _cacheService.getCacheDirectory();
-
-      // Calculate cache size
       final cacheSize = await _cacheService.calculateCacheSize(cacheDir);
       final formattedSize = _cacheService.formatBytes(cacheSize);
 
-      // Check if widget is still mounted after async operations
       if (!mounted) return;
 
       setState(() {
         _isLoading = false;
       });
 
-      // Show confirmation dialog with size info
-      final bool? shouldDelete =
-          await _showConfirmationDialog(context, cacheDir.path, formattedSize);
-
-      if (!mounted) return;
+      // Now we can safely use context since we're back in sync code
+      final shouldDelete =
+          await _showConfirmationDialog(cacheDir.path, formattedSize);
 
       if (shouldDelete == true) {
-        // Show loading dialog during deletion
-        _showLoadingDialog(context);
+        _showLoadingIndicator();
 
-        // Perform deletion
         final success = await _cacheService.clearCache(cacheDir);
 
         if (!mounted) return;
@@ -71,8 +67,8 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
         // Close loading dialog
         Navigator.of(context).pop();
 
-        // Show appropriate feedback based on success
-        _showFeedback(context, success);
+        // Show feedback
+        _showResultFeedback(success);
       }
     } catch (e) {
       if (!mounted) return;
@@ -81,15 +77,14 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
         _isLoading = false;
       });
 
-      // Show error feedback
-      _showErrorFeedback(context, e.toString());
+      _showErrorFeedback(e.toString());
     }
   }
 
-  Future<bool?> _showConfirmationDialog(
-      BuildContext context, String cachePath, String cacheSize) {
+  // Helper methods that use the current context
+  Future<bool?> _showConfirmationDialog(String cachePath, String cacheSize) {
     return showDialog<bool>(
-      context: context,
+      context: context, // Using the current context is safe here
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Confirm Cache Deletion'),
@@ -99,34 +94,12 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
             children: [
               const Text('Are you sure you want to delete the cache?'),
               const SizedBox(height: 16),
-              RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  children: [
-                    const TextSpan(
-                      text: 'Location: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: cachePath),
-                  ],
-                ),
-              ),
+              Text('Location: $cachePath'),
               const SizedBox(height: 8),
-              RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  children: [
-                    const TextSpan(
-                      text: 'Size: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: cacheSize),
-                  ],
-                ),
-              ),
+              Text('Size: $cacheSize'),
               const SizedBox(height: 16),
               const Text(
-                'Warning: This will remove all cached jingles. You may need to download them again.',
+                'Warning: This will remove all cached jingles.',
                 style: TextStyle(color: Colors.orange),
               ),
             ],
@@ -153,9 +126,9 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     );
   }
 
-  void _showLoadingDialog(BuildContext context) {
+  void _showLoadingIndicator() {
     showDialog(
-      context: context,
+      context: context, // Using the current context is safe here
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
@@ -173,49 +146,24 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     );
   }
 
-  void _showFeedback(BuildContext context, bool success) {
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cache successfully cleared'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cache directory not found or already empty'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-
-    // Refresh the widget state
-    setState(() {});
-  }
-
-  void _showErrorFeedback(BuildContext context, String errorMessage) {
+  void _showResultFeedback(bool success) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Failed to clear cache',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text('Error: $errorMessage'),
-          ],
-        ),
+        content: Text(success
+            ? 'Cache successfully cleared'
+            : 'Cache directory not found or already empty'),
+        backgroundColor: success ? Colors.green : Colors.orange,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorFeedback(String errorMessage) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to clear cache: $errorMessage'),
         backgroundColor: Colors.red,
         duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
