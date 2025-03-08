@@ -10,6 +10,7 @@ import 'package:soundboard/features/innebandy_api/application/match_service.dart
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
+import 'package:soundboard/utils/logger.dart';
 
 import '../../live/widget_event.dart';
 
@@ -29,6 +30,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
   late Stream<List<IbyMatchEvent>>? userStream;
   late IbyMatch updatedMatch;
   late List<IbyMatchEvent> matchEventList;
+  final Logger logger = const Logger('LiveEvents');
 
   late int liveindex;
 
@@ -44,7 +46,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
 
     // streamController.add(user);
     userStream = streamController.stream;
-    // print("SCROLLCONTROLLER: ${scrollController.position.pixels}");
+    // logger.d("SCROLLCONTROLLER: ${scrollController.position.pixels}");
   }
 
   @override
@@ -77,9 +79,8 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                       Expanded(
                         child: TextButton(
                           onLongPress: () {
-                            if (kDebugMode) {
-                              print("Timer cancelled");
-                            }
+                            logger.d("Timer cancelled");
+
                             setState(() {
                               if (_timer != null) {
                                 _timer?.cancel();
@@ -88,9 +89,8 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                             });
                           },
                           onPressed: () {
-                            if (kDebugMode) {
-                              print("Starting streamer");
-                            }
+                            logger.d("Starting streamer");
+
                             streamerRunning
                                 ? null
                                 : startMatchStreaming(
@@ -193,15 +193,12 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
       ref.read(selectedMatchProvider.notifier).state = updatedMatch;
     } catch (e) {
       // Handle errors, e.g., log or show a message
-      if (kDebugMode) {
-        print('Error during streaming: $e');
-      }
+      logger.d('Error during streaming: $e');
     }
 
     // Starting periodic timer
-    if (kDebugMode) {
-      print("starting timer");
-    }
+    logger.d("starting timer");
+
     _timer = Timer.periodic(refreshInterval, (Timer timer) async {
       try {
         // Call the getMatch API and update the UI
@@ -222,7 +219,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
         // Check if the match status changed, and stop the timer if needed
         if (updatedMatch.matchStatus == 4) {
           if (kDebugMode) {
-            print(
+            logger.d(
                 "Timer cancelled direct as we are not Live - ${updatedMatch.matchStatus}");
           }
           timer.cancel();
@@ -230,9 +227,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
         }
       } catch (e) {
         // Handle errors, e.g., log or show a message
-        if (kDebugMode) {
-          print('Error during streaming: $e');
-        }
+        logger.d('Error during streaming: $e');
       }
     });
   }

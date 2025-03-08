@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
@@ -8,6 +7,7 @@ import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class SsmlPeriodEvent {
   // final IbyMatch data;
@@ -15,6 +15,7 @@ class SsmlPeriodEvent {
   final WidgetRef ref;
   int period = 0;
   late final selectedMatch;
+  final Logger logger = const Logger('SsmlPeriodEvent');
 
   SsmlPeriodEvent({
     required this.ref,
@@ -78,9 +79,7 @@ class SsmlPeriodEvent {
         this.period == 2 ? "Matchen slutar" : "Ställningen i matchen är";
     String say =
         "<mstts:express-as style='exited'>Perioden slutar ${whoWonIntermediate()}. <break time='500ms'/>${intermediateOrFinal} ${whoIsInLead()}</mstts:express-as>";
-    if (kDebugMode) {
-      print("SAY: $say");
-    }
+    logger.d("SAY: $say");
 
     FlutterToastr.show(say, context,
         duration: FlutterToastr.lengthLong,

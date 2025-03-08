@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/globals.dart';
@@ -12,6 +10,7 @@ import 'package:soundboard/features/screen_home/application/audioplayer/data/cla
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 // [Keep other imports...]
 
 // Add the loading state provider
@@ -40,6 +39,7 @@ class _LineupState extends ConsumerState<Lineup> {
     "Loading commentary powers...",
     "Summoning the sports announcer spirit...",
   ];
+  final Logger logger = const Logger('Lineup');
 
   int currentMessageIndex = 0;
   Timer? messageRotationTimer;
@@ -205,91 +205,88 @@ class _LineupState extends ConsumerState<Lineup> {
       SettingsBox().azCharCount += selectedMatch.ssml.length as int;
 
       // Play background music
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Starting background music");
-      }
+
+      logger.d("[_handlePlayLineup] Starting background music");
+
       await jingleManager.audioManager.playAudio(
           AudioCategory.awayTeamJingle, ref,
           shortFade: true, isBackgroundMusic: true);
 
       // wait for 10 seconds
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Waiting 7 seconds");
-      }
+
+      logger.d("[_handlePlayLineup] Waiting 7 seconds");
+
       await Future.delayed(const Duration(seconds: 7));
 
       // Play welcome message
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Playing welcome message");
-      }
+
+      logger.d("[_handlePlayLineup] Playing welcome message");
+
       await jingleManager.audioManager.playBytesAndWait(
           audio: welcomeTTS.audio.buffer.asUint8List(), ref: ref);
 
       // Play away team lineup with background music
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Playing Away team background music");
-      }
+
+      logger.d("[_handlePlayLineup] Playing Away team background music");
+
       await jingleManager.audioManager.playBytesAndWait(
           audio: awayTeamTTS.audio.buffer.asUint8List(), ref: ref);
 
       // wait for 10 seconds
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Waiting 2 seconds");
-      }
+
+      logger.d("[_handlePlayLineup] Waiting 2 seconds");
+
       await Future.delayed(const Duration(seconds: 2));
 
       // Stop all audio
       // await jingleManager.audioManager.stopAll(ref);
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Fading out background music");
-      }
+
+      logger.d("[_handlePlayLineup] Fading out background music");
+
       await jingleManager.audioManager
           .fadeOutNoStop(ref, AudioChannel.channel1);
 
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Stopping channel2");
-      }
+      logger.d("[_handlePlayLineup] Stopping channel2");
+
       await jingleManager.audioManager.channel2.stop();
 
       // Play home team lineup with background music
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Playing Home team background music");
-      }
+
+      logger.d("[_handlePlayLineup] Playing Home team background music");
+
       await jingleManager.audioManager.playAudio(
           AudioCategory.homeTeamJingle, ref,
           shortFade: true, isBackgroundMusic: true);
 
       // wait for 10 seconds
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Waiting 10 seconds");
-      }
+      logger.d("[_handlePlayLineup] Waiting 10 seconds");
+
       await Future.delayed(const Duration(seconds: 10));
 
       // Play home team lineup with background music
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Playing Home team lineup");
-      }
+
+      logger.d("[_handlePlayLineup] Playing Home team lineup");
+
       await jingleManager.audioManager.playBytesAndWait(
           audio: homeTeamTTS.audio.buffer.asUint8List(), ref: ref);
 
       // wait for 10 seconds
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Waiting 5 seconds");
-      }
+
+      logger.d("[_handlePlayLineup] Waiting 5 seconds");
+
       await Future.delayed(const Duration(seconds: 5));
 
       // Stop all audio
-      if (kDebugMode) {
-        print("[_handlePlayLineup] Stopping all audio");
-      }
+
+      logger.d("[_handlePlayLineup] Stopping all audio");
+
       await jingleManager.audioManager.stopAll(ref);
 
       // await jingleManager.audioManager
       //     .playBytes(audio: speech.audio.buffer.asUint8List(), ref: ref);
     } catch (e) {
-      if (kDebugMode) {
-        print("Error generating audio: $e");
-      }
+      logger.d("Error generating audio: $e");
+
       // You might want to show an error message to the user here
     } finally {
       // Stop message rotation and hide loading indicator

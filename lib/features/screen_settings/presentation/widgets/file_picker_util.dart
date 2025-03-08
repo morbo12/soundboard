@@ -2,15 +2,16 @@
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:soundboard/utils/logger.dart';
 
-Future<void> pickFile({
-  required List<String> allowedExtensions,
-  Function(String filePath)? onFileSelected,
-  Function(List<File> files)? onMultipleFilesSelected,
-  bool allowMultiple = false,
-  Function(String errorMessage)? onError,
-  VoidCallback? onCancelled,
-}) async {
+Future<void> pickFile(
+    {required List<String> allowedExtensions,
+    Function(String filePath)? onFileSelected,
+    Function(List<File> files)? onMultipleFilesSelected,
+    bool allowMultiple = false,
+    Function(String errorMessage)? onError,
+    VoidCallback? onCancelled,
+    final Logger logger = const Logger('pickFile')}) async {
   try {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -26,9 +27,7 @@ Future<void> pickFile({
             .map((path) => File(path!))
             .toList();
 
-        if (kDebugMode) {
-          print("Selected files: ${files.length}");
-        }
+        logger.d("Selected files: ${files.length}");
 
         onMultipleFilesSelected(files);
       } else if (!allowMultiple &&
@@ -37,18 +36,14 @@ Future<void> pickFile({
         // Handle single file
         final filePath = result.files.first.path;
         if (filePath != null) {
-          if (kDebugMode) {
-            print("Selected file: $filePath");
-          }
+          logger.d("Selected file: $filePath");
 
           onFileSelected(filePath);
         }
       }
     } else {
       // User canceled the picker
-      if (kDebugMode) {
-        print("File picking cancelled by user");
-      }
+      logger.d("File picking cancelled by user");
 
       if (onCancelled != null) {
         onCancelled();
@@ -56,9 +51,7 @@ Future<void> pickFile({
     }
   } catch (e) {
     final errorMessage = "Error picking file: $e";
-    if (kDebugMode) {
-      print(errorMessage);
-    }
+    logger.d(errorMessage);
 
     if (onError != null) {
       onError(errorMessage);

@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class UploadButtonToDir extends StatefulWidget {
   final String directoryName; // Updated to be more descriptive
@@ -19,30 +19,7 @@ class UploadButtonToDir extends StatefulWidget {
 class UploadButtonToDirState extends State<UploadButtonToDir> {
   File? file;
   final ValueNotifier<String?> selectedPath = ValueNotifier(null);
-
-  // Future<void> _unzipFile({required String? file}) async {
-  //   final Directory appSupportDir = await getApplicationCacheDirectory();
-  //   final Directory targetDir = Directory(
-  //       '${appSupportDir.path}/${widget.directoryName}'); // Create target directory
-
-  //   if (!await targetDir.exists()) {
-  //     await targetDir.create(
-  //         recursive: true); // Ensure the target directory exists
-  //   }
-
-  //   if (kDebugMode) {
-  //     print("Extracting files to $targetDir");
-  //   }
-
-  //   try {
-  //     await extractFileToDisk(
-  //         file!, targetDir.path); // Updated to use target directory
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print(e);
-  //     }
-  //   }
-  // }
+  final Logger logger = const Logger('UploadButtonToDir');
 
   Future<void> _copyFileToDestination(List<File>? files) async {
     if (files == null) return;
@@ -62,13 +39,9 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
 
       try {
         await sourceFile.copy(targetPath);
-        if (kDebugMode) {
-          print("File copied to $targetPath");
-        }
+        logger.d("File copied to $targetPath");
       } catch (e) {
-        if (kDebugMode) {
-          print("Failed to copy file: $e");
-        }
+        logger.d("Failed to copy file: $e");
       }
     }
   }
@@ -93,9 +66,7 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
           onMultipleFilesSelected: (files) async {
             if (!mounted) return;
 
-            if (kDebugMode) {
-              print("VALUE: $files");
-            }
+            logger.d("VALUE: $files");
 
             // Copy the files to destination
             await _copyFileToDestination(files);

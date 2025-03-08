@@ -36,14 +36,14 @@ class Logger {
     final DateTime now = DateTime.now();
     final String formattedTime =
         "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}.${now.millisecond.toString().padLeft(3, '0')}";
-    final String prefix = "$formattedTime [$tag] ${_getLevelTag(msgLevel)}:";
+    final String prefix = "$formattedTime [$tag] ${getLevelTag(msgLevel)}:";
 
     debugPrint('$prefix $message');
     if (error != null) debugPrint('$prefix Error: $error');
     if (stackTrace != null) debugPrint('$prefix StackTrace: $stackTrace');
   }
 
-  String _getLevelTag(LogLevel level) {
+  String getLevelTag(LogLevel level) {
     switch (level) {
       case LogLevel.verbose:
         return 'V';

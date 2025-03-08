@@ -1,18 +1,19 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_colors.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class EventCard extends ConsumerWidget {
   const EventCard({super.key, required this.data});
   final IbyMatchEvent data;
 
   static const double _smallFontSize = 11.0;
+  final Logger logger = const Logger('EventCard');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,9 +23,7 @@ class EventCard extends ConsumerWidget {
       visualDensity: VisualDensity.compact,
       onTap: () {
         EventCardSsml(ref: ref, data: data).getEventText(context);
-        if (kDebugMode) {
-          print("Button pressed");
-        }
+        logger.d("Button pressed");
       },
       leading: Icon(
         _getEventIcon(data.matchEventTypeId),

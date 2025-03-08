@@ -2,9 +2,9 @@
 import 'dart:io';
 
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
@@ -19,15 +19,17 @@ import 'package:permission_handler/permission_handler.dart'; // Package for hand
 // Flutter Imports
 import 'package:flutter/material.dart';
 import 'package:soundboard/theme_config.dart';
+import 'package:soundboard/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
+
+  await initializeDateFormatting('sv_SE', null);
+  Intl.defaultLocale = 'sv_SE';
+  final Logger logger = const Logger('Main');
 
   Directory settingsDir = await getApplicationSupportDirectory();
-  if (kDebugMode) {
-    print("AppSupportDir: ${settingsDir.path} ");
-  }
+  logger.d("AppSupportDir: ${settingsDir.path} ");
 
   await EasyBox.initialize(subDir: settingsDir.path);
   await SettingsBox().init();
@@ -43,24 +45,15 @@ void main() async {
       SettingsBox().azCharCount = 0;
       SettingsBox().azCharCountLastDate = now; // Updating the last reset to now
       // Save changes in SettingsBox if necessary
-      if (kDebugMode) {
-        print("Resetting count to 0");
-      }
+      logger.d("Resetting count to 0");
     }
   }
 
   checkAndResetCount();
 
   runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('sv')],
-      path:
-          'assets/translations', // <-- change the path of the translation files
-      fallbackLocale: const Locale('sv'),
-      useOnlyLangCode: true,
-      child: const ProviderScope(
-        child: SoundBoard(),
-      ),
+    const ProviderScope(
+      child: SoundBoard(),
     ),
   );
 }
@@ -134,9 +127,9 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
           child: child!,
         );
       },
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
+      // localizationsDelegates: context.localizationDelegates,
+      // supportedLocales: context.supportedLocales,
+      // locale: context.locale,
       // darkTheme: FlexThemeData.dark(scheme: FlexScheme.mandyRed),
       // vesuviusBurn
       darkTheme: AppTheme.darkTheme(ref),

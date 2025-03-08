@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +5,11 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class Row1Ratata extends ConsumerWidget {
   const Row1Ratata({super.key});
+  final Logger logger = const Logger('Row1Ratata');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,9 +19,8 @@ class Row1Ratata extends ConsumerWidget {
         isSelected: true,
         onTap: () {
           // playJingle(audioSources.ratataFile);
-          if (kDebugMode) {
-            print(jingleManager.audioManager.audioInstances.first.filePath);
-          }
+          logger.d(jingleManager.audioManager.audioInstances.first.filePath);
+
           jingleManager.audioManager.playAudio(AudioCategory.ratataJingle, ref);
         },
         primaryText: 'RATATA',

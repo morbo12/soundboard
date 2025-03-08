@@ -1,8 +1,7 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsServiceKey extends StatefulWidget {
   const SettingsTtsServiceKey({
@@ -15,15 +14,14 @@ class SettingsTtsServiceKey extends StatefulWidget {
 
 class _SettingsTtsServiceKeyState extends State<SettingsTtsServiceKey> {
   Timer? _debounce;
+  final Logger logger = const Logger('SettingsTtsServiceKey');
 
   @override
   Widget build(BuildContext context) {
     final ctrlTtsKey = TextEditingController();
     ctrlTtsKey.text = SettingsBox().azTtsKey;
 
-    if (kDebugMode) {
-      print(SettingsBox().azTtsKey);
-    }
+    logger.d("Azure TTS Key: ${SettingsBox().azTtsKey}");
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

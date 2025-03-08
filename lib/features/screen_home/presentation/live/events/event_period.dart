@@ -1,13 +1,14 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class PeriodEvent extends ConsumerWidget {
   const PeriodEvent({super.key, required this.data});
   final IbyMatchEvent data;
+  final Logger logger = const Logger('PeriodEvent');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,9 +22,7 @@ class PeriodEvent extends ConsumerWidget {
                   ? null
                   : () {
                       EventCardSsml(ref: ref, data: data).getEventText(context);
-                      if (kDebugMode) {
-                        print("End period Button pressed");
-                      }
+                      logger.d("End period Button pressed");
                     },
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.resolveWith<Color?>(

@@ -1,10 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsVoice extends ConsumerStatefulWidget {
   const SettingsTtsVoice({
@@ -16,11 +16,12 @@ class SettingsTtsVoice extends ConsumerStatefulWidget {
 }
 
 class _SettingsTtsVoiceState extends ConsumerState<SettingsTtsVoice> {
+  final Logger logger = const Logger('SettingsTtsVoice');
+
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print(SettingsBox().azVoiceId);
-    }
+    logger.d("Azure Voice ID: ${SettingsBox().azVoiceId}");
+
     final myVoiceId = ref.watch(voiceManagerProvider);
     return Row(
       children: [

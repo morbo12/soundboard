@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/utils/logger.dart';
 
 final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
   return VoicesSuccessMicrosoft(voices: []);
@@ -13,6 +13,7 @@ final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
 
 class TextToSpeechService {
   final Ref ref;
+  final Logger logger = const Logger('TextToSpeechService');
 
   TextToSpeechService(this.ref);
 
@@ -23,10 +24,8 @@ class TextToSpeechService {
       params: microsoftParams,
       withLogs: true,
     );
-    if (kDebugMode) {
-      print(
-          "TextToSpeechService initialized with Region: ${microsoftParams.region} and Key: ${microsoftParams.subscriptionKey}");
-    }
+    logger.d(
+        "TextToSpeechService initialized with Region: ${microsoftParams.region} and Key: ${microsoftParams.subscriptionKey}");
   }
 
   Future<String> getTts({required String text, String? voice}) async {
@@ -34,30 +33,24 @@ class TextToSpeechService {
     final myVoiceId = ref.read(voiceManagerProvider);
 
     if (cachedVoices.voices.isEmpty) {
-      if (kDebugMode) {
-        print("No voices in state!!!!!!");
-      }
+      logger.d("No voices in state!!!!!!");
+
       // final VoicesSuccessMicrosoft voicesResponse =
       // await TtsMicrosoft.getVoices();
       ref.read(voicesProvider.notifier).state = await TtsMicrosoft.getVoices();
       // cachedVoices = ref.read(voicesProvider);
     } else {
-      if (kDebugMode) {
-        print("Voices are CACHED!!!!!!");
-      }
+      logger.d("Voices are CACHED!!!!!!");
     }
-    if (kDebugMode) {
-      print("Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)}");
-    }
+    logger.d("Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)}");
+
     final selectedVoice = cachedVoices.voices.firstWhere(
       (element) =>
           element.code.toLowerCase() ==
           VoiceManager.getAzVoiceName(myVoiceId).toLowerCase(),
     );
 
-    if (kDebugMode) {
-      print("Calling Azure Text2Speech");
-    }
+    logger.d("Calling Azure Text2Speech");
 
     final params = TtsParamsMicrosoft(
       voice: selectedVoice,
@@ -70,9 +63,7 @@ class TextToSpeechService {
 
     final ttsResponse = await TtsMicrosoft.convertTts(params);
 
-    if (kDebugMode) {
-      print("Lineup audio is complete");
-    }
+    logger.d("Lineup audio is complete");
 
     List<AudioFile> lineupFilePath = jingleManager.audioManager.audioInstances
         .where(
@@ -82,9 +73,7 @@ class TextToSpeechService {
     File(lineupFilePath[0].filePath)
         .writeAsBytes(ttsResponse.audio, flush: true);
 
-    if (kDebugMode) {
-      print("Lineup audio FILE is complete");
-    }
+    logger.d("Lineup audio FILE is complete");
 
     return lineupFilePath[0].filePath;
   }
@@ -96,9 +85,8 @@ class TextToSpeechService {
 
     // Ensure we have voices data before continuing
     if (cachedVoices.voices.isEmpty) {
-      if (kDebugMode) {
-        print("Fetching voices because cache is empty....");
-      }
+      logger.d("Fetching voices because cache is empty....");
+
       final VoicesSuccessMicrosoft voicesResponse =
           await TtsMicrosoft.getVoices();
       ref.read(voicesProvider.notifier).state = voicesResponse;
@@ -108,19 +96,17 @@ class TextToSpeechService {
     // Double-check if voices data is still null or empty (for some unexpected reason)
     if (cachedVoices.voices.isEmpty) {
       // Handle the error case here, perhaps throw an exception or return an error
-      if (kDebugMode) {
-        print("Failed to fetch voices!");
-      }
+
+      logger.d("Failed to fetch voices!");
+
       throw Exception("Failed to fetch voices data.");
     }
 
-    if (kDebugMode) {
-      print("Voices are available!");
-    }
-    if (kDebugMode) {
-      print(
-          "Select Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)} from ID: $myVoiceId");
-    }
+    logger.d("Voices are available!");
+
+    logger.d(
+        "Select Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)} from ID: $myVoiceId");
+
     final selectedVoice = cachedVoices.voices.firstWhere(
       (element) =>
           element.code.toLowerCase() ==
@@ -129,9 +115,7 @@ class TextToSpeechService {
           "Voice not found."), // This ensures we handle the case when the voice is not found.
     );
 
-    if (kDebugMode) {
-      print("Calling Azure Text2Speech with voice: ${selectedVoice.code}");
-    }
+    logger.d("Calling Azure Text2Speech with voice: ${selectedVoice.code}");
 
     final params = TtsParamsMicrosoft(
       voice: selectedVoice,

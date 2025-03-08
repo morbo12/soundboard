@@ -97,7 +97,6 @@ class _PlayerState extends ConsumerState<Player> {
     try {
       jingleManager = JingleManager(showMessageCallback: showMessage);
       await jingleManager.initialize();
-      jingleManager.audioManager.setRef(ref);
       setState(() {
         isJingleManagerInitialized = true;
       });

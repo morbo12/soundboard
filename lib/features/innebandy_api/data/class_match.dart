@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/application/match_service.dart';
@@ -6,6 +5,7 @@ import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_result.dart';
+import 'package:soundboard/utils/logger.dart';
 
 // Define a StateProvider for IbyVenueMatch.
 final selectedMatchProvider = StateProvider<IbyMatch>((ref) {
@@ -104,6 +104,7 @@ class IbyMatch {
   String? createdTS;
   String? updatedTS;
   IbyMatchLineup? lineup;
+  final Logger logger = const Logger('IbyMatch');
 
   IbyMatch({
     required this.matchId,
@@ -250,17 +251,6 @@ class IbyMatch {
     );
   }
 
-  // IbyMatchIntermediateResult? getResultForPeriod(int period) {
-  //   return intermediateResults!.firstWhere(
-  //     (result) => result.period == period,
-  //     orElse: () => IbyMatchIntermediateResult(
-  //       matchID: matchId,
-  //       period: period,
-  //       goalsHomeTeam: 0,
-  //       goalsAwayTeam: 0,
-  //     ),
-  //   );
-  // }
 // In your IbyMatch class
   @override
   bool operator ==(Object other) {
@@ -277,20 +267,13 @@ class IbyMatch {
   }
 
   Future<IbyMatchLineup> getLineupByMatchId(int matchId, ref) async {
-    if (kDebugMode) {
-      print("_getLineup");
-    }
+    logger.d("_getLineup");
 
     // final apiClient = APIClient();
     final apiClient = ref.watch(apiClientProvider);
 
     final matchService = MatchService(apiClient);
 
-    //  apiService = APIService();
-    //  accessToken = await apiService.getAccessToken();
-    // if (kDebugMode) {
-    //   print("SettingsScreenStateSeason: $accessToken");
-    // }
     IbyMatchLineup lineup =
         await matchService.getLineupOfMatch(matchId: matchId);
     return lineup;

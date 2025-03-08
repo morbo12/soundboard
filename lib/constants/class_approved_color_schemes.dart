@@ -1,5 +1,5 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/foundation.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class AppThemes {
   // Keep the original constants for reference
@@ -174,10 +174,9 @@ class AppThemes {
         return scheme;
       }
     }
+    final Logger logger = const Logger('AppThemes');
+    logger.e("ERROR ${name.toLowerCase()}");
 
-    if (kDebugMode) {
-      print("[AppThemes] ERROR ${name.toLowerCase()}");
-    }
     throw ArgumentError('Unknown theme name: $name');
   }
 

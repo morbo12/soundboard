@@ -1,7 +1,6 @@
 import 'dart:core';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dart_date/dart_date.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -17,6 +16,7 @@ import 'package:soundboard/features/screen_match/presentation/selector_federatio
 import 'package:soundboard/features/screen_match/presentation/selector_date.dart';
 import 'package:soundboard/features/screen_match/presentation/selector_match.dart';
 import 'package:soundboard/features/screen_match/presentation/selector_venue.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class MatchSetupScreen extends ConsumerStatefulWidget {
   const MatchSetupScreen({super.key});
@@ -26,52 +26,38 @@ class MatchSetupScreen extends ConsumerStatefulWidget {
 }
 
 class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
-  // List<IbyVenueMatch> matches = [selectedMatch];
   List<IbyMatch> matches = [];
 
-  // IbyMatchLineup lineup = [];
-  // final double fontSize = 16;
+  final Logger logger = const Logger('MatchSetupScreen');
 
   void _getMatches() async {
     final selectedVenue = ref.watch(selectedVenueProvider);
     final selectedDate = ref.watch(selectedDateProvider);
 
-    if (kDebugMode) {
-      print("_getMatches");
-    }
+    logger.d("_getMatches");
+
     // final apiClient = APIClient(ref);
     final apiClient = ref.watch(apiClientProvider);
     final seasonService = SeasonService(apiClient);
     final matchService = MatchService(apiClient);
 
-    // final accessToken = await apiService.getAccessToken();
-    // if (kDebugMode) {
-    // print("MatchSetupScreenStateSeason: $accessToken");
-    // }
     final seasonId = await seasonService.getSeason();
-    if (kDebugMode) {
-      print("MatchSetupScreenStateSeason: $seasonId");
-    }
-    if (kDebugMode) {
-      print(
-          "date: ${DateFormat('yyyy-MM-dd').format(selectedDate.toLocalTime)} | seasonId: $seasonId | venueId: $selectedVenue");
-    }
+    logger.d("SeasonID: $seasonId");
+    logger.d(
+        "date: ${DateFormat('yyyy-MM-dd').format(selectedDate.toLocalTime)} | seasonId: $seasonId | venueId: $selectedVenue");
 
     ref.read(matchesProvider.notifier).state =
         await matchService.getMatchesInVenue(
             date: DateFormat('yyyy-MM-dd').format(selectedDate.toLocalTime),
             seasonId: seasonId,
             venueId: selectedVenue);
-    // print("Length is : ${matches.length}");
-    // print(matches);
+
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print("Length wod is : ${matches.length}");
-    }
+    // logger.d("matches.length is : ${matches.length}");
 
     return SafeArea(
       child: Scaffold(

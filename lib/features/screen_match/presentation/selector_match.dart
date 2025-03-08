@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/common_widgets/widget_match.dart';
 import 'package:soundboard/features/screen_match/presentation/providers.dart';
+import 'package:soundboard/utils/logger.dart';
 // import 'package:soundboard/widget/styles.dart';
 
 class MatchSelector extends ConsumerStatefulWidget {
@@ -16,13 +16,12 @@ class MatchSelector extends ConsumerStatefulWidget {
 class _MatchSelectorState extends ConsumerState<MatchSelector> {
   // final List<IbyVenueMatch> _matches = matches;
   final ScrollController controller = ScrollController();
+  final Logger logger = const Logger('MatchSelector');
 
   @override
   Widget build(BuildContext context) {
     final matches = ref.watch(matchesProvider);
-    if (kDebugMode) {
-      print("Length of matches is : ${matches.length}");
-    }
+    logger.d("Length of matches is : ${matches.length}");
 
     // TextStyle styleBoldContainer = TextStyle(
     //     fontSize: fontSize,

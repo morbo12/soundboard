@@ -1,9 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsRegion extends ConsumerStatefulWidget {
   const SettingsTtsRegion({
@@ -15,11 +15,12 @@ class SettingsTtsRegion extends ConsumerStatefulWidget {
 }
 
 class _SettingsTtsRegionState extends ConsumerState<SettingsTtsRegion> {
+  final Logger logger = const Logger('SettingsTtsRegion');
+
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print(SettingsBox().azRegionId);
-    }
+    logger.d("Azure RegionID: ${SettingsBox().azRegionId}");
+
     final myRegionId = ref.watch(regionManagerProvider);
 
     return Row(

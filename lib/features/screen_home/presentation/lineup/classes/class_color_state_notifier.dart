@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/utils/logger.dart';
 
 enum PlayerState { normal, goal, assist, penalty }
 
@@ -11,6 +11,7 @@ final playerStatesProvider =
 
 class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
   PlayerStatesNotifier() : super({});
+  final Logger logger = const Logger('PlayerStatesNotifier');
 
 // New read method
   PlayerState readState(String playerId) {
@@ -59,9 +60,7 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     updatedState[playerId] = PlayerState.assist;
 
     state = updatedState;
-    if (kDebugMode) {
-      print("Assist state: ${state[playerId]}");
-    }
+    logger.d("Assist state: ${state[playerId]}");
   }
 
   void setPenaltyState(String playerId) {

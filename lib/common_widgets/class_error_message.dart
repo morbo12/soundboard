@@ -1,11 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class ErrorHandler {
   static void showErrorMessage(BuildContext context, String message) {
-    if (kDebugMode) {
-      print(message);
-    }
+    final Logger logger = const Logger('ErrorHandler');
+
+    logger.d(message);
 
     // Display the error message to the user using a suitable UI component
     // For example, you can use a SnackBar:
