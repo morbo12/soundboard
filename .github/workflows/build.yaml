@@ -52,7 +52,11 @@ jobs:
         run: |
           flutter clean
           flutter pub get
-      
+
+      - name: Run Unit Tests
+        run: |
+            flutter test
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
