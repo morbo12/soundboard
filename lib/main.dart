@@ -15,7 +15,7 @@ import 'package:soundboard/player_app.dart'; // Local main app file.
 
 // External Imports (sorted by package name length, shortest first)
 import 'package:easy_hive/easy_hive.dart'; // Package for easy integration of Hive, a lightweight and fast NoSQL database.
-import 'package:permission_handler/permission_handler.dart'; // Package for handling permissions in Flutter apps.
+// import 'package:permission_handler/permission_handler.dart'; // Package for handling permissions in Flutter apps.
 
 // Flutter Imports
 import 'package:flutter/material.dart';
@@ -68,7 +68,6 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
   @override
   initState() {
     super.initState();
-    checkPermissions();
 
     final microsoftParams = InitParamsMicrosoft(
       subscriptionKey: SettingsBox().azTtsKey,
@@ -82,21 +81,6 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void checkPermissions() async {
-    var status = await Permission.storage.status;
-
-    if (status.isGranted) {
-    } else if (status.isDenied) {
-      // ignore: unused_local_variable
-      Map<Permission, PermissionStatus> status =
-          await [
-            Permission.storage,
-            // Permission.manageExternalStorage,
-            Permission.accessMediaLocation,
-          ].request();
-    }
   }
 
   @override
