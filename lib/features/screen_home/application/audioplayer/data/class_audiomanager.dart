@@ -67,7 +67,7 @@ class AudioManager {
       await _fadeAndStop(ref, AudioChannel.channel1);
       await _fadeAndStop(ref, AudioChannel.channel2);
     } catch (e) {
-      logger.e("Error stopping all audio: $e");
+      logger.e("Error stopping all audio", e.toString());
     }
   }
 
@@ -308,7 +308,7 @@ class AudioManager {
   /// Plays a horn jingle immediately
   Future<void> playHorn(WidgetRef ref) async {
     try {
-      final category = AudioCategory.hornJingle;
+      const category = AudioCategory.hornJingle;
       final categoryInstances = audioInstances
           .where((instance) => instance.audioCategory == category)
           .toList();

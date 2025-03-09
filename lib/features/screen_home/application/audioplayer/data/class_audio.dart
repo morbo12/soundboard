@@ -10,5 +10,5 @@ class AudioFile {
   AudioFile(
       {required this.filePath,
       required this.displayName,
-      required this.audioCategory}) {}
+      required this.audioCategory});
 }

@@ -155,7 +155,7 @@ class SsmlGoalEvent {
     final time = _formatTime();
 
     return '''
-      ${teamName} $phrase 
+      $teamName $phrase 
       <say-as interpret-as='cardinal'>${matchEvent.goalsHomeTeam}</say-as>-<say-as interpret-as='cardinal'>${matchEvent.goalsAwayTeam}</say-as>, 
       $scorer. 
       ${assist.isNotEmpty ? '$assist. ' : ''}
@@ -169,16 +169,7 @@ class SsmlGoalEvent {
     try {
       final announcement = _formatAnnouncement();
       logger.d("Announcement: $announcement");
-
-      // Show toast
-      FlutterToastr.show(
-        announcement,
-        context,
-        duration: FlutterToastr.lengthLong,
-        position: FlutterToastr.bottom,
-        backgroundColor: Colors.black,
-        textStyle: const TextStyle(color: Colors.white),
-      );
+      await _showToast(context, announcement);
 
       // Generate and play audio
       final textToSpeechService = ref.read(textToSpeechServiceProvider);
@@ -196,15 +187,33 @@ class SsmlGoalEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process goal announcement', e, stackTrace);
-
-      FlutterToastr.show(
-        'Ett fel uppstod vid målannonsering',
-        context,
-        backgroundColor: Colors.red,
-        textStyle: const TextStyle(color: Colors.white),
-      );
+      await _showToast(context, "Ett fel uppstod vid målannonsering'",
+          isError: true);
 
       return false;
+    }
+  }
+
+  /// Shows a toast message with the announcement text
+  Future<void> _showToast(
+    BuildContext context,
+    String announcement, {
+    bool isError = false,
+    Color? backgroundColor,
+  }) async {
+    try {
+      FlutterToastr.show(
+        announcement,
+        context,
+        duration: FlutterToastr.lengthLong,
+        position: FlutterToastr.bottom,
+        backgroundColor:
+            backgroundColor ?? (isError ? Colors.red : Colors.black),
+        textStyle: const TextStyle(color: Colors.white),
+      );
+    } catch (e, stackTrace) {
+      logger.e('Failed to show toast: Error', e, stackTrace);
+      // Consider whether to rethrow or handle silently
     }
   }
 

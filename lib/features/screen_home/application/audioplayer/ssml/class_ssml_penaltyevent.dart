@@ -252,28 +252,27 @@ class SsmlPenaltyEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process penalty announcement', e, stackTrace);
-
-      // Show error toast to user
-      FlutterToastr.show(
-        'Failed to announce penalty',
-        context,
-        backgroundColor: Colors.red,
-        textStyle: const TextStyle(color: Colors.white),
-      );
+      await _showToast(context, "Failed to announce penalty", isError: true);
 
       return false;
     }
   }
 
   /// Shows a toast message with the announcement text
-  Future<void> _showToast(BuildContext context, String announcement) async {
+  Future<void> _showToast(
+    BuildContext context,
+    String announcement, {
+    bool isError = false,
+    Color? backgroundColor,
+  }) async {
     try {
       FlutterToastr.show(
         announcement,
         context,
         duration: FlutterToastr.lengthLong,
         position: FlutterToastr.bottom,
-        backgroundColor: Colors.black,
+        backgroundColor:
+            backgroundColor ?? (isError ? Colors.red : Colors.black),
         textStyle: const TextStyle(color: Colors.white),
       );
     } catch (e, stackTrace) {

@@ -174,7 +174,7 @@ class AppThemes {
         return scheme;
       }
     }
-    final Logger logger = const Logger('AppThemes');
+    const Logger logger = const Logger('AppThemes');
     logger.e("ERROR ${name.toLowerCase()}");
 
     throw ArgumentError('Unknown theme name: $name');

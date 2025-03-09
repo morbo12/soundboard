@@ -26,7 +26,7 @@ void main() async {
 
   await initializeDateFormatting('sv_SE', null);
   Intl.defaultLocale = 'sv_SE';
-  final Logger logger = const Logger('Main');
+  const Logger logger = const Logger('Main');
 
   Directory settingsDir = await getApplicationSupportDirectory();
   logger.d("AppSupportDir: ${settingsDir.path} ");
@@ -82,9 +82,6 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
 
   @override
   void dispose() {
-    // _subscription.cancel();
-    // _durationSubscription.cancel();
-    // _positionSubscription.cancel();
     super.dispose();
   }
 
@@ -104,22 +101,7 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Implement restart app
-    // final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-    // final restartAppProvider = Provider<void Function()>((ref) {
-    //   return () {
-    //     navigatorKey.currentState?.pushReplacement(
-    //       MaterialPageRoute(
-    //         builder: (BuildContext context) =>
-    //             const Player(), // MyApp is your root widget
-    //       ),
-    //     );
-    //   };
-    // });
-
     return MaterialApp(
-      // TODO: Implement restart app
       // navigatorKey: navigatorKey,
       builder: (contex, child) {
         return ScrollConfiguration(
@@ -127,11 +109,7 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
           child: child!,
         );
       },
-      // localizationsDelegates: context.localizationDelegates,
-      // supportedLocales: context.supportedLocales,
-      // locale: context.locale,
-      // darkTheme: FlexThemeData.dark(scheme: FlexScheme.mandyRed),
-      // vesuviusBurn
+      title: 'Soundboard',
       darkTheme: AppTheme.darkTheme(ref),
       theme: AppTheme.lightTheme(ref),
       themeMode: ThemeMode.dark,

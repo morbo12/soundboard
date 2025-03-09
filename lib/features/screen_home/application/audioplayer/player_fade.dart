@@ -9,7 +9,6 @@ class Fade {
   static const double MAX_VOLUME = 1.0;
   static const double VOLUME_STEP = 0.05;
   static const int MIN_STEP_DURATION = 1;
-
   final WidgetRef ref;
   final Logger _logger = const Logger('Fade');
 
@@ -28,9 +27,8 @@ class Fade {
       // Early return if volumes are already equal
       if ((to - from).abs() < 0.001) {
         // Using small epsilon for float comparison
-        if (channel.playerId == "9ec5366c-f5aa-4e8e-831f-f6f07687440f") {
-          _logger.d('Volumes already equal, no fade needed');
-        }
+        _logger.d('Volumes already equal, no fade needed');
+
         return;
       }
 
@@ -39,23 +37,19 @@ class Fade {
       if (steps == 0) {
         // If no steps needed, just set the final volume directly
         await _updateVolume(to, channel, provider);
-        if (channel.playerId == "9ec5366c-f5aa-4e8e-831f-f6f07687440f") {
-          _logger.d('Fade completed immediately. Final volume: $to');
-        }
+        _logger.d('Fade completed immediately. Final volume: $to');
+
         return;
       }
 
       int stepDuration = math.max(MIN_STEP_DURATION, duration ~/ steps);
 
-      if (channel.playerId == "9ec5366c-f5aa-4e8e-831f-f6f07687440f") {
-        _logger.d(
-            'Starting fade from $from to $to over $duration ms on channel ${channel.playerId}');
-      }
+      _logger.d(
+          'Starting fade from $from to $to over $duration ms on channel ${channel.playerId}');
 
       for (int i = 0; i < steps; i++) {
-        if (channel.playerId == "9ec5366c-f5aa-4e8e-831f-f6f07687440f") {
-          _logger.d('Step $i: $currentVolume');
-        }
+        _logger.d('Step $i: $currentVolume');
+
         await Future.delayed(Duration(milliseconds: stepDuration));
         currentVolume = _calculateNextVolume(currentVolume, to);
         await _updateVolume(currentVolume, channel, provider);
@@ -64,9 +58,8 @@ class Fade {
       }
 
       await _updateVolume(to, channel, provider);
-      if (channel.playerId == "9ec5366c-f5aa-4e8e-831f-f6f07687440f") {
-        _logger.d('Fade completed. Final volume: $to');
-      }
+
+      _logger.d('Fade completed. Final volume: $to');
     } catch (e) {
       _logger.d('Error during fade: $e');
     }
