@@ -4,7 +4,7 @@ import 'package:soundboard/features/jingle_manager/application/class_audiocatego
 import 'package:soundboard/utils/logger.dart';
 
 void playGoal2(WidgetRef ref) async {
-  final Logger logger = const Logger('playGoal2');
+  const Logger logger = Logger('playGoal2');
 
   // Play horn
   jingleManager.audioManager.channel1.stop();

@@ -248,7 +248,7 @@ class AudioManager {
           isBackgroundMusic ? AudioChannel.channel1 : _getAvailableChannel();
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
-      logger.d("[playAudio] fadeDuration is ${fadeDuration}");
+      logger.d("[playAudio] fadeDuration is $fadeDuration");
       logger.d(
         "[playAudio] Playing ${audioFile.filePath} on channel ${channel.name}",
       );
