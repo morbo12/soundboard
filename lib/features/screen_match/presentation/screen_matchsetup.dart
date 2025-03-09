@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:dart_date/dart_date.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -44,13 +43,15 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     final seasonId = await seasonService.getSeason();
     logger.d("SeasonID: $seasonId");
     logger.d(
-        "date: ${DateFormat('yyyy-MM-dd').format(selectedDate.toLocalTime)} | seasonId: $seasonId | venueId: $selectedVenue");
+      "date: ${DateFormat('yyyy-MM-dd').format(selectedDate)} | seasonId: $seasonId | venueId: $selectedVenue",
+    );
 
-    ref.read(matchesProvider.notifier).state =
-        await matchService.getMatchesInVenue(
-            date: DateFormat('yyyy-MM-dd').format(selectedDate.toLocalTime),
-            seasonId: seasonId,
-            venueId: selectedVenue);
+    ref.read(matchesProvider.notifier).state = await matchService
+        .getMatchesInVenue(
+          date: DateFormat('yyyy-MM-dd').format(selectedDate),
+          seasonId: seasonId,
+          venueId: selectedVenue,
+        );
 
     setState(() {});
   }
@@ -72,14 +73,10 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AutoSizeText(
-                    "Välj Förbund",
-                  ),
+                  const AutoSizeText("Välj Förbund"),
                   const Gap(10),
                   const FederationSelector(),
-                  const AutoSizeText(
-                    "Välj Anläggning",
-                  ),
+                  const AutoSizeText("Välj Anläggning"),
                   const Gap(10),
                   const VenueSelector(),
                   const Gap(10),
@@ -91,10 +88,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                   const AutoSizeText("Välj Match (scrolla listan nedan)"),
                   const Gap(10),
                   // MatchButton2(readonly: false, match: selectedMatch),
-                  const Expanded(
-                    flex: 2,
-                    child: MatchSelector(),
-                  ),
+                  const Expanded(flex: 2, child: MatchSelector()),
                   const Gap(10),
                   // Row(children: [Expanded(child: createLineup)]),
                 ],

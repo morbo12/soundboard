@@ -1,7 +1,6 @@
+import 'package:intl/intl.dart';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-// import 'package:soundboard/features/innebandy_api/data/class_venuematch.dart';
-import 'package:dart_date/dart_date.dart';
 
 import 'api_client.dart';
 import 'api_constants.dart';
@@ -23,8 +22,8 @@ class MatchService {
     final response = await _apiClient.authenticatedGet(
       path,
       queryParameters: {
-        "\$filter": "MatchDateTime eq ${dt.format("yyyy-MM-dd")}",
-        "\$orderby": "MatchDateTime"
+        "\$filter": "MatchDateTime eq ${DateFormat('yyyy-MM-dd').format(dt)}",
+        "\$orderby": "MatchDateTime",
       },
     );
 
@@ -38,8 +37,10 @@ class MatchService {
   }
 
   Future<IbyMatchLineup> getLineupOfMatch({required int matchId}) async {
-    final path =
-        APIConstants.matchLineup.replaceAll('{matchId}', matchId.toString());
+    final path = APIConstants.matchLineup.replaceAll(
+      '{matchId}',
+      matchId.toString(),
+    );
     final response = await _apiClient.authenticatedGet(path);
 
     if (response.statusCode == 200) {

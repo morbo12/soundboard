@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -25,6 +26,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeDateFormatting('sv_SE', null);
+
   Intl.defaultLocale = 'sv_SE';
   const Logger logger = const Logger('Main');
 
@@ -51,11 +53,7 @@ void main() async {
 
   checkAndResetCount();
 
-  runApp(
-    const ProviderScope(
-      child: SoundBoard(),
-    ),
-  );
+  runApp(const ProviderScope(child: SoundBoard()));
 }
 
 class SoundBoard extends ConsumerStatefulWidget {
@@ -73,8 +71,9 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
     checkPermissions();
 
     final microsoftParams = InitParamsMicrosoft(
-        subscriptionKey: SettingsBox().azTtsKey,
-        region: AzureRegionManager().getAzRegionName(SettingsBox().azRegionId));
+      subscriptionKey: SettingsBox().azTtsKey,
+      region: AzureRegionManager().getAzRegionName(SettingsBox().azRegionId),
+    );
     final textToSpeechService = ref.read(textToSpeechServiceProvider);
 
     textToSpeechService.initialize(microsoftParams: microsoftParams);
@@ -91,11 +90,12 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
     if (status.isGranted) {
     } else if (status.isDenied) {
       // ignore: unused_local_variable
-      Map<Permission, PermissionStatus> status = await [
-        Permission.storage,
-        // Permission.manageExternalStorage,
-        Permission.accessMediaLocation
-      ].request();
+      Map<Permission, PermissionStatus> status =
+          await [
+            Permission.storage,
+            // Permission.manageExternalStorage,
+            Permission.accessMediaLocation,
+          ].request();
     }
   }
 
@@ -109,6 +109,12 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
           child: child!,
         );
       },
+      locale: const Locale('sv', 'SE'), // Set the Swedish locale
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       title: 'Soundboard',
       darkTheme: AppTheme.darkTheme(ref),
       theme: AppTheme.lightTheme(ref),
