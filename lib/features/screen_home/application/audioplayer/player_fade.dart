@@ -27,7 +27,7 @@ class Fade {
       // Early return if volumes are already equal
       if ((to - from).abs() < 0.001) {
         // Using small epsilon for float comparison
-        _logger.d('Volumes already equal, no fade needed');
+        _logger.d('[fade] Volumes already equal, no fade needed');
 
         return;
       }
@@ -37,7 +37,7 @@ class Fade {
       if (steps == 0) {
         // If no steps needed, just set the final volume directly
         await _updateVolume(to, channel, provider);
-        _logger.d('Fade completed immediately. Final volume: $to');
+        _logger.d('[fade] Fade completed immediately. Final volume: $to');
 
         return;
       }
@@ -45,14 +45,17 @@ class Fade {
       int stepDuration = math.max(MIN_STEP_DURATION, duration ~/ steps);
 
       _logger.d(
-        'Starting fade from $from to $to over $duration ms on channel ${channel.playerId}',
+        '[fade] Starting fade from $from to $to over $duration ms on channel ${channel.playerId}',
       );
 
       for (int i = 0; i < steps; i++) {
-        // _logger.d('Step $i: $currentVolume');
+        // _logger.d('[fade] Step $i: $currentVolume');
 
         await Future.delayed(Duration(milliseconds: stepDuration));
         currentVolume = _calculateNextVolume(currentVolume, to);
+        // _logger.d(
+        //   '[fade] Current volume: $currentVolume - Channel: $channel.name',
+        // );
         await _updateVolume(currentVolume, channel, provider);
 
         if (_isFadeComplete(currentVolume, to, from)) break;

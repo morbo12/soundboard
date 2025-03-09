@@ -45,7 +45,7 @@ class AudioManager {
 
   /// Fade duration constants
   static const int _shortFadeDuration = 10;
-  static const int _longFadeDuration = 400;
+  static const int _longFadeDuration = 300;
 
   /// Constructor initializes audio channels with default volumes
   AudioManager() {
@@ -81,14 +81,20 @@ class AudioManager {
   }
 
   /// Internal method to fade a channel without stopping
-  Future<void> _fadeNoStop(WidgetRef ref, AudioChannel channel,
-      {int fadeDuration = _longFadeDuration}) async {
+  Future<void> _fadeNoStop(
+    WidgetRef ref,
+    AudioChannel channel, {
+    int fadeDuration = _longFadeDuration,
+  }) async {
     await _fadeChannel(ref, channel, 0.0, fadeDuration);
   }
 
   /// Internal method to fade out and stop a channel
-  Future<void> _fadeAndStop(WidgetRef ref, AudioChannel channel,
-      {int fadeDuration = _longFadeDuration}) async {
+  Future<void> _fadeAndStop(
+    WidgetRef ref,
+    AudioChannel channel, {
+    int fadeDuration = _longFadeDuration,
+  }) async {
     try {
       await _fadeChannel(ref, channel, 0.0, fadeDuration);
       await _stopChannel(channel);
@@ -99,16 +105,27 @@ class AudioManager {
 
   /// Fades a channel's volume to the specified level
   Future<void> _fadeChannel(
-      WidgetRef ref, AudioChannel channel, double to, int duration) async {
+    WidgetRef ref,
+    AudioChannel channel,
+    double to,
+    int duration,
+  ) async {
     try {
       final fade = Fade(ref);
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
-      final provider = channel == AudioChannel.channel1
-          ? c1VolumeProvider
-          : c2VolumeProvider;
-
+      final provider =
+          channel == AudioChannel.channel1
+              ? c1VolumeProvider
+              : c2VolumeProvider;
+      logger.d(
+        "[_fadeChannel] Fading channel ${channel.name} duration $duration",
+      );
       await fade.fade(
-          to: to, duration: duration, channel: player, provider: provider);
+        to: to,
+        duration: duration,
+        channel: player,
+        provider: provider,
+      );
     } catch (e) {
       logger.e("Error fading channel ${channel.name}: $e");
     }
@@ -128,18 +145,21 @@ class AudioManager {
   /// Plays an audio file on the specified channel
   Future<void> _playAudioFile(
     WidgetRef ref,
-    AudioChannel channel,
+    AudioChannel channel, // the channel to play on
     String filePath, {
-    int fadeDuration = _shortFadeDuration,
+    required int fadeDuration,
     bool isBackgroundMusic = false,
   }) async {
     try {
-      final otherChannel = channel == AudioChannel.channel1
-          ? AudioChannel.channel2
-          : AudioChannel.channel1;
+      final otherChannel =
+          channel == AudioChannel.channel1
+              ? AudioChannel.channel2
+              : AudioChannel.channel1;
 
       await _setChannelVolume(ref, channel, 0.0);
+      logger.d("Fading and stopping channel ${otherChannel.name}");
       _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
+      logger.d("After _fadeAndStop");
 
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
       await player.play(DeviceFileSource(filePath));
@@ -147,7 +167,11 @@ class AudioManager {
       if (isBackgroundMusic) {
         // Fade down to background music level
         await _fadeChannel(
-            ref, channel, SettingsBox().backgroundVolumeLevel, fadeDuration);
+          ref,
+          channel,
+          SettingsBox().backgroundVolumeLevel,
+          fadeDuration,
+        );
 
         // Set up a listener for when the background music ends
         player.onPlayerComplete.listen((_) async {
@@ -174,15 +198,19 @@ class AudioManager {
 
   /// Sets the volume for a specific channel
   Future<void> _setChannelVolume(
-      WidgetRef ref, AudioChannel channel, double volume) async {
+    WidgetRef ref,
+    AudioChannel channel,
+    double volume,
+  ) async {
     try {
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
       logger.d("Setting volume to $volume for channel ${channel.name}");
       await player.setVolume(volume);
 
-      final provider = channel == AudioChannel.channel1
-          ? c1VolumeProvider
-          : c2VolumeProvider;
+      final provider =
+          channel == AudioChannel.channel1
+              ? c1VolumeProvider
+              : c2VolumeProvider;
       ref.read(provider.notifier).updateVolume(volume);
     } catch (e) {
       logger.e("Error setting channel volume: $e");
@@ -199,9 +227,10 @@ class AudioManager {
     bool isBackgroundMusic = false,
   }) async {
     try {
-      final categoryInstances = audioInstances
-          .where((instance) => instance.audioCategory == category)
-          .toList();
+      final categoryInstances =
+          audioInstances
+              .where((instance) => instance.audioCategory == category)
+              .toList();
 
       if (categoryInstances.isEmpty) return;
 
@@ -219,7 +248,10 @@ class AudioManager {
           isBackgroundMusic ? AudioChannel.channel1 : _getAvailableChannel();
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
-
+      logger.d("[playAudio] fadeDuration is ${fadeDuration}");
+      logger.d(
+        "[playAudio] Playing ${audioFile.filePath} on channel ${channel.name}",
+      );
       await _playAudioFile(
         ref,
         channel,
@@ -234,7 +266,9 @@ class AudioManager {
 
   /// Selects a random audio file while avoiding recently played files
   AudioFile _selectRandomAudioFile(
-      AudioCategory category, List<AudioFile> categoryInstances) {
+    AudioCategory category,
+    List<AudioFile> categoryInstances,
+  ) {
     // Initialize queue for this category if it doesn't exist
     if (!_recentlyPlayed.containsKey(category)) {
       _recentlyPlayed[category] = Queue<String>();
@@ -275,7 +309,9 @@ class AudioManager {
 
   /// Selects an audio file sequentially from the category
   AudioFile _selectSequentialAudioFile(
-      AudioCategory category, List<AudioFile> categoryInstances) {
+    AudioCategory category,
+    List<AudioFile> categoryInstances,
+  ) {
     if (!_currentPlayIndex.containsKey(category)) {
       _currentPlayIndex[category] = 0;
     }
@@ -309,33 +345,42 @@ class AudioManager {
   Future<void> playHorn(WidgetRef ref) async {
     try {
       const category = AudioCategory.hornJingle;
-      final categoryInstances = audioInstances
-          .where((instance) => instance.audioCategory == category)
-          .toList();
+      final categoryInstances =
+          audioInstances
+              .where((instance) => instance.audioCategory == category)
+              .toList();
 
       if (categoryInstances.isEmpty) return;
 
-      logger.d(categoryInstances[0].filePath);
+      logger.d(
+        "[playHorn] Loading ${categoryInstances[0].filePath} into channel 2",
+      );
 
       if (channel2.state == PlayerState.playing) {
+        logger.d("[playHorn] Stopping Channel 2");
         await channel2.stop(); // Stop the currently playing instance
+        logger.d("[playHorn] Channel 2 Stopped");
       }
       if (channel1.state == PlayerState.playing) {
+        logger.d("[playHorn] Stopping Channel 1");
         await channel1.stop(); // Stop the currently playing instance
+        logger.d("[playHorn] Channel 1 Stopped");
       }
-
+      logger.d("[playHorn] Channel 2 setVolume 1.0");
       await channel2.setVolume(1.0);
       ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
-
+      logger.d("[playHorn] Playing horn");
       await channel2.play(DeviceFileSource(categoryInstances[0].filePath));
     } catch (e) {
-      logger.e("Error playing horn: $e");
+      logger.e("[playHorn] Error playing horn: $e");
     }
   }
 
   /// Plays audio from a byte array
-  Future<void> playBytes(
-      {required Uint8List audio, required WidgetRef ref}) async {
+  Future<void> playBytes({
+    required Uint8List audio,
+    required WidgetRef ref,
+  }) async {
     try {
       logger.d("Length is ${audio.length}");
 
@@ -353,8 +398,10 @@ class AudioManager {
   }
 
   /// Plays audio from a byte array and waits for completion
-  Future<void> playBytesAndWait(
-      {required Uint8List audio, required WidgetRef ref}) async {
+  Future<void> playBytesAndWait({
+    required Uint8List audio,
+    required WidgetRef ref,
+  }) async {
     try {
       logger.d("[playBytesAndWait] Length is ${audio.length}");
 
