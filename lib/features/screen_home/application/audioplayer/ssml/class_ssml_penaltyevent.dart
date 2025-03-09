@@ -15,14 +15,16 @@ import 'package:soundboard/utils/logger.dart';
 
 class PenaltyAnnouncements {
   static final List<
-      String Function(
-        String time,
-        String period,
-        String number,
-        String name,
-        String team,
-        String penalty,
-      )> templates = [
+    String Function(
+      String time,
+      String period,
+      String number,
+      String name,
+      String team,
+      String penalty,
+    )
+  >
+  templates = [
     // Template 0: Original
     (time, period, number, name, team, penalty) => '''
       Nummer $number, $name 
@@ -60,10 +62,7 @@ class SsmlPenaltyEvent {
   final Logger logger = const Logger('SsmlPenaltyEvent');
   final Random _random = Random();
 
-  SsmlPenaltyEvent({
-    required this.ref,
-    required this.matchEvent,
-  });
+  SsmlPenaltyEvent({required this.ref, required this.matchEvent});
   // data.matchTeamName == selectedMatch.awayTeam
   String whosEvent() {
     final selectedMatch = ref.read(selectedMatchProvider);
@@ -85,8 +84,9 @@ class SsmlPenaltyEvent {
   }
 
   String penaltyName() {
-    Map<String, String> penaltyInfo =
-        PenaltyTypes.getPenaltyInfo(matchEvent.penaltyCode);
+    Map<String, String> penaltyInfo = PenaltyTypes.getPenaltyInfo(
+      matchEvent.penaltyCode,
+    );
     logger.d("penaltyName: ${penaltyInfo['time']} för ${penaltyInfo['name']}");
 
     String penaltyString = "";
@@ -159,8 +159,9 @@ class SsmlPenaltyEvent {
     final penalty = penaltyName();
     final time = _formatTime();
     // Select random template
-    final templateIndex =
-        _random.nextInt(PenaltyAnnouncements.templates.length);
+    final templateIndex = _random.nextInt(
+      PenaltyAnnouncements.templates.length,
+    );
     final template = PenaltyAnnouncements.templates[templateIndex];
     logger.d('Selected template: $templateIndex');
     // Add variation to announcement with optional pause breaks
@@ -174,17 +175,22 @@ class SsmlPenaltyEvent {
     );
     // Clean up whitespace and add random pauses
     return _addRandomPauses(
-        announcement.trim().replaceAll(RegExp(r'\s+'), ' '));
+      announcement.trim().replaceAll(RegExp(r'\s+'), ' '),
+    );
   }
 
   /// Adds random SSML pauses to make the announcement more natural
   String _addRandomPauses(String text) {
     if (!text.contains('.')) return text;
 
-    return text.split('.').where((s) => s.trim().isNotEmpty).map((sentence) {
-      final pauseLength = _random.nextInt(300) + 200; // 200-500ms pause
-      return '${sentence.trim()}. <break time="${pauseLength}ms"/>';
-    }).join(' ');
+    return text
+        .split('.')
+        .where((s) => s.trim().isNotEmpty)
+        .map((sentence) {
+          final pauseLength = _random.nextInt(300) + 200; // 200-500ms pause
+          return '${sentence.trim()}. <break time="${pauseLength}ms"/>';
+        })
+        .join(' ');
   }
 
   /// Validates the event data before processing
@@ -228,9 +234,7 @@ class SsmlPenaltyEvent {
 
       // Update persistent storage
       final settings = SettingsBox();
-      await settings.updateAzureCharCount(
-        settings.azCharCount + charCount,
-      );
+      await settings.updateAzureCharCount(settings.azCharCount + charCount);
     } catch (e, stackTrace) {
       logger.e('Failed to update character count', e, stackTrace);
       // Consider whether to rethrow or handle silently
@@ -239,6 +243,8 @@ class SsmlPenaltyEvent {
 
   /// Modified getSay function using the helper methods
   Future<bool> getSay(BuildContext context) async {
+    // Capture the context early
+    final currentContext = context;
     try {
       // Validate input data
       _validateEventData();
@@ -252,7 +258,9 @@ class SsmlPenaltyEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process penalty announcement', e, stackTrace);
-      await _showToast(context, "Failed to announce penalty", isError: true);
+      if (currentContext.mounted) {
+        await _showToast(context, "Failed to announce penalty", isError: true);
+      }
 
       return false;
     }
@@ -266,21 +274,23 @@ class SsmlPenaltyEvent {
     Color? backgroundColor,
   }) async {
     try {
-      FlutterToastr.show(
-        announcement,
-        context,
-        duration: FlutterToastr.lengthLong,
-        position: FlutterToastr.bottom,
-        backgroundColor:
-            backgroundColor ?? (isError ? Colors.red : Colors.black),
-        textStyle: const TextStyle(color: Colors.white),
-      );
+      if (context.mounted) {
+        // Add mounted check
+        FlutterToastr.show(
+          announcement,
+          context,
+          duration: FlutterToastr.lengthLong,
+          position: FlutterToastr.bottom,
+          backgroundColor:
+              backgroundColor ?? (isError ? Colors.red : Colors.black),
+          textStyle: const TextStyle(color: Colors.white),
+        );
+      }
     } catch (e, stackTrace) {
       logger.e('Failed to show toast: Error', e, stackTrace);
-      // Consider whether to rethrow or handle silently
     }
   }
-// Nybro IF tar ledningen med 1-0. Målskytt utan assistans nummer 24 Peter Eriksson. Tid 12.14
+  // Nybro IF tar ledningen med 1-0. Målskytt utan assistans nummer 24 Peter Eriksson. Tid 12.14
 
   List<String> goalSays = [
     "<hemmalag> utökar ledningen till x-y, mål av <person>",
