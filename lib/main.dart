@@ -28,7 +28,7 @@ void main() async {
   await initializeDateFormatting('sv_SE', null);
 
   Intl.defaultLocale = 'sv_SE';
-  const Logger logger = const Logger('Main');
+  const Logger logger = Logger('Main');
 
   Directory settingsDir = await getApplicationSupportDirectory();
   logger.d("AppSupportDir: ${settingsDir.path} ");

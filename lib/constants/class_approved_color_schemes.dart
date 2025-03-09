@@ -25,16 +25,19 @@ class AppThemes {
     purpleBrown,
 
     // Then add all remaining schemes
-    ...FlexScheme.values.where((scheme) => ![
-          greyLaw,
-          aquaBlue,
-          ebonyClay,
-          outerSpace,
-          blueWhale,
-          sanJuanBlue,
-          blueM3,
-          purpleBrown,
-        ].contains(scheme)),
+    ...FlexScheme.values.where(
+      (scheme) =>
+          ![
+            greyLaw,
+            aquaBlue,
+            ebonyClay,
+            outerSpace,
+            blueWhale,
+            sanJuanBlue,
+            blueM3,
+            purpleBrown,
+          ].contains(scheme),
+    ),
   ];
 
   static String getName(FlexScheme scheme) {
@@ -103,12 +106,13 @@ class AppThemes {
     }
 
     // Convert camelCase to words with spaces
-    final result = name
-        .replaceAllMapped(
-          RegExp(r'([A-Z])'),
-          (match) => ' ${match.group(0)}',
-        )
-        .trim();
+    final result =
+        name
+            .replaceAllMapped(
+              RegExp(r'([A-Z])'),
+              (match) => ' ${match.group(0)}',
+            )
+            .trim();
 
     // Capitalize first letter
     if (result.isNotEmpty) {
@@ -174,7 +178,7 @@ class AppThemes {
         return scheme;
       }
     }
-    const Logger logger = const Logger('AppThemes');
+    const Logger logger = Logger('AppThemes');
     logger.e("ERROR ${name.toLowerCase()}");
 
     throw ArgumentError('Unknown theme name: $name');
