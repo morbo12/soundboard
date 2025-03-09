@@ -45,10 +45,11 @@ class Fade {
       int stepDuration = math.max(MIN_STEP_DURATION, duration ~/ steps);
 
       _logger.d(
-          'Starting fade from $from to $to over $duration ms on channel ${channel.playerId}');
+        'Starting fade from $from to $to over $duration ms on channel ${channel.playerId}',
+      );
 
       for (int i = 0; i < steps; i++) {
-        _logger.d('Step $i: $currentVolume');
+        // _logger.d('Step $i: $currentVolume');
 
         await Future.delayed(Duration(milliseconds: stepDuration));
         currentVolume = _calculateNextVolume(currentVolume, to);
@@ -71,8 +72,11 @@ class Fade {
     return (next * 100).round() / 100; // Round to 2 decimal places
   }
 
-  Future<void> _updateVolume(double volume, AudioPlayer channel,
-      StateNotifierProvider<VolumeNotifier, Volume> provider) async {
+  Future<void> _updateVolume(
+    double volume,
+    AudioPlayer channel,
+    StateNotifierProvider<VolumeNotifier, Volume> provider,
+  ) async {
     volume = volume.clamp(MIN_VOLUME, MAX_VOLUME);
     await channel.setVolume(volume);
     ref.read(provider.notifier).updateVolume(volume);
