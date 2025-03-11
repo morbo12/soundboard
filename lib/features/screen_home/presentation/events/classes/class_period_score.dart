@@ -2,8 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_periodevent.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_divider.dart';
+import 'package:soundboard/utils/logger.dart';
+import 'package:collection/collection.dart';
 
 class PeriodScores extends ConsumerWidget {
   const PeriodScores({Key? key}) : super(key: key);
@@ -11,7 +14,6 @@ class PeriodScores extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMatch = ref.watch(selectedMatchProvider);
-
     return Row(
       children: [
         Expanded(
@@ -43,40 +45,74 @@ class PeriodScores extends ConsumerWidget {
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 0, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          1,
+          selectedMatch,
+          key: const Key('Period1'),
+        ),
         const VerticalDividerWidget(
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 1, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          2,
+          selectedMatch,
+          key: const Key('Period2'),
+        ),
         const VerticalDividerWidget(
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 2, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          3,
+          selectedMatch,
+          key: const Key('Period3'),
+        ),
       ],
     );
   }
 
   Widget _buildPeriodButton(
-      BuildContext context, WidgetRef ref, int period, IbyMatch match) {
+    BuildContext context,
+    WidgetRef ref,
+    int period,
+    IbyMatch match, {
+    required Key key,
+  }) {
     // Check if intermediate results exist and have data for this period
-    final hasIntermediateResults = match.intermediateResults != null &&
-        match.intermediateResults!.length > period;
+    final hasIntermediateResults =
+        match.intermediateResults != null &&
+        match.intermediateResults!.isNotEmpty;
+    const Logger logger = Logger('_buildPeriodButton');
 
-    // Safely get the period score text
-    String getPeriodScore() {
-      if (hasIntermediateResults) {
-        final periodResult = match.intermediateResults![period];
-        return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+    String getPeriodScore(int _period) {
+      try {
+        if (hasIntermediateResults && match.intermediateResults != null) {
+          final periodResult = match.intermediateResults!.firstWhereOrNull(
+            ((result) => result.period == _period),
+          );
+
+          if (periodResult != null) {
+            return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+          }
+        }
+        return "0 - 0";
+      } catch (e) {
+        logger.d('Error getting period score: $e');
+        return "- - -"; // Return a fallback format indicating error
       }
-      return "0 - 0";
     }
 
     return Expanded(
       child: TextButton(
-        onPressed: () =>
-            SsmlPeriodEvent(period: period, ref: ref).getSay(context),
+        onPressed:
+            () => SsmlPeriodEvent(period: period, ref: ref).getSay(context),
         child: Column(
           children: [
             Text(
@@ -86,7 +122,7 @@ class PeriodScores extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-              "P ${period + 1}",
+              "P ${period}",
             ),
             Text(
               textAlign: TextAlign.center,
@@ -95,7 +131,8 @@ class PeriodScores extends ConsumerWidget {
                 fontStyle: FontStyle.italic,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-              getPeriodScore(),
+
+              getPeriodScore(period),
             ),
           ],
         ),
