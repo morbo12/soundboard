@@ -1,99 +1,127 @@
+// ssml_period_event.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_toastr/flutter_toastr.dart';
-import 'package:intl/intl.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
+import 'class_ssml_base.dart';
 
-class SsmlPeriodEvent {
-  // final IbyMatch data;
-  final NumberFormat formatter = NumberFormat("0");
-  final WidgetRef ref;
-  int period = 0;
-  late final selectedMatch;
-  final Logger logger = const Logger('SsmlPeriodEvent');
+class SsmlPeriodEvent extends BaseSsmlEvent {
+  final int period;
+  late final dynamic selectedMatch;
 
-  SsmlPeriodEvent({
-    required this.ref,
-    // required this.data,
-    required this.period,
-  }) {
+  SsmlPeriodEvent({required super.ref, required this.period})
+    : super(loggerName: 'SsmlPeriodEvent') {
     selectedMatch = ref.read(selectedMatchProvider);
   }
 
-  String stripTeamSuffix(String teamName) {
-    return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
+  @override
+  String formatAnnouncement() {
+    final intermediateOrFinal =
+        period == 3 ? "Matchen slutar" : "Ställningen i matchen är";
+
+    return wrapWithProsody(
+      "Perioden slutar ${_formatPeriodResult()} "
+      "<break time='300ms'/>${intermediateOrFinal} "
+      "<break strength='weak'/>${_formatMatchScore()}",
+    );
   }
 
-  String whoIsInLead() {
-    if (selectedMatch.goalsHomeTeam! > selectedMatch.goalsAwayTeam!) {
-      return "<prosody rate='slow' pitch='medium'><say-as interpret-as='number'>${selectedMatch.goalsHomeTeam}</say-as> <say-as interpret-as='number'>${selectedMatch.goalsAwayTeam}</say-as></prosody> till ${stripTeamSuffix(selectedMatch.homeTeam)}.";
-    } else if (selectedMatch.goalsHomeTeam! < selectedMatch.goalsAwayTeam!) {
-      return "<prosody rate='slow' pitch='medium'><say-as interpret-as='number'>${selectedMatch.goalsAwayTeam}</say-as> <say-as interpret-as='number'>${selectedMatch.goalsHomeTeam}</say-as></prosody> till ${stripTeamSuffix(selectedMatch.awayTeam)}.";
-    } else {
-      // Om antalet mål är lika för båda lagen
-      return "oavgjort ${selectedMatch.goalsHomeTeam}-${selectedMatch.goalsAwayTeam}.";
+  String _formatMatchScore() {
+    final homeGoals = selectedMatch.goalsHomeTeam!;
+    final awayGoals = selectedMatch.goalsAwayTeam!;
+
+    if (homeGoals > awayGoals) {
+      return _formatScore(
+        homeScore: homeGoals,
+        awayScore: awayGoals,
+        teamName: selectedMatch.homeTeam,
+      );
+    } else if (homeGoals < awayGoals) {
+      return _formatScore(
+        homeScore: awayGoals,
+        awayScore: homeGoals,
+        teamName: selectedMatch.awayTeam,
+      );
     }
+
+    return "<prosody rate='medium'>oavgjort <say-as interpret-as='number'>"
+        "$homeGoals</say-as> <say-as interpret-as='number'>$awayGoals</say-as>.</prosody>";
   }
 
-  String whoWonIntermediate() {
-    final hasIntermediateResults = selectedMatch.intermediateResults != null &&
-        selectedMatch.intermediateResults!.length > period;
+  String _formatScore({
+    required int homeScore,
+    required int awayScore,
+    required String teamName,
+  }) {
+    return "<prosody rate='medium'><say-as interpret-as='number'>$homeScore</say-as> "
+        "<say-as interpret-as='number'>$awayScore</say-as> till ${stripTeamSuffix(teamName)}.</prosody>";
+  }
+
+  String _formatPeriodResult() {
+    final periodResult = _getPeriodResult();
+
+    if (periodResult.goalsHomeTeam > periodResult.goalsAwayTeam) {
+      return _formatScore(
+        homeScore: periodResult.goalsHomeTeam,
+        awayScore: periodResult.goalsAwayTeam,
+        teamName: selectedMatch.homeTeam,
+      );
+    } else if (periodResult.goalsAwayTeam > periodResult.goalsHomeTeam) {
+      return _formatScore(
+        homeScore: periodResult.goalsAwayTeam,
+        awayScore: periodResult.goalsHomeTeam,
+        teamName: selectedMatch.awayTeam,
+      );
+    }
+
+    return "<prosody rate='medium'>oavgjort, <say-as interpret-as='number'>"
+        "${periodResult.goalsHomeTeam}</say-as> <say-as interpret-as='number'>"
+        "${periodResult.goalsAwayTeam}</say-as>.</prosody>";
+  }
+
+  IbyMatchIntermediateResult _getPeriodResult() {
+    final hasIntermediateResults =
+        selectedMatch.intermediateResults != null &&
+        selectedMatch.intermediateResults!.isNotEmpty;
+
     if (!hasIntermediateResults) {
-      return "<say-as interpret-as='number'>0</say-as> <say-as interpret-as='number'>0</say-as>.";
+      return IbyMatchIntermediateResult(
+        period: period,
+        goalsHomeTeam: 0,
+        goalsAwayTeam: 0,
+        matchId: 0,
+      );
     }
 
-    // Kontrollerar vem som vann eller om det blev oavgjort
-    if (selectedMatch.intermediateResults!
-            .elementAt(this.period)
-            .goalsHomeTeam >
-        selectedMatch.intermediateResults!
-            .elementAt(this.period)
-            .goalsAwayTeam) {
-      // Hemmalaget vann perioden
-      return "<say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsHomeTeam}</say-as> <say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsAwayTeam}</say-as> till ${stripTeamSuffix(selectedMatch.homeTeam)}.";
-    } else if (selectedMatch.intermediateResults!
-            .elementAt(this.period)
-            .goalsAwayTeam >
-        selectedMatch.intermediateResults!
-            .elementAt(this.period)
-            .goalsHomeTeam) {
-      // Bortalaget vann perioden
-      return "<say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsAwayTeam}</say-as> <say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsHomeTeam}</say-as> till ${stripTeamSuffix(selectedMatch.awayTeam)}.";
-    } else {
-      // Om antalet mål är lika för båda lagen
-      return "oavgjort <say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsHomeTeam}</say-as> <say-as interpret-as='number'>${selectedMatch.intermediateResults!.elementAt(this.period).goalsAwayTeam}</say-as>.";
-    }
+    return selectedMatch.intermediateResults.firstWhere(
+      (result) => result.period == period,
+      orElse:
+          () => IbyMatchIntermediateResult(
+            period: period,
+            goalsHomeTeam: 0,
+            goalsAwayTeam: 0,
+            matchId: 0,
+          ),
+    );
   }
 
-  // <hemma/bortalaget> vinner perioden med x-y. Ställningen i matchen efter x perioder är 1-0
-  // Perioden slutar 2-1 till hemmalaget. Ställnigen efter den x:a periden är x-y
-
+  @override
   Future<bool> getSay(BuildContext context) async {
-    // String say = selectedMatch.matchTeamName;
-    final String intermediateOrFinal =
-        this.period == 2 ? "Matchen slutar" : "Ställningen i matchen är";
-    String say =
-        "<mstts:express-as style='exited'>Perioden slutar ${whoWonIntermediate()}. <break time='500ms'/>${intermediateOrFinal} ${whoIsInLead()}</mstts:express-as>";
-    logger.d("SAY: $say");
+    try {
+      final announcement = formatAnnouncement();
+      logger.d("Announcement: $announcement");
 
-    FlutterToastr.show(say, context,
-        duration: FlutterToastr.lengthLong,
-        position: FlutterToastr.bottom,
-        backgroundColor: Colors.black,
-        textStyle: const TextStyle(color: Colors.white));
-    final textToSpeechService = ref.read(textToSpeechServiceProvider);
-    final ssml = await textToSpeechService.getTtsNoFile(text: say);
-    ref.read(azCharCountProvider.notifier).state += say.length;
-    SettingsBox().azCharCount += say.length;
-    // await eventAudioPlayer.setVolume(1.0);
-    await jingleManager.audioManager
-        .playBytes(audio: ssml.audio.buffer.asUint8List(), ref: ref);
+      await showToast(context, announcement);
+      await playAnnouncement(announcement);
 
-    return true;
+      return true;
+    } catch (e, stackTrace) {
+      logger.e('Failed to process period announcement', e, stackTrace);
+      await showToast(
+        context,
+        "Ett fel uppstod vid periodannonsering",
+        isError: true,
+      );
+      return false;
+    }
   }
 }

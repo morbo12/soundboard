@@ -1,20 +1,9 @@
+// ssml_goal_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_toastr/flutter_toastr.dart';
-import 'package:intl/intl.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
-import 'package:soundboard/properties.dart';
-import 'package:soundboard/utils/logger.dart';
-
-class Team {
-  static const String home = "hemmalaget";
-  static const String away = "bortalaget";
-}
+import 'class_ssml_base.dart';
 
 class GoalPhrases {
   static const List<String> reduce = [
@@ -52,85 +41,67 @@ class GoalPhrases {
   ];
 }
 
-class SpeechEmphasis {
-  static const String STRONG = 'strong';
-  static const String MODERATE = 'moderate';
-  static const String REDUCED = 'reduced';
-
-  static String wrap(String text, String level) =>
-      '<emphasis level="$level">$text</emphasis>';
-}
-
-class SsmlGoalEvent {
-  final WidgetRef ref;
+class SsmlGoalEvent extends BaseSsmlEvent {
   final IbyMatchEvent matchEvent;
-  final NumberFormat formatter = NumberFormat("00");
-  final Logger logger = const Logger('SsmlGoalEvent');
   final Random _random = Random();
 
-  SsmlGoalEvent({required this.matchEvent, required this.ref});
+  SsmlGoalEvent({required super.ref, required this.matchEvent})
+    : super(loggerName: 'SsmlGoalEvent');
 
-  String _whichTeamScored() {
-    final selectedMatch = ref.read(selectedMatchProvider);
-    return (matchEvent.matchTeamName == selectedMatch.homeTeam)
-        ? Team.home
-        : Team.away;
+  @override
+  String formatAnnouncement() {
+    return _addProsodyVariation(_formatGoalAnnouncement());
   }
 
-  String _formatAssist() {
-    if (matchEvent.playerAssistShirtNo == null) return '';
+  String _formatGoalAnnouncement() {
+    final teamName = stripTeamSuffix(matchEvent.matchTeamName);
+    final phrase = _selectGoalPhrase();
+    final scorer = _formatScorer();
+    final assist = _formatAssist();
+    final time = _formatEventTime();
 
     return '''
-      Assist av nummer 
-      <say-as interpret-as='cardinal'>${matchEvent.playerAssistShirtNo}</say-as>, 
-      <say-as interpret-as='name'>${matchEvent.playerAssistName}</say-as>
-    '''.trim();
+      $teamName $phrase 
+      <say-as interpret-as='cardinal'>${matchEvent.goalsHomeTeam}</say-as>-<say-as interpret-as='cardinal'>${matchEvent.goalsAwayTeam}</say-as>, 
+      $scorer. 
+      ${assist.isNotEmpty ? '$assist. ' : ''}
+      Tid: $time
+    '''.trim().replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  String _formatTime() {
-    final time =
-        matchEvent.minute != 0
-            ? "${formatter.format(matchEvent.minute)}:${formatter.format(matchEvent.second)}"
-            : "${formatter.format(matchEvent.second)} sekunder";
-
-    return '<say-as interpret-as="time" format="hms">$time</say-as>';
-  }
-
-  String _selectRandomPhrase({
-    required int goalsHomeTeam,
-    required int goalsAwayTeam,
-  }) {
-    final team = _whichTeamScored();
-    final totalGoals = goalsHomeTeam + goalsAwayTeam;
-    final goalDifference =
-        team == Team.home
-            ? goalsHomeTeam - goalsAwayTeam
-            : goalsAwayTeam - goalsHomeTeam;
+  String _selectGoalPhrase() {
+    final totalGoals = matchEvent.goalsHomeTeam + matchEvent.goalsAwayTeam;
+    final goalDifference = _calculateGoalDifference();
 
     if (totalGoals == 1) {
-      return GoalPhrases.firstGoal[_random.nextInt(
-        GoalPhrases.firstGoal.length,
-      )];
+      return _getRandomPhrase(GoalPhrases.firstGoal);
     }
 
     if (goalDifference > 1) {
-      return GoalPhrases.increaseMoreThanOne[_random.nextInt(
-        GoalPhrases.increaseMoreThanOne.length,
-      )];
+      return _getRandomPhrase(GoalPhrases.increaseMoreThanOne);
     } else if (goalDifference == 1) {
-      return GoalPhrases.increaseOne[_random.nextInt(
-        GoalPhrases.increaseOne.length,
-      )];
+      return _getRandomPhrase(GoalPhrases.increaseOne);
     } else if (goalDifference == 0) {
-      return GoalPhrases.equal[_random.nextInt(GoalPhrases.equal.length)];
+      return _getRandomPhrase(GoalPhrases.equal);
     } else {
-      return GoalPhrases.reduce[_random.nextInt(GoalPhrases.reduce.length)];
+      return _getRandomPhrase(GoalPhrases.reduce);
     }
   }
 
-  String _stripTeamSuffix(String teamName) {
-    return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
+  int _calculateGoalDifference() {
+    final isHomeTeam = _isHomeTeam();
+    return isHomeTeam
+        ? matchEvent.goalsHomeTeam - matchEvent.goalsAwayTeam
+        : matchEvent.goalsAwayTeam - matchEvent.goalsHomeTeam;
   }
+
+  bool _isHomeTeam() {
+    final selectedMatch = ref.read(selectedMatchProvider);
+    return matchEvent.matchTeamName == selectedMatch.homeTeam;
+  }
+
+  String _getRandomPhrase(List<String> phrases) =>
+      phrases[_random.nextInt(phrases.length)];
 
   String _formatScorer() {
     if (matchEvent.playerName == "Självmål") {
@@ -144,97 +115,54 @@ class SsmlGoalEvent {
     '''.trim();
   }
 
-  String _formatAnnouncement() {
-    final teamName = _stripTeamSuffix(matchEvent.matchTeamName);
-    final phrase = _selectRandomPhrase(
-      goalsHomeTeam: matchEvent.goalsHomeTeam,
-      goalsAwayTeam: matchEvent.goalsAwayTeam,
-    );
-    final scorer = _formatScorer();
-    final assist = _formatAssist();
-    final time = _formatTime();
+  String _formatAssist() {
+    if (matchEvent.playerAssistShirtNo == null) return '';
 
     return '''
-      $teamName $phrase 
-      <say-as interpret-as='cardinal'>${matchEvent.goalsHomeTeam}</say-as>-<say-as interpret-as='cardinal'>${matchEvent.goalsAwayTeam}</say-as>, 
-      $scorer. 
-      ${assist.isNotEmpty ? '$assist. ' : ''}
-      Tid: $time
-    '''.trim().replaceAll(RegExp(r'\s+'), ' ');
+      Assist av nummer 
+      <say-as interpret-as='cardinal'>${matchEvent.playerAssistShirtNo}</say-as>, 
+      <say-as interpret-as='name'>${matchEvent.playerAssistName}</say-as>
+    '''.trim();
   }
 
+  String _formatEventTime() {
+    return formatTime(matchEvent.minute, matchEvent.second);
+  }
+
+  String _addProsodyVariation(String text) {
+    final variations = ['excited', 'cheerful', 'friendly'];
+
+    return '''
+      <mstts:express-as style='${variations[_random.nextInt(variations.length)]}'>
+        ${wrapWithProsody(text)}
+      </mstts:express-as>
+    '''.trim();
+  }
+
+  @override
   Future<bool> getSay(BuildContext context) async {
-    // Capture the context early
-    final currentContext = context;
-
     try {
-      final announcement = _formatAnnouncement();
+      final announcement = formatAnnouncement();
       logger.d("Announcement: $announcement");
-      if (currentContext.mounted) {
-        // Add a mounted check for safety
-        await _showToast(currentContext, announcement); // Use captured context
-      }
 
-      // Generate and play audio
-      final textToSpeechService = ref.read(textToSpeechServiceProvider);
-      logger.d("Before TTS call");
-      final ssml = await textToSpeechService.getTtsNoFile(text: announcement);
-      logger.d("After TTS call");
-
-      // Update character count
-      ref.read(azCharCountProvider.notifier).state += announcement.length;
-      SettingsBox().azCharCount += announcement.length;
-      // Play audio
-      await jingleManager.audioManager.playBytes(
-        audio: ssml.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+      await showToast(context, announcement);
+      await playAnnouncement(announcement);
 
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process goal announcement', e, stackTrace);
-      // Use captured context here as well
-      if (currentContext.mounted) {
-        // Add a mounted check for safety
-        await _showToast(
-          currentContext,
-          "Ett fel uppstod vid målannonsering'",
-          isError: true,
-        );
-      }
-
+      await showToast(
+        context,
+        "Ett fel uppstod vid målannonsering",
+        isError: true,
+      );
       return false;
-    }
-  }
-
-  /// Shows a toast message with the announcement text
-  Future<void> _showToast(
-    BuildContext context,
-    String announcement, {
-    bool isError = false,
-    Color? backgroundColor,
-  }) async {
-    try {
-      if (context.mounted) {
-        // Add mounted check
-        FlutterToastr.show(
-          announcement,
-          context,
-          duration: FlutterToastr.lengthLong,
-          position: FlutterToastr.bottom,
-          backgroundColor:
-              backgroundColor ?? (isError ? Colors.red : Colors.black),
-          textStyle: const TextStyle(color: Colors.white),
-        );
-      }
-    } catch (e, stackTrace) {
-      logger.e('Failed to show toast: Error', e, stackTrace);
     }
   }
 
   // Helper method for testing SSML output
   void testAnnouncement() {
-    final announcement = _formatAnnouncement();
+    final announcement = formatAnnouncement();
     logger.d('Generated SSML announcement: $announcement');
   }
 }
