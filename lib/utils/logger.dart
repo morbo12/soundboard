@@ -29,8 +29,12 @@ class Logger {
     _log(LogLevel.error, message, error, stackTrace);
   }
 
-  void _log(LogLevel msgLevel, String message,
-      [Object? error, StackTrace? stackTrace]) {
+  void _log(
+    LogLevel msgLevel,
+    String message, [
+    Object? error,
+    StackTrace? stackTrace,
+  ]) {
     if (msgLevel.index < level.index) return;
 
     final DateTime now = DateTime.now();
