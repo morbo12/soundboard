@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_periodevent.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_divider.dart';
 import 'package:soundboard/utils/logger.dart';
