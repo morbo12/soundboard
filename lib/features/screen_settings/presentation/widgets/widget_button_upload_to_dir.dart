@@ -1,16 +1,21 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class UploadButtonToDir extends StatefulWidget {
   final String directoryName; // Updated to be more descriptive
 
-  const UploadButtonToDir(
-      {super.key, required this.directoryName}); // Updated constructor
+  const UploadButtonToDir({
+    super.key,
+    required this.directoryName,
+  }); // Updated constructor
 
   @override
   UploadButtonToDirState createState() => UploadButtonToDirState();
@@ -25,17 +30,19 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
     if (files == null) return;
 
     final Directory appSupportDir = await getApplicationCacheDirectory();
-    final Directory targetDir =
-        Directory('${appSupportDir.path}/${widget.directoryName}');
+    final Directory targetDir = Directory(
+      '${appSupportDir.path}/${widget.directoryName}',
+    );
 
     if (!await targetDir.exists()) {
       await targetDir.create(recursive: true);
     }
     for (var sourceFile in files) {
       // final File sourceFile = File(file);
-      final String targetPath = Platform.isWindows
-          ? '${targetDir.path}/${sourceFile.path.split('\\').last}'
-          : '${targetDir.path}/${sourceFile.path.split('/').last}';
+      final String targetPath =
+          Platform.isWindows
+              ? '${targetDir.path}/${sourceFile.path.split('\\').last}'
+              : '${targetDir.path}/${sourceFile.path.split('/').last}';
 
       try {
         await sourceFile.copy(targetPath);
@@ -48,6 +55,15 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
 
   @override
   Widget build(BuildContext context) {
+    final tmp_category =
+        widget.directoryName == "GenericJingles"
+            ? AudioCategory.genericJingle
+            : widget.directoryName == "GoalJingles"
+            ? AudioCategory.goalJingle
+            : widget.directoryName == "ClapJingles"
+            ? AudioCategory.clapJingle
+            : AudioCategory.awayTeamJingle;
+
     return Button(
       style: ElevatedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -81,7 +97,9 @@ class UploadButtonToDirState extends State<UploadButtonToDir> {
           },
         );
       },
-      secondaryText: 'N/A',
+      secondaryText:
+          "(${jingleManager.audioManager.audioInstances.where((element) => element.audioCategory == tmp_category).length.toString()})",
+
       primaryText:
           widget.directoryName, // Use directory name for the button text
     );
