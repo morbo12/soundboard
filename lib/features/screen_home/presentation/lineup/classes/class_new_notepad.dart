@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class GoalInputWidget extends ConsumerStatefulWidget {
   final String team;
@@ -19,6 +20,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
   String _scorer = '';
   String _assist = '';
   String _errorMessage = '';
+  final logger = const Logger('GoalInputWidget');
 
   void _processInput(String input) {
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
@@ -32,17 +34,17 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
       });
 
       // Debugging
-      print('Scorer: $_scorer');
-      print('Assist: $_assist');
+      logger.d('Scorer: $_scorer');
+      logger.d('Assist: $_assist');
 
       // Update player states if valid
       final playerState = ref.read(playerStatesProvider.notifier);
       if (_scorer.isNotEmpty) {
-        print('Setting scorer state: $_scorer');
+        logger.d('Setting scorer state: $_scorer');
         playerState.setGoalState(_scorer);
       }
       if (_assist.isNotEmpty) {
-        print('Setting assist state: $_assist');
+        logger.d('Setting assist state: $_assist');
         playerState.setAssistState(_assist);
       }
     });

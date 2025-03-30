@@ -2,13 +2,20 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:soundboard/features/jingle_manager/application/class_filesystem_helper.dart';
 import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
+import 'package:soundboard/utils/logger.dart';
+
+class JingleDirectories {
+  static const String generic = "GenericJingles";
+  static const String goal = "GoalJingles";
+  static const String clap = "ClapJingles";
+  static const String lineup = "LineupJingles";
+}
 
 class JingleManager {
   late Directory genericJinglesDir;
@@ -16,6 +23,7 @@ class JingleManager {
   late Directory clapJinglesDir;
   late Directory lineupJinglesDir;
   List<AudioFile> audioFiles = [];
+  final Logger logger = const Logger('JingleManager');
 
   AudioManager audioManager = AudioManager();
   final FileSystemHelper fileSystemHelper = FileSystemHelper();
@@ -27,22 +35,34 @@ class JingleManager {
     required this.showMessageCallback,
     // required this.showErrorMessageCallback
   }) {
-    if (kDebugMode) {
-      print("INIT: AudioSources 2");
-    }
+    logger.d("INIT: AudioSources 2");
   }
 
   Future<void> initialize() async {
-    if (kDebugMode) {
-      print("Initializing DIRS");
-    }
+    logger.d("Initializing DIRS");
+
     try {
-      genericJinglesDir =
-          await fileSystemHelper.createDirectory("GenericJingles");
-      goalJinglesDir = await fileSystemHelper.createDirectory("GoalJingles");
-      clapJinglesDir = await fileSystemHelper.createDirectory("ClapJingles");
-      lineupJinglesDir =
-          await fileSystemHelper.createDirectory("LineupJingles");
+      await _initializeDirectories();
+      await _loadAudioConfigurations();
+      await initializeJingleFilesDirs();
+
+      // Successfully initialized, show a success toast message.
+      showMessageCallback(
+        type: MsgType.normal,
+        message: "Jingles initialized successfully!",
+      );
+    } catch (e) {
+      // Handle directory creation or file initialization errors.
+      logger.d(e.toString());
+      showMessageCallback(
+        type: MsgType.error,
+        message: "Error: Failed to initialize directories and files.",
+      );
+    }
+  }
+
+  Future<void> _loadAudioConfigurations() async {
+    try {
       List<Map<String, dynamic>> audioFileConfigurations =
           await AudioConfigurations.getAudioFileConfigurations();
       for (var config in audioFileConfigurations) {
@@ -59,23 +79,25 @@ class JingleManager {
         // For instance, add them to your AudioManager
         audioManager.addInstance(audioFile);
       }
-      initializeJingleFilesDirs();
-      // initializeSoundboardFiles(context)
-
-      // Successfully initialized, show a success toast message.
-      showMessageCallback(
-        type: MsgType.normal,
-        message: "Jingles initialized successfully!",
-      );
     } catch (e) {
-      // Handle directory creation or file initialization errors.
-      if (kDebugMode) {
-        print(e);
-      }
+      logger.e("Error loading audio configurations: $e");
       showMessageCallback(
-        type: MsgType.error,
-        message: "Error: Failed to initialize directories and files.",
-      );
+          type: MsgType.error, message: "Error: Failed to load audio files");
+    }
+  }
+
+  Future<void> _initializeDirectories() async {
+    try {
+      genericJinglesDir =
+          await fileSystemHelper.createDirectory("GenericJingles");
+      goalJinglesDir = await fileSystemHelper.createDirectory("GoalJingles");
+      clapJinglesDir = await fileSystemHelper.createDirectory("ClapJingles");
+      lineupJinglesDir =
+          await fileSystemHelper.createDirectory("LineupJingles");
+    } catch (e) {
+      logger.e("Error initializing directories: $e");
+      showMessageCallback(
+          type: MsgType.error, message: "Error: Failed to create directories");
     }
   }
 
@@ -108,9 +130,7 @@ class JingleManager {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Error initializing Jingle files: $e");
-      }
+      logger.d("Error initializing Jingle files: $e");
       // Consider handling or reporting the error as appropriate.
     }
   }

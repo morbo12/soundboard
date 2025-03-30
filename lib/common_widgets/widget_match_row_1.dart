@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:easy_localization/easy_localization.dart';
+// import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 
 class MatchRow1 extends StatelessWidget {
@@ -35,8 +36,7 @@ class MatchRow1 extends StatelessWidget {
                 child: AutoSizeText(
                   textAlign: TextAlign.center,
                   maxLines: 1,
-                  DateFormat.yMd(context.locale.toString())
-                      .format(DateTime.parse(match.matchDateTime)),
+                  DateFormat.yMd().format(DateTime.parse(match.matchDateTime)),
                   // style: styleTitle,
                 ),
               ),
@@ -47,8 +47,7 @@ class MatchRow1 extends StatelessWidget {
                 child: AutoSizeText(
                   textAlign: TextAlign.center,
                   maxLines: 1,
-                  DateFormat.Hm('sv_SE')
-                      .format(DateTime.parse(match.matchDateTime)),
+                  DateFormat.Hm().format(DateTime.parse(match.matchDateTime)),
                   // style: styleTitle,
                 ),
               ),

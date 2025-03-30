@@ -21,7 +21,7 @@ class VolumeSection extends StatelessWidget {
             width: 0.0,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          ColumnVolume(),
+          const ColumnVolume(),
         ],
       ),
     );

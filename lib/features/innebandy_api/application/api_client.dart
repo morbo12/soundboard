@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
+import 'package:soundboard/utils/logger.dart';
 import 'dart:convert';
 import 'api_constants.dart';
 import 'api_config.dart';
@@ -10,13 +11,14 @@ import 'access_token_data.dart';
 class APIClient {
   late Dio _dio;
   final Ref _ref;
+  final Logger logger = const Logger('APIClient');
 
   APIClient(this._ref) {
     _dio = Dio(BaseOptions(
       baseUrl: APIConstants.baseUrl,
-      connectTimeout: Duration(milliseconds: APIConfig.connectionTimeout),
-      receiveTimeout: Duration(milliseconds: APIConfig.receiveTimeout),
-      sendTimeout: Duration(milliseconds: APIConfig.sendTimeout),
+      connectTimeout: const Duration(milliseconds: APIConfig.connectionTimeout),
+      receiveTimeout: const Duration(milliseconds: APIConfig.receiveTimeout),
+      sendTimeout: const Duration(milliseconds: APIConfig.sendTimeout),
     ));
 
     _dio.interceptors.add(LogInterceptor(responseBody: true));
@@ -28,19 +30,19 @@ class APIClient {
     if (cachedToken != null &&
         DateTime.now()
             .isBefore(DateTime.parse(cachedToken.accessTokenExpiration))) {
-      APIConfig.log(
+      logger.d(
           "Token is NOT expired: NOW: ${DateTime.now()} - Token: ${cachedToken.accessTokenExpiration}");
       return cachedToken;
     }
 
-    APIConfig.log("Token is expired or null. Fetching new token.");
+    logger.d("Token is expired or null. Fetching new token.");
     final response = await http
         .get(Uri.parse('${APIConstants.baseUrl}${APIConstants.startKit}'));
 
     if (response.statusCode == 200) {
       final newToken = AccessTokenData.fromJson(json.decode(response.body));
       _ref.read(accessTokenProvider.notifier).state = newToken;
-      APIConfig.log('New access token: ${newToken.accessToken}');
+      logger.d('New access token: ${newToken.accessToken}');
       return newToken;
     } else {
       throw Exception(

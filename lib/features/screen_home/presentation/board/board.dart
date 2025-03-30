@@ -31,15 +31,17 @@ class BoardSection extends ConsumerWidget {
             child: Column(
               children: [
                 SizedBox(
-                  width: ScreenSizeUtil.getWidth(context,
-                      maxWidth: ScreenSizeUtil.getSoundboardSize(context)),
+                  width: ScreenSizeUtil.getWidth(
+                    context,
+                    maxWidth: ScreenSizeUtil.getSoundboardSize(context),
+                  ),
                   child: MatchButton2(match: selectedMatch, readonly: true),
                 ),
                 const PlayerProgressBar(),
                 const Gap(10),
                 const StopGoalRow(),
                 const Gap(10),
-                RowPlayerPresentation(),
+                const RowPlayerPresentation(),
                 const Gap(10),
                 const Row1Ratata(),
                 const Gap(10),

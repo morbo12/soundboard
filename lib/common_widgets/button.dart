@@ -34,7 +34,7 @@ class ButtonState extends State<Button> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       // fixedSize: const Size.fromHeight(100),
       minimumSize: const Size(0, 100),
-      textStyle: TextStyle(fontSize: 24),
+      textStyle: const TextStyle(fontSize: 24),
     );
 
     ButtonStyle selectedButtonStyle = normalbuttonStyle.copyWith(

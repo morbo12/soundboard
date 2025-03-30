@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_periodevent.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_divider.dart';
+import 'package:soundboard/utils/logger.dart';
+import 'package:collection/collection.dart';
 
 class PeriodScores extends ConsumerWidget {
   const PeriodScores({Key? key}) : super(key: key);
@@ -11,7 +13,6 @@ class PeriodScores extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMatch = ref.watch(selectedMatchProvider);
-
     return Row(
       children: [
         Expanded(
@@ -43,51 +44,74 @@ class PeriodScores extends ConsumerWidget {
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 0, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          1,
+          selectedMatch,
+          key: const Key('Period1'),
+        ),
         const VerticalDividerWidget(
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 1, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          2,
+          selectedMatch,
+          key: const Key('Period2'),
+        ),
         const VerticalDividerWidget(
           useThemeColor: true,
           padding: EdgeInsets.symmetric(horizontal: 8.0),
         ),
-        _buildPeriodButton(context, ref, 2, selectedMatch),
+        _buildPeriodButton(
+          context,
+          ref,
+          3,
+          selectedMatch,
+          key: const Key('Period3'),
+        ),
       ],
     );
   }
 
   Widget _buildPeriodButton(
-      BuildContext context, WidgetRef ref, int period, IbyMatch match) {
-    // Check if events exist and have the required period data
-    final hasEvents = match.events != null &&
-        match.events!.isNotEmpty &&
-        match.events!.any((test) => test.matchEventType == "Periodstart") &&
-        match.events!
-            .any((element) => element.periodName == "Period ${period + 1}");
-
+    BuildContext context,
+    WidgetRef ref,
+    int period,
+    IbyMatch match, {
+    required Key key,
+  }) {
     // Check if intermediate results exist and have data for this period
-    final hasIntermediateResults = match.intermediateResults != null &&
-        match.intermediateResults!.length > period;
+    final hasIntermediateResults =
+        match.intermediateResults != null &&
+        match.intermediateResults!.isNotEmpty;
+    const Logger logger = Logger('_buildPeriodButton');
 
-    // Only enable the button if both conditions are met
-    final buttonEnabled = hasEvents && hasIntermediateResults;
+    String getPeriodScore(int _period) {
+      try {
+        if (hasIntermediateResults && match.intermediateResults != null) {
+          final periodResult = match.intermediateResults!.firstWhereOrNull(
+            ((result) => result.period == _period),
+          );
 
-    // Safely get the period score text
-    String getPeriodScore() {
-      if (hasIntermediateResults) {
-        final periodResult = match.intermediateResults![period];
-        return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+          if (periodResult != null) {
+            return "${periodResult.goalsHomeTeam} - ${periodResult.goalsAwayTeam}";
+          }
+        }
+        return "0 - 0";
+      } catch (e) {
+        logger.d('Error getting period score: $e');
+        return "- - -"; // Return a fallback format indicating error
       }
-      return "0 - 0";
     }
 
     return Expanded(
       child: TextButton(
-        onPressed: buttonEnabled
-            ? () => SsmlPeriodEvent(period: period, ref: ref).getSay(context)
-            : null,
+        onPressed:
+            () => SsmlPeriodEvent(period: period, ref: ref).getSay(context),
         child: Column(
           children: [
             Text(
@@ -97,7 +121,7 @@ class PeriodScores extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-              "P ${period + 1}",
+              "P ${period}",
             ),
             Text(
               textAlign: TextAlign.center,
@@ -106,7 +130,8 @@ class PeriodScores extends ConsumerWidget {
                 fontStyle: FontStyle.italic,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-              getPeriodScore(),
+
+              getPeriodScore(period),
             ),
           ],
         ),

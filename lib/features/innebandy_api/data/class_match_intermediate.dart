@@ -19,4 +19,20 @@ class IbyMatchIntermediateResult {
       goalsAwayTeam: json['GoalsAwayTeam'],
     );
   }
+
+  // Add this method
+  @override
+  String toString() {
+    return '{matchId: $matchId, period: $period, goalsHomeTeam: $goalsHomeTeam, goalsAwayTeam: $goalsAwayTeam}';
+  }
+
+  // Optionally, you can also add toJson method
+  Map<String, dynamic> toJson() {
+    return {
+      'matchId': matchId,
+      'period': period,
+      'goalsHomeTeam': goalsHomeTeam,
+      'goalsAwayTeam': goalsAwayTeam,
+    };
+  }
 }

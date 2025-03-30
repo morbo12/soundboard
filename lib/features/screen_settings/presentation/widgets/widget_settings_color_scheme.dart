@@ -59,9 +59,6 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
                   final theme = themeList[index];
                   final isSelected = theme == selectedTheme;
 
-                  // Get the actual color scheme to show a preview
-                  final themeScheme = AppThemes.getSchemeFromName(theme);
-
                   return ListTile(
                     title: Text(theme),
                     selected: isSelected,

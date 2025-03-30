@@ -1,11 +1,10 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class SettingsSpotify extends StatefulWidget {
   const SettingsSpotify({
@@ -20,6 +19,8 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
   Timer? _debounce;
   final ctrlSpotifyUrl = TextEditingController();
   final ctrlSpotifyUri = TextEditingController();
+  final Logger logger = const Logger('SettingsSpotify');
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -33,9 +34,7 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
     ctrlSpotifyUrl.text = SettingsBox().spotifyUrl;
     ctrlSpotifyUri.text = SettingsBox().spotifyUri;
 
-    if (kDebugMode) {
-      print(SettingsBox().spotifyUrl);
-    }
+    logger.d("SpotifyURL: ${SettingsBox().spotifyUrl}");
 
     return Row(
       children: [

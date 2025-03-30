@@ -166,8 +166,9 @@ class LineupData extends ConsumerWidget {
                     backgroundColor: getButtonColor(),
                     foregroundColor: getTextColor(),
                     // padding: EdgeInsets.zero,
-                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    minimumSize: Size(0, 30),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    minimumSize: const Size(0, 30),
                   ),
                   onPressed: () {
                     ref
@@ -192,7 +193,7 @@ class LineupData extends ConsumerWidget {
                       ),
                       AutoSizeText(
                         getButtonStateText(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.lime,
                           fontSize: _smallFontSize,
                           fontWeight: FontWeight.bold,

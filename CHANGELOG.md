@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.3.15] - 2025-03-30
+
+### Changed
+- Dropdown menus update for better visibility
+- Update 'Delete cache' logic/visual
+- SonarQube scanning
+
+### Added
+- update debug code to a logger function
+
+### Fixes
+- Lots of cleanup of unused code
+- added unit tests
+- add Const where appropriate
+- Say period event if period score is 0-0
+
 
 ## [0.3.14] - 2025-03-01
 ### Fixed

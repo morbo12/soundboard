@@ -27,7 +27,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               settingsHeaderText("Färgschema"),
               settingsHeader2Text(
                   "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown"),
-              MyColorScheme(),
+              const MyColorScheme(),
 
               const Gap(10),
               // settingsHeaderText("Default mainvolym"),
@@ -41,7 +41,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               settingsHeaderText("Kanalens volym för bakgrund"),
               // settingsHeader2Text("Sätt volymen för bakgrundsmusik"),
               const Gap(2),
-              BackgroundVolume(),
+              const BackgroundVolume(),
               const Gap(5),
 
               settingsHeaderText("Spotify Configuration"),

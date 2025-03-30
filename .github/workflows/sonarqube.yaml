@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.27.3'
+  FLUTTER_VERSION: '3.29.1'
   JAVA_VERSION: '21'
 
 jobs:

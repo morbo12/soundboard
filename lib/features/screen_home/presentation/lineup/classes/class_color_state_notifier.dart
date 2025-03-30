@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/utils/logger.dart';
 
 enum PlayerState { normal, goal, assist, penalty }
 
@@ -10,6 +11,7 @@ final playerStatesProvider =
 
 class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
   PlayerStatesNotifier() : super({});
+  final Logger logger = const Logger('PlayerStatesNotifier');
 
 // New read method
   PlayerState readState(String playerId) {
@@ -21,7 +23,7 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
 
     return allStates.entries
         .firstWhere((entry) => entry.value == PlayerState.goal,
-            orElse: () => MapEntry('', PlayerState.normal))
+            orElse: () => const MapEntry('', PlayerState.normal))
         .key;
   }
 
@@ -30,7 +32,7 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
 
     return allStates.entries
         .firstWhere((entry) => entry.value == PlayerState.assist,
-            orElse: () => MapEntry('', PlayerState.normal))
+            orElse: () => const MapEntry('', PlayerState.normal))
         .key;
   }
 
@@ -58,7 +60,7 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     updatedState[playerId] = PlayerState.assist;
 
     state = updatedState;
-    print("Assist state: ${state[playerId]}");
+    logger.d("Assist state: ${state[playerId]}");
   }
 
   void setPenaltyState(String playerId) {

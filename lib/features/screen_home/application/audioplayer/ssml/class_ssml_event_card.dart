@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
 import 'class_ssml_goalevent.dart';
 import 'class_ssml_penaltyevent.dart';
@@ -23,41 +22,7 @@ class EventCardSsml {
       case MatchEventType.straffmal:
       case MatchEventType.mal:
         SsmlGoalEvent(ref: ref, matchEvent: data).getSay(context);
-      // case MatchEventType.lineup:
-      //   // SsmlLineupEvent(ref: ref, matchEvent: data).getSay(context);
-      //   ref.read(lineupSsmlProvider.notifier).state =
-      //       selectedMatch.generateSsml();
-      // case MatchEventType.periodslut:
-      //   SsmlPeriodEvent(ref: ref, matchEvent: data).getSay(context);
     }
     return string;
-    // @override
-    // Widget build(BuildContext context) {
-    //   switch (data.matchEventTypeID) {
-    //     case MatchEventType.mal:
-    //       print("SAY: ${SsmlGoalEvents(matchEvent: data).getRandomSay()}");
-
-    //     case MatchEventType.utvisning:
-    //       FlutterToastr.show(SsmlPenaltyEvent(matchEvent: data).getSay(), context,
-    //           duration: FlutterToastr.lengthLong,
-    //           position: FlutterToastr.bottom,
-    //           backgroundColor: Colors.black,
-    //           textStyle: const TextStyle(color: Colors.white));
-
-    //     // default:
-    //     // return const Text("");
-    //   }
-    //   return const Text("");
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   String text = SsmlGoalEvents(matchEvent: data).getRandomSay();
-  //   FlutterToastr.show("${text}", context,
-  //       duration: FlutterToastr.lengthLong,
-  //       position: FlutterToastr.bottom,
-  //       backgroundColor: Colors.black,
-  //       textStyle: const TextStyle(color: Colors.white));
-  //   throw UnimplementedError();
-  // }
 }

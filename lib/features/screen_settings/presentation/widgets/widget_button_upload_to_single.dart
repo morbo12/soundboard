@@ -1,11 +1,10 @@
 import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
+import 'package:soundboard/utils/logger.dart';
 
 class UploadButtonToSingle extends StatefulWidget {
   final AudioFile audiofile; // Updated to be more descriptive
@@ -20,6 +19,7 @@ class UploadButtonToSingle extends StatefulWidget {
 class UploadButtonToSingleState extends State<UploadButtonToSingle> {
   File? file;
   final ValueNotifier<String?> selectedPath = ValueNotifier(null);
+  final Logger logger = const Logger('UploadButtonToSingle');
 
   Future<void> _copyFileToDestination(String? filePath) async {
     if (filePath == null) return;
@@ -28,13 +28,9 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
 
     try {
       await sourceFile.copy(widget.audiofile.filePath);
-      if (kDebugMode) {
-        print("File copied to $widget.audiofile.filePath");
-      }
+      logger.d("File copied to $widget.audiofile.filePath");
     } catch (e) {
-      if (kDebugMode) {
-        print("Failed to copy file: $e");
-      }
+      logger.d("Failed to copy file: $e");
     }
   }
 

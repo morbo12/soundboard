@@ -39,9 +39,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }
             return Row(
               children: [
-                BoardSection(width: 400),
+                const BoardSection(width: 400),
                 if (Platform.isWindows) ...[
-                  VolumeSection(
+                  const VolumeSection(
                     width: 100,
                   ),
                   EventsSection(
@@ -53,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 2.0,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  LineupSection(), // 502 = 400 + 100 + 2
+                  const LineupSection(), // 502 = 400 + 100 + 2
                 ],
               ],
             );

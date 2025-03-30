@@ -10,46 +10,9 @@ class Row2lineup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // lineupFile = ref.watch(lineupFileProvider);
-    // final lineupSsml = ref.watch(lineupSsmlProvider);
-    // final selectedMatch = ref.read(selectedMatchProvider);
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Button to play the lineup audio
-        // Button(
-        //   onTap: () async {
-        //     if (lineupSsml.isNotEmpty) {
-        //       if (kDebugMode) {
-        //         print("Lineup String Exists");
-        //       }
-        //       final textToSpeechService = ref.read(textToSpeechServiceProvider);
-        //       final speech = await textToSpeechService.getTtsNoFile(
-        //           text: lineupSsml.toString());
-        //       ref.read(azCharCountProvider.notifier).state += lineupSsml.length;
-
-        //       SettingsBox().azCharCount += lineupSsml
-        //           .length; // TODO: Should check if getTts was successful
-        //       await jingleManager.audioManager.playBytes(
-        //           audio: speech.audio.buffer.asUint8List(), ref: ref);
-        //     } else {
-        //       if (kDebugMode) {
-        //         print("Generating Linup String");
-        //       }
-        //       ref.read(lineupSsmlProvider.notifier).state =
-        //           selectedMatch.generateSsml();
-        //     }
-        //     // print("Lineup SSML: $lineupSsml");
-        //     // playLineup(lineupFile);
-        //   },
-        //   primaryText: lineupSsml.isNotEmpty ? 'Play Lineup' : 'Generate\nSSML',
-        //   secondaryText: lineupSsml.isNotEmpty ? '(2min)' : 'N/A',
-        //   noLines: lineupSsml.isNotEmpty ? 2 : 1,
-        //   isDisabled: false,
-        //   isSelected: true,
-        // ),
-
         Button(
           isSelected: true,
           noLines: 2,
