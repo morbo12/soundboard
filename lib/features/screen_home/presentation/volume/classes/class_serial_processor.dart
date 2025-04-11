@@ -50,7 +50,7 @@ class SerialProcessor {
         }
       },
       onError: (error) {
-        print('Error: $error');
+        logger.e('Error: $error');
       },
       onDone: () {
         // Handle any remaining data in buffer if needed

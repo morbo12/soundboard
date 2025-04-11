@@ -52,7 +52,7 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
                   fontSize: 12,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                  ).colorScheme.onPrimaryContainer.withValues(alpha: 204),
                 ),
               ),
             ],
@@ -354,10 +354,10 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
               // Slider 0 Process Name
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Slider 0 Process Name',
                   hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: const Icon(Icons.slideshow),
+                  prefixIcon: Icon(Icons.slideshow),
                 ),
                 controller: TextEditingController(
                   text: SettingsBox().slider0Mapping,
@@ -370,10 +370,10 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
               // Slider 1 Process Name
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Slider 1 Process Name',
                   hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: const Icon(Icons.slideshow),
+                  prefixIcon: Icon(Icons.slideshow),
                 ),
                 controller: TextEditingController(
                   text: SettingsBox().slider1Mapping,
@@ -386,10 +386,10 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
               // Slider 2 Process Name
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Slider 2 Process Name',
                   hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: const Icon(Icons.slideshow),
+                  prefixIcon: Icon(Icons.slideshow),
                 ),
                 controller: TextEditingController(
                   text: SettingsBox().slider2Mapping,
@@ -402,10 +402,10 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
               // Slider 3 Process Name
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Slider 3 Process Name',
                   hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: const Icon(Icons.slideshow),
+                  prefixIcon: Icon(Icons.slideshow),
                 ),
                 controller: TextEditingController(
                   text: SettingsBox().slider3Mapping,

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +13,6 @@ import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:win32audio/win32audio.dart';
-import 'dart:convert';
 
 // Global key to access the ColumnVolume widget
 final GlobalKey<_ColumnVolumeState> columnVolumeKey =
@@ -123,13 +121,14 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
     });
 
     // Single timer for all refreshes - reduced frequency to 3 seconds
-    _refreshTimer = Timer.periodic(Duration(seconds: _refreshIntervalSeconds), (
-      timer,
-    ) {
-      if (mounted) {
-        syncSystemVolume();
-      }
-    });
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: _refreshIntervalSeconds),
+      (timer) {
+        if (mounted) {
+          syncSystemVolume();
+        }
+      },
+    );
 
     // Initial fetch
     syncSystemVolume();
@@ -198,7 +197,7 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
 
     _isSerialReconnecting = true;
     _serialReconnectTimer = Timer.periodic(
-      Duration(seconds: _serialReconnectIntervalSeconds),
+      const Duration(seconds: _serialReconnectIntervalSeconds),
       (timer) {
         if (!_isSerialConnected && mounted) {
           logger.d('Attempting to reconnect to serial port...');
@@ -299,7 +298,7 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
 
     // Create a new timer
     _debounceTimers[id] = Timer(
-      Duration(milliseconds: _volumeDebounceMilliseconds),
+      const Duration(milliseconds: _volumeDebounceMilliseconds),
       () {
         // Only proceed if the component is still mounted
         if (mounted) {
@@ -657,9 +656,9 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
               ),
 
               if (isConnected)
-                Text('Connected to serial port')
+                const Text('Connected to serial port')
               else
-                Text('Not connected'),
+                const Text('Not connected'),
             ],
           ),
         );

@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/utils/logger.dart';
 
