@@ -116,11 +116,14 @@ class _PlayerState extends ConsumerState<Player> {
   }
 
   void showMessage({required String message, required MsgType type}) {
-    FlutterToastr.show(message, context,
-        duration: FlutterToastr.lengthLong,
-        position: FlutterToastr.bottom,
-        backgroundColor: type == MsgType.error ? Colors.red : Colors.green,
-        textStyle: const TextStyle(color: Colors.white));
+    FlutterToastr.show(
+      message,
+      context,
+      duration: FlutterToastr.lengthLong,
+      position: FlutterToastr.bottom,
+      backgroundColor: type == MsgType.error ? Colors.red : Colors.green,
+      textStyle: const TextStyle(color: Colors.white),
+    );
   }
 
   Widget _buildMainContent(int currentIndex) {
@@ -159,11 +162,7 @@ class _PlayerState extends ConsumerState<Player> {
     final selectedIndex = ref.watch(selectedIndexProvider);
     if (_isLoading) {
       return const MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
     // If intro is not completed, show intro screens
@@ -185,53 +184,61 @@ class _PlayerState extends ConsumerState<Player> {
       );
     }
     return Scaffold(
-      body: isJingleManagerInitialized
-          ? _buildMainContent(selectedIndex)
-          : const Center(child: CircularProgressIndicator()),
+      body:
+          isJingleManagerInitialized
+              ? _buildMainContent(selectedIndex)
+              : const Center(child: CircularProgressIndicator()),
       appBar: AppBar(
-          toolbarHeight: DefaultConstants().appBarHeight,
-          elevation: 2,
-          title: Text(
-            'Game Soundboard ${_packageInfo.version}',
-            style: const TextStyle(fontSize: 12),
-          )),
+        toolbarHeight: DefaultConstants().appBarHeight,
+        elevation: 2,
+        title: Text(
+          'Game Soundboard ${_packageInfo.version}',
+          style: const TextStyle(fontSize: 12),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
-          selectedFontSize: 10,
-          unselectedFontSize: 10,
-          elevation: 2,
-          currentIndex: selectedIndex,
-          onTap: (index) {
-            if (index == 4) {
-              launchSpotify();
-            } else {
-              ref.read(selectedIndexProvider.notifier).state = index;
-            }
-          },
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white54,
-          type: BottomNavigationBarType.shifting,
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(FluentIcons.home_12_filled),
-                activeIcon: Icon(FluentIcons.home_12_filled),
-                label: "Home"),
-            BottomNavigationBarItem(
-                icon: Icon(FluentIcons.settings_28_regular),
-                activeIcon: Icon(FluentIcons.settings_16_filled),
-                label: "Match"),
-            BottomNavigationBarItem(
-                icon: Icon(FluentIcons.settings_16_regular),
-                activeIcon: Icon(FluentIcons.settings_16_filled),
-                label: "Settings"),
-            BottomNavigationBarItem(
-                icon: Icon(FluentIcons.settings_16_regular),
-                activeIcon: Icon(FluentIcons.settings_16_filled),
-                label: "TTS Settings"),
-            BottomNavigationBarItem(
-                icon: Icon(FluentIcons.music_note_2_16_regular),
-                activeIcon: Icon(FluentIcons.music_note_2_16_filled),
-                label: "Spotify"),
-          ]),
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
+        elevation: 2,
+        currentIndex: selectedIndex,
+        onTap: (index) {
+          if (index == 4) {
+            launchSpotify();
+          } else {
+            ref.read(selectedIndexProvider.notifier).state = index;
+          }
+        },
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white54,
+        type: BottomNavigationBarType.shifting,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(FluentIcons.home_12_filled),
+            activeIcon: Icon(FluentIcons.home_12_filled),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FluentIcons.settings_28_regular),
+            activeIcon: Icon(FluentIcons.settings_16_filled),
+            label: "Match",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FluentIcons.settings_16_regular),
+            activeIcon: Icon(FluentIcons.settings_16_filled),
+            label: "Settings",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FluentIcons.settings_16_regular),
+            activeIcon: Icon(FluentIcons.settings_16_filled),
+            label: "TTS Settings",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(FluentIcons.music_note_2_16_regular),
+            activeIcon: Icon(FluentIcons.music_note_2_16_filled),
+            label: "Spotify",
+          ),
+        ],
+      ),
     );
   }
 }

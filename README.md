@@ -18,11 +18,34 @@ Features on both platforms
 Features on Windows platform
 - Lineups
 - Live Events
+- Hardware volume mixer support (Deej)
 
 ## Limitations
 - No plans exists to build for any Apple device.
 - TTS requires an Azure Speech Service, which you need to provide yourself
 - No jingles included
+
+## Hardware Volume Mixer (Deej)
+Soundboard now supports hardware volume mixers following the Deej protocol. This allows you to control 
+various volume levels using physical sliders. 
+
+### Setup
+1. Build a Deej mixer following instructions at [Deej GitHub repository](https://github.com/omriharel/deej)
+2. Connect your Arduino to your computer via USB
+3. In Soundboard, go to Settings and configure your serial port settings:
+   - Select the correct COM port
+   - Set baud rate to match your Arduino sketch (default: 9600)
+   - Configure other serial port parameters if needed
+   - Enable "Auto Connect" to automatically connect at startup
+
+### Slider Mapping
+The volume sliders are mapped as follows:
+- Slider 1: Main system volume
+- Slider 2: Spotify volume
+- Slider 3: Soundboard volume
+- Slider 4: Jingle Palette volume
+- Slider 5: Channel 1 volume
+- Slider 6: Channel 2 volume
 
 ## Pre-req
 Windows 10 needs a VC Redist update to run this program. 
