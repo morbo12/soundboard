@@ -6,9 +6,7 @@ import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsRegion extends ConsumerStatefulWidget {
-  const SettingsTtsRegion({
-    super.key,
-  });
+  const SettingsTtsRegion({super.key});
 
   @override
   ConsumerState<SettingsTtsRegion> createState() => _SettingsTtsRegionState();
@@ -27,11 +25,12 @@ class _SettingsTtsRegionState extends ConsumerState<SettingsTtsRegion> {
       children: [
         Expanded(
           child: ElevatedButton(
-              onPressed: () => _showRegionPicker(context, ref, myRegionId),
-              child: AutoSizeText(
-                AzureRegionManager().getNameById(myRegionId),
-                textAlign: TextAlign.center,
-              )),
+            onPressed: () => _showRegionPicker(context, ref, myRegionId),
+            child: AutoSizeText(
+              AzureRegionManager().getNameById(myRegionId),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ],
     );
@@ -87,8 +86,9 @@ class _SettingsTtsRegionState extends ConsumerState<SettingsTtsRegion> {
                           actions: <Widget>[
                             TextButton(
                               onPressed: () {
-                                ScaffoldMessenger.of(context)
-                                    .hideCurrentMaterialBanner();
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentMaterialBanner();
                               },
                               child: const Text("OK"),
                             ),
