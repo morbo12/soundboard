@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'api_client.dart';
 import 'api_constants.dart';
 
@@ -12,6 +14,7 @@ class SeasonService {
       var data = response.data.where((val) => val["IsCurrentSeason"] == true);
       // dev.log('access token is -> $data');
       final seasonID = data.first["SeasonID"];
+      print('seasonID is -> $seasonID');
       return seasonID;
 
       // var data = response.data;
