@@ -50,13 +50,11 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
   void _getMatches() async {
     final state = ref.read(matchSetupStateProvider);
     final service = ref.read(matchSetupServiceProvider);
+    final notifier = ref.read(matchSetupStateProvider.notifier);
 
     try {
       // Set loading state
-      ref.read(matchSetupStateProvider.notifier).state = state.copyWith(
-        isLoading: true,
-        error: null,
-      );
+      notifier.setLoading(true);
 
       // Fetch matches
       final matches = await service.getMatches(
@@ -66,16 +64,10 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
 
       // Update state with matches
       ref.read(matchesProvider.notifier).state = matches;
-      ref.read(matchSetupStateProvider.notifier).state = state.copyWith(
-        isLoading: false,
-        error: null,
-      );
+      notifier.setLoading(false);
     } catch (e) {
       // Handle error
-      ref.read(matchSetupStateProvider.notifier).state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      notifier.setError(e.toString());
     }
   }
 
