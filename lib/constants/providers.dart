@@ -4,13 +4,15 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_mainvolume.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/data/class_system_mainvolume.dart';
 import 'package:soundboard/properties.dart';
 
 final lineupFileProvider = StateProvider<String>((ref) {
   return "";
 });
-final azCharCountProvider =
-    StateProvider<int>((ref) => SettingsBox().azCharCount);
+final azCharCountProvider = StateProvider<int>(
+  (ref) => SettingsBox().azCharCount,
+);
 
 final maxdurationProviderC1 = StateProvider<Duration>((ref) {
   return const Duration(seconds: 0);
@@ -36,26 +38,52 @@ final c2StateProvider = StateProvider<PlayerState>((ref) {
   return PlayerState.stopped;
 });
 
+final mainStateProvider = StateProvider<PlayerState>((ref) {
+  return PlayerState.stopped;
+});
+
+final sbStateProvider = StateProvider<PlayerState>((ref) {
+  return PlayerState.stopped;
+});
+
+final jpStateProvider = StateProvider<PlayerState>((ref) {
+  return PlayerState.stopped;
+});
+
+final spoStateProvider = StateProvider<PlayerState>((ref) {
+  return PlayerState.stopped;
+});
+
 final voicesProvider = StateProvider<VoicesSuccessUniversal>((ref) {
   return VoicesSuccessUniversal(voices: [], code: 200, reason: "N/A");
 });
 
-final mainVolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
-  (ref) => VolumeNotifier(
-    Volume(vol: SettingsBox().mainVolume),
-  ),
-);
+final mainVolumeProvider = StateNotifierProvider<
+  SystemVolumeNotifier,
+  SystemVolume
+>((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+
+final sbVolumeProvider = StateNotifierProvider<
+  SystemVolumeNotifier,
+  SystemVolume
+>((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+
+final spoVolumeProvider = StateNotifierProvider<
+  SystemVolumeNotifier,
+  SystemVolume
+>((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+
+final jpVolumeProvider = StateNotifierProvider<
+  SystemVolumeNotifier,
+  SystemVolume
+>((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
 
 final c1VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
-  (ref) => VolumeNotifier(
-    Volume(vol: SettingsBox().c1InitialVolume),
-  ),
+  (ref) => VolumeNotifier(Volume(vol: SettingsBox().c1InitialVolume)),
 );
 
 final c2VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
-  (ref) => VolumeNotifier(
-    Volume(vol: SettingsBox().c2InitialVolume),
-  ),
+  (ref) => VolumeNotifier(Volume(vol: SettingsBox().c2InitialVolume)),
 );
 
 final c1ColorProvider = StateProvider<Color>((ref) {

@@ -5,10 +5,7 @@ import 'package:soundboard/features/screen_home/presentation/volume/classes/clas
 class VolumeSection extends StatelessWidget {
   final double width;
 
-  const VolumeSection({
-    super.key,
-    required this.width,
-  });
+  const VolumeSection({super.key, required this.width});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +18,10 @@ class VolumeSection extends StatelessWidget {
             width: 0.0,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          const ColumnVolume(),
+          const Expanded(
+            // Add this to provide a specific width constraint
+            child: ColumnVolume(),
+          ),
         ],
       ),
     );

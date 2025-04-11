@@ -4,8 +4,10 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
+  flutter_libserialport
   flutter_volume_controller
   url_launcher_windows
+  win32audio
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

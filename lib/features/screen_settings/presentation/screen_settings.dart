@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_serial_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_spotify.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
@@ -26,7 +27,8 @@ class SettingsScreenState extends State<SettingsScreen> {
             children: [
               settingsHeaderText("Färgschema"),
               settingsHeader2Text(
-                  "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown"),
+                "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown",
+              ),
               const MyColorScheme(),
 
               const Gap(10),
@@ -44,6 +46,14 @@ class SettingsScreenState extends State<SettingsScreen> {
               const BackgroundVolume(),
               const Gap(5),
 
+              settingsHeaderText("Deej Mixer Serial Port Settings"),
+              settingsHeader2Text(
+                "Configure the serial port connection for your Deej hardware mixer",
+              ),
+              const Gap(2),
+              const SerialPortSettingsButton(),
+              const Gap(10),
+
               settingsHeaderText("Spotify Configuration"),
               settingsHeader2Text(
                 "Copy URL from Spotify. In playlist, goto ... -> Share -> Copy link",
@@ -53,28 +63,29 @@ class SettingsScreenState extends State<SettingsScreen> {
               const Gap(10),
               settingsHeaderText("Ladda upp jinglar"),
               settingsHeader2Text(
-                  "Antingen välj en eller flera flac eller mp3-filer."),
+                "Antingen välj en eller flera flac eller mp3-filer.",
+              ),
               const Gap(2),
               JingleSettings(),
               const Gap(5),
               settingsHeaderText("Ladda upp enskilda jinglar"),
               settingsHeader2Text(
-                  "Ladda upp en flac eller mp3-fil som kopplas till funktionen"),
+                "Ladda upp en flac eller mp3-fil som kopplas till funktionen",
+              ),
               const Gap(2),
               JingleSingleSettings(),
               const Gap(5),
+
               // settingsHeaderText("Ladda upp en komplett struktur"),
               // settingsHeader2Text(
               //     "Ladda upp samtliga filer i en och samma zip-fil"),
               // const Gap(2),
               // JingleAllSettings(),
               // const Gap(5),
-
               settingsHeaderText(
-                  "!!! DANGER - Clean jingle cache - DANGER !!!"),
-              settingsHeader2Text(
-                "Deletes all uploaded jingles from cache",
+                "!!! DANGER - Clean jingle cache - DANGER !!!",
               ),
+              settingsHeader2Text("Deletes all uploaded jingles from cache"),
               const Gap(2),
               const CleanCacheButton(),
             ],
