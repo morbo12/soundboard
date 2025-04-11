@@ -18,6 +18,14 @@ final matchSetupStateProvider =
       );
     });
 
+/// State notifier for managing the match setup state.
+///
+/// Handles all state updates for the match setup process, including:
+/// - Date selection
+/// - Venue selection
+/// - Federation selection
+/// - Loading states
+/// - Error states
 class MatchSetupStateNotifier extends StateNotifier<MatchSetupState> {
   final Ref ref;
 
@@ -33,16 +41,37 @@ class MatchSetupStateNotifier extends StateNotifier<MatchSetupState> {
          ),
        );
 
+  /// Updates the selected date and resets loading/error states.
   void updateDate(DateTime date) {
-    state = state.copyWith(selectedDate: date);
+    state = state.copyWith(selectedDate: date, isLoading: false, error: null);
   }
 
+  /// Updates the selected venue and resets loading/error states.
   void updateVenue(int venueId) {
-    state = state.copyWith(selectedVenue: venueId);
+    state = state.copyWith(
+      selectedVenue: venueId,
+      isLoading: false,
+      error: null,
+    );
   }
 
+  /// Updates the selected federation and resets loading/error states.
   void updateFederation(int federationId) {
-    state = state.copyWith(selectedFederation: federationId);
+    state = state.copyWith(
+      selectedFederation: federationId,
+      isLoading: false,
+      error: null,
+    );
+  }
+
+  /// Sets the loading state.
+  void setLoading(bool isLoading) {
+    state = state.copyWith(isLoading: isLoading, error: null);
+  }
+
+  /// Sets the error state.
+  void setError(String? error) {
+    state = state.copyWith(isLoading: false, error: error);
   }
 }
 
@@ -60,6 +89,7 @@ final venuesProvider = Provider<List<VenueItem>>((ref) {
       .toList();
 });
 
+/// Represents a federation with its ID and name.
 class FederationItem {
   final int id;
   final String name;
@@ -67,6 +97,7 @@ class FederationItem {
   FederationItem({required this.id, required this.name});
 }
 
+/// Represents a venue with its ID and name.
 class VenueItem {
   final int id;
   final String name;
