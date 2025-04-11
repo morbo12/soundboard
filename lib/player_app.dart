@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
-import 'package:soundboard/features/screen_tts_settings/presentation/screen_settings_tts.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';
 import 'package:soundboard/features/screen_match/presentation/screen_matchsetup.dart';
@@ -131,12 +130,7 @@ class _PlayerState extends ConsumerState<Player> {
       children: [
         IndexedStack(
           index: currentIndex,
-          children: const [
-            HomeScreen(),
-            MatchSetupScreen(),
-            SettingsScreen(),
-            SettingsTtsScreen(),
-          ],
+          children: const [HomeScreen(), MatchSetupScreen(), SettingsScreen()],
         ),
       ],
     );
@@ -202,7 +196,7 @@ class _PlayerState extends ConsumerState<Player> {
         elevation: 2,
         currentIndex: selectedIndex,
         onTap: (index) {
-          if (index == 4) {
+          if (index == 3) {
             launchSpotify();
           } else {
             ref.read(selectedIndexProvider.notifier).state = index;
@@ -226,11 +220,6 @@ class _PlayerState extends ConsumerState<Player> {
             icon: Icon(FluentIcons.settings_16_regular),
             activeIcon: Icon(FluentIcons.settings_16_filled),
             label: "Settings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(FluentIcons.settings_16_regular),
-            activeIcon: Icon(FluentIcons.settings_16_filled),
-            label: "TTS Settings",
           ),
           BottomNavigationBarItem(
             icon: Icon(FluentIcons.music_note_2_16_regular),

@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_penaltyevent.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
