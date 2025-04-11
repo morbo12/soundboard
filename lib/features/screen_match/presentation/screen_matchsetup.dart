@@ -40,7 +40,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     final seasonService = SeasonService(apiClient);
     final matchService = MatchService(apiClient);
 
-    final seasonId = await seasonService.getSeason();
+    final seasonId = await seasonService.getCurrentSeason();
     logger.d("SeasonID: $seasonId");
     logger.d(
       "date: ${DateFormat('yyyy-MM-dd').format(selectedDate)} | seasonId: $seasonId | venueId: $selectedVenue",
