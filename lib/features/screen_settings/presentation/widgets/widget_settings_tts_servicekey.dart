@@ -4,9 +4,7 @@ import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsServiceKey extends StatefulWidget {
-  const SettingsTtsServiceKey({
-    super.key,
-  });
+  const SettingsTtsServiceKey({super.key});
 
   @override
   State<SettingsTtsServiceKey> createState() => _SettingsTtsServiceKeyState();
@@ -40,20 +38,24 @@ class _SettingsTtsServiceKeyState extends State<SettingsTtsServiceKey> {
               if (_debounce?.isActive ?? false) _debounce?.cancel();
               _debounce = Timer(const Duration(milliseconds: 2000), () {
                 SettingsBox().azTtsKey = text;
-                ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
-                  content: const Text(
-                      "Omstart av applikationen krävs för att ändringarna ska slå igenom."),
-                  elevation: 5,
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context)
-                            .hideCurrentMaterialBanner();
-                      },
-                      child: const Text("OK"),
+                ScaffoldMessenger.of(context).showMaterialBanner(
+                  MaterialBanner(
+                    content: const Text(
+                      "Omstart av applikationen krävs för att ändringarna ska slå igenom.",
                     ),
-                  ],
-                ));
+                    elevation: 5,
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).hideCurrentMaterialBanner();
+                        },
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  ),
+                );
               });
             },
           ),

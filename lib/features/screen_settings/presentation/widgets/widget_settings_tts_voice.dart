@@ -7,9 +7,7 @@ import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsVoice extends ConsumerStatefulWidget {
-  const SettingsTtsVoice({
-    super.key,
-  });
+  const SettingsTtsVoice({super.key});
 
   @override
   ConsumerState<SettingsTtsVoice> createState() => _SettingsTtsVoiceState();
@@ -27,11 +25,12 @@ class _SettingsTtsVoiceState extends ConsumerState<SettingsTtsVoice> {
       children: [
         Expanded(
           child: ElevatedButton(
-              onPressed: () => _showVoicePicker(context, ref, myVoiceId),
-              child: AutoSizeText(
-                VoiceManager.getNameById(myVoiceId),
-                textAlign: TextAlign.center,
-              )),
+            onPressed: () => _showVoicePicker(context, ref, myVoiceId),
+            child: AutoSizeText(
+              VoiceManager.getNameById(myVoiceId),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ],
     );
