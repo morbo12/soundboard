@@ -11,7 +11,6 @@ import 'package:soundboard/features/screen_home/presentation/lineup/classes/clas
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
-// [Keep other imports...]
 
 // Add the loading state provider
 final isLoadingProvider = StateProvider<bool>((ref) => false);
@@ -58,8 +57,9 @@ class _LineupState extends ConsumerState<Lineup> {
   void startMessageRotation() {
     currentMessageIndex = 0;
     messageRotationTimer?.cancel();
-    messageRotationTimer =
-        Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+    messageRotationTimer = Timer.periodic(const Duration(milliseconds: 2000), (
+      timer,
+    ) {
       setState(() {
         currentMessageIndex =
             (currentMessageIndex + 1) % loadingMessages.length;
@@ -80,19 +80,25 @@ class _LineupState extends ConsumerState<Lineup> {
 
     return Stack(
       children: [
-        SizedBox(
-          width: widget.availableWidth,
-          height: widget.availableHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Column(
-              children: [
-                _buildHeader(theme, selectedMatch),
-                _buildDivider(theme),
-                LineupData(
+        SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: widget.availableHeight,
+              maxWidth: widget.availableWidth,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHeader(theme, selectedMatch),
+                  _buildDivider(theme),
+                  LineupData(
                     availableWidth: widget.availableWidth,
-                    availableHeight: widget.availableHeight),
-              ],
+                    availableHeight: widget.availableHeight,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -111,8 +117,10 @@ class _LineupState extends ConsumerState<Lineup> {
                   const SizedBox(height: 16),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
+                    transitionBuilder: (
+                      Widget child,
+                      Animation<double> animation,
+                    ) {
                       return FadeTransition(
                         opacity: animation,
                         child: SlideTransition(
@@ -151,6 +159,7 @@ class _LineupState extends ConsumerState<Lineup> {
       ),
       padding: const EdgeInsets.all(6.0),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _buildPlayButton(theme, selectedMatch),
           _buildDivider(theme),
@@ -159,6 +168,14 @@ class _LineupState extends ConsumerState<Lineup> {
             children: [
               Expanded(child: GoalInputWidget(team: "homeTeam")),
               Expanded(child: GoalInputWidget(team: "awayTeam")),
+            ],
+          ),
+          _buildDivider(theme),
+          const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: PenaltyInputWidget(team: "homeTeam")),
+              Expanded(child: PenaltyInputWidget(team: "awayTeam")),
             ],
           ),
         ],
@@ -190,12 +207,15 @@ class _LineupState extends ConsumerState<Lineup> {
       // final speech =
       //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
 
-      final welcomeTTS =
-          await textToSpeechService.getTtsNoFile(text: selectedMatch.introSsml);
+      final welcomeTTS = await textToSpeechService.getTtsNoFile(
+        text: selectedMatch.introSsml,
+      );
       final homeTeamTTS = await textToSpeechService.getTtsNoFile(
-          text: selectedMatch.homeTeamSsml);
+        text: selectedMatch.homeTeamSsml,
+      );
       final awayTeamTTS = await textToSpeechService.getTtsNoFile(
-          text: selectedMatch.awayTeamSsml);
+        text: selectedMatch.awayTeamSsml,
+      );
 
       stopMessageRotation();
       ref.read(isLoadingProvider.notifier).state = false;
@@ -209,8 +229,11 @@ class _LineupState extends ConsumerState<Lineup> {
       logger.d("[_handlePlayLineup] Starting background music");
 
       await jingleManager.audioManager.playAudio(
-          AudioCategory.awayTeamJingle, ref,
-          shortFade: true, isBackgroundMusic: true);
+        AudioCategory.awayTeamJingle,
+        ref,
+        shortFade: true,
+        isBackgroundMusic: true,
+      );
 
       // wait for 10 seconds
 
@@ -223,14 +246,18 @@ class _LineupState extends ConsumerState<Lineup> {
       logger.d("[_handlePlayLineup] Playing welcome message");
 
       await jingleManager.audioManager.playBytesAndWait(
-          audio: welcomeTTS.audio.buffer.asUint8List(), ref: ref);
+        audio: welcomeTTS.audio.buffer.asUint8List(),
+        ref: ref,
+      );
 
       // Play away team lineup with background music
 
       logger.d("[_handlePlayLineup] Playing Away team background music");
 
       await jingleManager.audioManager.playBytesAndWait(
-          audio: awayTeamTTS.audio.buffer.asUint8List(), ref: ref);
+        audio: awayTeamTTS.audio.buffer.asUint8List(),
+        ref: ref,
+      );
 
       // wait for 10 seconds
 
@@ -243,8 +270,10 @@ class _LineupState extends ConsumerState<Lineup> {
 
       logger.d("[_handlePlayLineup] Fading out background music");
 
-      await jingleManager.audioManager
-          .fadeOutNoStop(ref, AudioChannel.channel1);
+      await jingleManager.audioManager.fadeOutNoStop(
+        ref,
+        AudioChannel.channel1,
+      );
 
       logger.d("[_handlePlayLineup] Stopping channel2");
 
@@ -255,8 +284,11 @@ class _LineupState extends ConsumerState<Lineup> {
       logger.d("[_handlePlayLineup] Playing Home team background music");
 
       await jingleManager.audioManager.playAudio(
-          AudioCategory.homeTeamJingle, ref,
-          shortFade: true, isBackgroundMusic: true);
+        AudioCategory.homeTeamJingle,
+        ref,
+        shortFade: true,
+        isBackgroundMusic: true,
+      );
 
       // wait for 10 seconds
       logger.d("[_handlePlayLineup] Waiting 10 seconds");
@@ -268,7 +300,9 @@ class _LineupState extends ConsumerState<Lineup> {
       logger.d("[_handlePlayLineup] Playing Home team lineup");
 
       await jingleManager.audioManager.playBytesAndWait(
-          audio: homeTeamTTS.audio.buffer.asUint8List(), ref: ref);
+        audio: homeTeamTTS.audio.buffer.asUint8List(),
+        ref: ref,
+      );
 
       // wait for 10 seconds
 
