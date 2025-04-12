@@ -6,6 +6,8 @@ import 'package:soundboard/features/screen_home/presentation/live/data/class_mat
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_goalevent.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_penaltyevent.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class EventCard extends ConsumerWidget {
@@ -14,6 +16,44 @@ class EventCard extends ConsumerWidget {
 
   static const double _smallFontSize = 11.0;
   final Logger logger = const Logger('EventCard');
+
+  String _getEventText(BuildContext context, WidgetRef ref) {
+    switch (data.matchEventTypeId) {
+      case MatchEventType.utvisning:
+        return _stripSsmlTags(
+          SsmlPenaltyEvent(ref: ref, matchEvent: data).formatAnnouncement(),
+        );
+      case MatchEventType.straffmal:
+      case MatchEventType.mal:
+        return _stripSsmlTags(
+          SsmlGoalEvent(ref: ref, matchEvent: data).formatAnnouncement(),
+        );
+      default:
+        return "";
+    }
+  }
+
+  String _stripSsmlTags(String text) {
+    // Remove SSML/XML tags using regex
+    return text.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  void _showTextDialog(BuildContext context, String text) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Announcement Text'),
+            content: SingleChildScrollView(child: Text(text)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,6 +64,10 @@ class EventCard extends ConsumerWidget {
       onTap: () {
         EventCardSsml(ref: ref, data: data).getEventText(context);
         logger.d("Button pressed");
+      },
+      onLongPress: () {
+        final text = _getEventText(context, ref);
+        _showTextDialog(context, text);
       },
       leading: Icon(
         _getEventIcon(data.matchEventTypeId),
@@ -56,30 +100,38 @@ class EventCard extends ConsumerWidget {
           "${MatchEventTypes.getEventName(data.matchEventTypeId)} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         AutoSizeText(
           "${data.minute}:${data.second.toString().padLeft(2, '0')} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         if (_isGoalEvent())
           AutoSizeText(
             "${data.goalsHomeTeam} - ${data.goalsAwayTeam} | ",
             minFontSize: _smallFontSize,
             style: const TextStyle(
-                fontSize: _smallFontSize, fontWeight: FontWeight.bold),
+              fontSize: _smallFontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         AutoSizeText(
-            data.matchTeamName.length < 20
-                ? data.matchTeamName
-                : "${data.matchTeamName.substring(0, 17) + "..."}",
-            minFontSize: _smallFontSize,
-            style: const TextStyle(
-                fontSize: _smallFontSize + 2,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic)),
+          data.matchTeamName.length < 20
+              ? data.matchTeamName
+              : "${data.matchTeamName.substring(0, 17) + "..."}",
+          minFontSize: _smallFontSize,
+          style: const TextStyle(
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
       ],
     );
   }
@@ -92,7 +144,9 @@ class EventCard extends ConsumerWidget {
           maxLines: 2,
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize, fontStyle: FontStyle.normal),
+            fontSize: _smallFontSize,
+            fontStyle: FontStyle.normal,
+          ),
         ),
       ],
     );
@@ -159,7 +213,9 @@ class EventCardSubTile extends StatelessWidget {
       maxLines: 1,
       minFontSize: _smallFontSize,
       style: const TextStyle(
-          fontSize: _mediumFontSize, fontStyle: FontStyle.italic),
+        fontSize: _mediumFontSize,
+        fontStyle: FontStyle.italic,
+      ),
       textAlign: TextAlign.left,
     );
   }

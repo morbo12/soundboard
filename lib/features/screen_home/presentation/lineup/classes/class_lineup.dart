@@ -11,6 +11,7 @@ import 'package:soundboard/features/screen_home/presentation/lineup/classes/clas
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/utils/logger.dart';
+// [Keep other imports...]
 
 // Add the loading state provider
 final isLoadingProvider = StateProvider<bool>((ref) => false);
@@ -80,25 +81,20 @@ class _LineupState extends ConsumerState<Lineup> {
 
     return Stack(
       children: [
-        SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: widget.availableHeight,
-              maxWidth: widget.availableWidth,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildHeader(theme, selectedMatch),
-                  _buildDivider(theme),
-                  LineupData(
-                    availableWidth: widget.availableWidth,
-                    availableHeight: widget.availableHeight,
-                  ),
-                ],
-              ),
+        SizedBox(
+          width: widget.availableWidth,
+          height: widget.availableHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Column(
+              children: [
+                _buildHeader(theme, selectedMatch),
+                _buildDivider(theme),
+                LineupData(
+                  availableWidth: widget.availableWidth,
+                  availableHeight: widget.availableHeight,
+                ),
+              ],
             ),
           ),
         ),
@@ -159,7 +155,6 @@ class _LineupState extends ConsumerState<Lineup> {
       ),
       padding: const EdgeInsets.all(6.0),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           _buildPlayButton(theme, selectedMatch),
           _buildDivider(theme),
@@ -168,14 +163,6 @@ class _LineupState extends ConsumerState<Lineup> {
             children: [
               Expanded(child: GoalInputWidget(team: "homeTeam")),
               Expanded(child: GoalInputWidget(team: "awayTeam")),
-            ],
-          ),
-          _buildDivider(theme),
-          const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: PenaltyInputWidget(team: "homeTeam")),
-              Expanded(child: PenaltyInputWidget(team: "awayTeam")),
             ],
           ),
         ],
