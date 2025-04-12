@@ -27,11 +27,23 @@ final selectedMatchProvider = StateProvider<IbyMatch>((ref) {
     matchStatus: 0,
     intermediateResults: [
       IbyMatchIntermediateResult(
-          matchId: 0, period: 1, goalsHomeTeam: 0, goalsAwayTeam: 0),
+        matchId: 0,
+        period: 1,
+        goalsHomeTeam: 0,
+        goalsAwayTeam: 0,
+      ),
       IbyMatchIntermediateResult(
-          matchId: 0, period: 2, goalsHomeTeam: 0, goalsAwayTeam: 0),
+        matchId: 0,
+        period: 2,
+        goalsHomeTeam: 0,
+        goalsAwayTeam: 0,
+      ),
       IbyMatchIntermediateResult(
-          matchId: 0, period: 3, goalsHomeTeam: 0, goalsAwayTeam: 0)
+        matchId: 0,
+        period: 3,
+        goalsHomeTeam: 0,
+        goalsAwayTeam: 0,
+      ),
     ],
     goalsHomeTeam: 0,
     goalsAwayTeam: 0,
@@ -206,15 +218,19 @@ class IbyMatch {
       referee2Id: json['Referee2ID'],
       referee2: json['Referee2'],
       shotsOnGoal: json['ShotsOnGoal'],
-      results: json['Results'] != null
-          ? List<IbyMatchResult>.from(
-              json['Results'].map((event) => IbyMatchResult.fromJson(event)))
-          : null,
+      results:
+          json['Results'] != null
+              ? List<IbyMatchResult>.from(
+                json['Results'].map((event) => IbyMatchResult.fromJson(event)),
+              )
+              : null,
       spectators: json['Spectators'],
-      events: json['Events'] != null
-          ? List<IbyMatchEvent>.from(
-              json['Events'].map((event) => IbyMatchEvent.fromJson(event)))
-          : null,
+      events:
+          json['Events'] != null
+              ? List<IbyMatchEvent>.from(
+                json['Events'].map((event) => IbyMatchEvent.fromJson(event)),
+              )
+              : null,
       round: json['Round'],
       roundName: json['RoundName'],
       matchDescription: json['MatchDescription'],
@@ -223,10 +239,14 @@ class IbyMatch {
       goalsAwayTeam: json['GoalsAwayTeam'],
       homeMatchTeamId: json['HomeMatchTeamID'],
       awayMatchTeamId: json['AwayMatchTeamID'],
-      intermediateResults: json['IntermediateResults'] != null
-          ? List<IbyMatchIntermediateResult>.from(json['IntermediateResults']
-              .map((event) => IbyMatchIntermediateResult.fromJson(event)))
-          : null,
+      intermediateResults:
+          json['IntermediateResults'] != null
+              ? List<IbyMatchIntermediateResult>.from(
+                json['IntermediateResults'].map(
+                  (event) => IbyMatchIntermediateResult.fromJson(event),
+                ),
+              )
+              : null,
       lastMatchChange: json['LastMatchChange'],
       lastMatchChangeComment: json['LastMatchChangeComment'],
       competitionLogotypeUrl: json['CompetitionLogotypeUrl'],
@@ -251,7 +271,7 @@ class IbyMatch {
     );
   }
 
-// In your IbyMatch class
+  // In your IbyMatch class
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -274,8 +294,9 @@ class IbyMatch {
 
     final matchService = MatchService(apiClient);
 
-    IbyMatchLineup lineup =
-        await matchService.getLineupOfMatch(matchId: matchId);
+    IbyMatchLineup lineup = await matchService.getLineupOfMatch(
+      matchId: matchId,
+    );
     return lineup;
   }
 
@@ -313,8 +334,8 @@ class IbyMatch {
       // ssml =
       // '<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="sv-SE">\n<lang xml:lang="sv-SE">';
 
-// Split into intro ssml, home ssml and away ssml
-// sync run of home and away tts to jingles.
+      // Split into intro ssml, home ssml and away ssml
+      // sync run of home and away tts to jingles.
 
       ssml = _generateWelcomeMessage();
       ssml += _generateAwayTeamLineup();
@@ -372,7 +393,7 @@ Välkomna! Testtext är nu slut
     """;
     } else {
       ssml =
-          "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />";
+          "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />\n";
       String homeGoalie =
           "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
       for (TeamPlayer player in lineup!.homeTeamPlayers) {
@@ -380,15 +401,16 @@ Välkomna! Testtext är nu slut
           homeGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
         } else {
-          ssml += player.shirtNo == null
-              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+          ssml +=
+              player.shirtNo == null
+                  ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+                  : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
         }
       }
       ssml += homeGoalie;
       ssml += "<break time=\"500ms\" />\n";
       ssml +=
-          "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />";
+          "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />\n";
       for (TeamTeamPerson teamPerson in lineup!.homeTeamTeamPersons) {
         ssml +=
             "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='1000ms' />\n";
@@ -418,14 +440,16 @@ Välkomna! Testtext är nu slut
           awayGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
         } else {
-          ssml += player.shirtNo == null
-              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+          ssml +=
+              player.shirtNo == null
+                  ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+                  : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
         }
       }
       ssml += awayGoalie;
       ssml += "<break time=\"500ms\" />\n";
-      ssml += "Ledare för ${stripTeamSuffix(awayTeam)} är,";
+      ssml +=
+          "Ledare för ${stripTeamSuffix(awayTeam)} är<break time='750ms' />\n";
       for (TeamTeamPerson teamPerson in lineup!.awayTeamTeamPersons) {
         ssml +=
             "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='750ms' />\n";
