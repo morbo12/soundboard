@@ -88,11 +88,19 @@ class _LineupState extends ConsumerState<Lineup> {
             padding: const EdgeInsets.all(5.0),
             child: Column(
               children: [
-                _buildHeader(theme, selectedMatch),
+                Expanded(
+                  flex: 1,
+                  child: SingleChildScrollView(
+                    child: _buildHeader(theme, selectedMatch),
+                  ),
+                ),
                 _buildDivider(theme),
-                LineupData(
-                  availableWidth: widget.availableWidth,
-                  availableHeight: widget.availableHeight,
+                Expanded(
+                  flex: 3,
+                  child: LineupData(
+                    availableWidth: widget.availableWidth,
+                    availableHeight: widget.availableHeight,
+                  ),
                 ),
               ],
             ),
@@ -163,6 +171,14 @@ class _LineupState extends ConsumerState<Lineup> {
             children: [
               Expanded(child: GoalInputWidget(team: "homeTeam")),
               Expanded(child: GoalInputWidget(team: "awayTeam")),
+            ],
+          ),
+          _buildDivider(theme),
+          const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: PenaltyInputWidget(team: "homeTeam")),
+              Expanded(child: PenaltyInputWidget(team: "awayTeam")),
             ],
           ),
         ],
