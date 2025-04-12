@@ -173,6 +173,10 @@ class _LineupState extends ConsumerState<Lineup> {
   Widget _buildPlayButton(ThemeData theme, dynamic selectedMatch) {
     return TextButton(
       onPressed: () => _handlePlayLineup(selectedMatch),
+      onLongPress: () {
+        final text = _getLineupText(selectedMatch);
+        _showTextDialog(context, text);
+      },
       child: Text(
         "Lineup (Click to Play)",
         style: TextStyle(
@@ -181,6 +185,37 @@ class _LineupState extends ConsumerState<Lineup> {
           color: theme.colorScheme.onPrimaryContainer,
         ),
       ),
+    );
+  }
+
+  String _getLineupText(dynamic selectedMatch) {
+    final introText = _stripSsmlTags(selectedMatch.introSsml);
+    final homeTeamText = _stripSsmlTags(selectedMatch.homeTeamSsml);
+
+    final awayTeamText = _stripSsmlTags(selectedMatch.awayTeamSsml);
+
+    return "$introText\n\n$awayTeamText\n\n$homeTeamText";
+  }
+
+  String _stripSsmlTags(String text) {
+    // Remove SSML/XML tags using regex
+    return text.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  void _showTextDialog(BuildContext context, String text) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Lineup Announcement Text'),
+            content: SingleChildScrollView(child: Text(text)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
     );
   }
 
