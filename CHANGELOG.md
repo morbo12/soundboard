@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.4.0-beta1] - 2025-04-12
+### Added
+- Support for Deej soundboard using serial port, controlling Windows Mixer
+- Scratchpad for penalties
+- Long pressing lineup and events show the announcment text
+
+### Changes
+- Modernized layout of settings
+- TTS Settings moved into "settings"
+- Code generation by Cursor AI
+
+### Fixes
+- Lots of under-the-hood-updates to enhance layout and performance
+
+### Removed
+- TTS Settings screen
+
 ## [0.3.15] - 2025-03-30
 
 ### Changed
