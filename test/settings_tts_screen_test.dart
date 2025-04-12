@@ -13,6 +13,7 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_region.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_servicekey.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_voice.dart';
@@ -110,28 +111,42 @@ void main() {
     );
   }
 
-  group('SettingsTtsScreen', () {
+  group('TtsSettingsButton', () {
     testWidgets('renders correctly with initial values', (
       WidgetTester tester,
     ) async {
       // Arrange (setup)
       await tester.pumpWidget(
-        makeTestableWidget(child: const SettingsTtsScreen()),
+        makeTestableWidget(child: const TtsSettingsButton()),
       );
 
       // Assert (verify initial state)
-      expect(find.text('Antal tecken kvar att använda'), findsOneWidget);
-      expect(find.text('Text to speech konfiguration'), findsOneWidget);
-      expect(find.text('Välj röst'), findsOneWidget);
-      expect(find.text('Välj Region'), findsOneWidget);
-      expect(
-        find.text('Ange Azure service key för Text To Speech'),
-        findsOneWidget,
+      expect(find.text('TTS Voice:'), findsOneWidget);
+      expect(find.text('Region:'), findsOneWidget);
+      expect(find.text('Key:'), findsOneWidget);
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+    });
+
+    testWidgets('opens settings bottom sheet when pressed', (
+      WidgetTester tester,
+    ) async {
+      // Arrange
+      await tester.pumpWidget(
+        makeTestableWidget(child: const TtsSettingsButton()),
       );
+
+      // Act
+      await tester.tap(find.byType(TtsSettingsButton));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Text to Speech Settings'), findsOneWidget);
+      expect(find.text('Voice Selection'), findsOneWidget);
+      expect(find.text('Region Selection'), findsOneWidget);
+      expect(find.text('Azure Service Key'), findsOneWidget);
       expect(find.byType(SettingsTtsVoice), findsOneWidget);
       expect(find.byType(SettingsTtsRegion), findsOneWidget);
       expect(find.byType(SettingsTtsServiceKey), findsOneWidget);
-      expect(find.byType(Gap), findsWidgets); // Check for Gap widgets
     });
 
     testWidgets('displays correct remaining character count', (
@@ -143,7 +158,7 @@ void main() {
       // Create the widget with the overridden provider
       await tester.pumpWidget(
         makeTestableWidget(
-          child: const SettingsTtsScreen(),
+          child: const TtsSettingsButton(),
           azCharCount: testCharCount,
         ),
       );
@@ -164,46 +179,6 @@ void main() {
         findsWidgets,
         reason: 'Should find text containing ${expectedRemaining.toString()}',
       );
-    });
-
-    testWidgets('renders custom header and subheader texts correctly', (
-      WidgetTester tester,
-    ) async {
-      // Arrange
-      await tester.pumpWidget(
-        makeTestableWidget(child: const SettingsTtsScreen()),
-      );
-
-      // Act: No action needed, just observing the rendered state
-
-      // Assert: Check for specific text styles (using helper methods)
-      final headerTextFinder = find.byType(Text);
-      final headerTexts =
-          headerTextFinder
-              .evaluate()
-              .map((e) => (e.widget as Text).data)
-              .toList();
-
-      // Check for the presence of header texts
-      expect(headerTexts.contains('Antal tecken kvar att använda'), isTrue);
-      expect(headerTexts.contains('Text to speech konfiguration'), isTrue);
-
-      // You can also check for the style, but it's more brittle.  It's better to check
-      // for semantic meaning (like "is this a header?") rather than exact style.
-      // This is just an example:
-      final settingsHeaderText = tester.widget<Text>(
-        find.text('Antal tecken kvar att använda'),
-      );
-      expect(settingsHeaderText.style!.fontSize, 19);
-      expect(settingsHeaderText.style!.fontWeight, FontWeight.bold);
-
-      final settingsHeader2Text = tester.widget<Text>(
-        find.text(
-          'Du behöver ett konto hos Azure för att använda denna funktion.',
-        ),
-      );
-      expect(settingsHeader2Text.style!.fontSize, 12);
-      expect(settingsHeader2Text.style!.fontWeight, FontWeight.normal);
     });
   });
 }
