@@ -13,10 +13,9 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/providers.dart';
-import 'package:soundboard/features/screen_tts_settings/presentation/screen_settings_tts.dart';
-import 'package:soundboard/features/screen_tts_settings/presentation/widget_settings_tts_region.dart';
-import 'package:soundboard/features/screen_tts_settings/presentation/widget_settings_tts_servicekey.dart';
-import 'package:soundboard/features/screen_tts_settings/presentation/widget_settings_tts_voice.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_region.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_servicekey.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_voice.dart';
 import 'package:soundboard/properties.dart';
 
 // Mock implementations for dependencies (VERY IMPORTANT)
@@ -65,9 +64,9 @@ class MockPathProviderPlatform extends MockPlatformInterfaceMixin
   Future<String?> getExternalStoragePath() async => _tempDirPath;
 
   @override
-  Future<List<String>?> getExternalStoragePaths(
-          {StorageDirectory? type}) async =>
-      [await _tempDirPath];
+  Future<List<String>?> getExternalStoragePaths({
+    StorageDirectory? type,
+  }) async => [await _tempDirPath];
 
   @override
   Future<String?> getLibraryPath() async => _tempDirPath;
@@ -102,46 +101,52 @@ void main() {
     return ProviderScope(
       overrides: [
         // Override providers with mock/test values
-        azCharCountProvider.overrideWithProvider(StateProvider(
-            (ref) => azCharCount ?? 0)), // Default to 0 if not provided
+        azCharCountProvider.overrideWithProvider(
+          StateProvider((ref) => azCharCount ?? 0),
+        ), // Default to 0 if not provided
         // Add other provider overrides as needed (e.g., for SettingsTtsVoice, etc.)
       ],
-      child: MaterialApp(
-        home: child,
-      ),
+      child: MaterialApp(home: child),
     );
   }
 
   group('SettingsTtsScreen', () {
-    testWidgets('renders correctly with initial values',
-        (WidgetTester tester) async {
+    testWidgets('renders correctly with initial values', (
+      WidgetTester tester,
+    ) async {
       // Arrange (setup)
-      await tester
-          .pumpWidget(makeTestableWidget(child: const SettingsTtsScreen()));
+      await tester.pumpWidget(
+        makeTestableWidget(child: const SettingsTtsScreen()),
+      );
 
       // Assert (verify initial state)
       expect(find.text('Antal tecken kvar att använda'), findsOneWidget);
       expect(find.text('Text to speech konfiguration'), findsOneWidget);
       expect(find.text('Välj röst'), findsOneWidget);
       expect(find.text('Välj Region'), findsOneWidget);
-      expect(find.text('Ange Azure service key för Text To Speech'),
-          findsOneWidget);
+      expect(
+        find.text('Ange Azure service key för Text To Speech'),
+        findsOneWidget,
+      );
       expect(find.byType(SettingsTtsVoice), findsOneWidget);
       expect(find.byType(SettingsTtsRegion), findsOneWidget);
       expect(find.byType(SettingsTtsServiceKey), findsOneWidget);
       expect(find.byType(Gap), findsWidgets); // Check for Gap widgets
     });
 
-    testWidgets('displays correct remaining character count',
-        (WidgetTester tester) async {
+    testWidgets('displays correct remaining character count', (
+      WidgetTester tester,
+    ) async {
       // Arrange: Set a specific azCharCount
       const testCharCount = 500;
 
       // Create the widget with the overridden provider
-      await tester.pumpWidget(makeTestableWidget(
-        child: const SettingsTtsScreen(),
-        azCharCount: testCharCount,
-      ));
+      await tester.pumpWidget(
+        makeTestableWidget(
+          child: const SettingsTtsScreen(),
+          azCharCount: testCharCount,
+        ),
+      );
 
       // Allow the widget to fully settle (handles any animations or async operations)
       await tester.pumpAndSettle();
@@ -154,25 +159,30 @@ void main() {
       final containsMatch = find.textContaining(expectedRemaining.toString());
 
       // Use a more flexible assertion
-      expect(containsMatch, findsWidgets,
-          reason:
-              'Should find text containing ${expectedRemaining.toString()}');
+      expect(
+        containsMatch,
+        findsWidgets,
+        reason: 'Should find text containing ${expectedRemaining.toString()}',
+      );
     });
 
-    testWidgets('renders custom header and subheader texts correctly',
-        (WidgetTester tester) async {
+    testWidgets('renders custom header and subheader texts correctly', (
+      WidgetTester tester,
+    ) async {
       // Arrange
-      await tester
-          .pumpWidget(makeTestableWidget(child: const SettingsTtsScreen()));
+      await tester.pumpWidget(
+        makeTestableWidget(child: const SettingsTtsScreen()),
+      );
 
       // Act: No action needed, just observing the rendered state
 
       // Assert: Check for specific text styles (using helper methods)
       final headerTextFinder = find.byType(Text);
-      final headerTexts = headerTextFinder
-          .evaluate()
-          .map((e) => (e.widget as Text).data)
-          .toList();
+      final headerTexts =
+          headerTextFinder
+              .evaluate()
+              .map((e) => (e.widget as Text).data)
+              .toList();
 
       // Check for the presence of header texts
       expect(headerTexts.contains('Antal tecken kvar att använda'), isTrue);
@@ -181,13 +191,17 @@ void main() {
       // You can also check for the style, but it's more brittle.  It's better to check
       // for semantic meaning (like "is this a header?") rather than exact style.
       // This is just an example:
-      final settingsHeaderText =
-          tester.widget<Text>(find.text('Antal tecken kvar att använda'));
+      final settingsHeaderText = tester.widget<Text>(
+        find.text('Antal tecken kvar att använda'),
+      );
       expect(settingsHeaderText.style!.fontSize, 19);
       expect(settingsHeaderText.style!.fontWeight, FontWeight.bold);
 
-      final settingsHeader2Text = tester.widget<Text>(find.text(
-          'Du behöver ett konto hos Azure för att använda denna funktion.'));
+      final settingsHeader2Text = tester.widget<Text>(
+        find.text(
+          'Du behöver ett konto hos Azure för att använda denna funktion.',
+        ),
+      );
       expect(settingsHeader2Text.style!.fontSize, 12);
       expect(settingsHeader2Text.style!.fontWeight, FontWeight.normal);
     });
