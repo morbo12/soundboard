@@ -38,21 +38,21 @@ final c2StateProvider = StateProvider<PlayerState>((ref) {
   return PlayerState.stopped;
 });
 
-final mainStateProvider = StateProvider<PlayerState>((ref) {
-  return PlayerState.stopped;
-});
+// final mainStateProvider = StateProvider<PlayerState>((ref) {
+//   return PlayerState.stopped;
+// });
 
-final sbStateProvider = StateProvider<PlayerState>((ref) {
-  return PlayerState.stopped;
-});
+// final sbStateProvider = StateProvider<PlayerState>((ref) {
+//   return PlayerState.stopped;
+// });
 
-final jpStateProvider = StateProvider<PlayerState>((ref) {
-  return PlayerState.stopped;
-});
+// final jpStateProvider = StateProvider<PlayerState>((ref) {
+//   return PlayerState.stopped;
+// });
 
-final spoStateProvider = StateProvider<PlayerState>((ref) {
-  return PlayerState.stopped;
-});
+// final spoStateProvider = StateProvider<PlayerState>((ref) {
+//   return PlayerState.stopped;
+// });
 
 final voicesProvider = StateProvider<VoicesSuccessUniversal>((ref) {
   return VoicesSuccessUniversal(voices: [], code: 200, reason: "N/A");
@@ -63,20 +63,20 @@ final mainVolumeProvider = StateNotifierProvider<
   SystemVolume
 >((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
 
-final sbVolumeProvider = StateNotifierProvider<
-  SystemVolumeNotifier,
-  SystemVolume
->((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+final p1VolumeProvider =
+    StateNotifierProvider<SystemVolumeNotifier, SystemVolume>(
+      (ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().p1Volume)),
+    );
 
-final spoVolumeProvider = StateNotifierProvider<
-  SystemVolumeNotifier,
-  SystemVolume
->((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+final p2VolumeProvider =
+    StateNotifierProvider<SystemVolumeNotifier, SystemVolume>(
+      (ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().p2Volume)),
+    );
 
-final jpVolumeProvider = StateNotifierProvider<
-  SystemVolumeNotifier,
-  SystemVolume
->((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+final p3VolumeProvider =
+    StateNotifierProvider<SystemVolumeNotifier, SystemVolume>(
+      (ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().p3Volume)),
+    );
 
 final c1VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
   (ref) => VolumeNotifier(Volume(vol: SettingsBox().c1InitialVolume)),

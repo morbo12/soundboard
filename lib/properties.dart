@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:easy_hive/easy_hive.dart';
+import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
 
 enum Settings {
   key, // Use as box key. You can use a String constant instead.
@@ -28,6 +29,9 @@ enum Settings {
   serialStopBits,
   serialParity,
   serialAutoConnect,
+  p1Volume,
+  p2Volume,
+  p3Volume,
 }
 
 class SettingsBox extends EasyBox {
@@ -45,17 +49,65 @@ class SettingsBox extends EasyBox {
   static const String _slider2Key = 'slider2_mapping';
   static const String _slider3Key = 'slider3_mapping';
 
-  String get slider0Mapping => get(_slider0Key, defaultValue: 'master');
+  // Process to UI slider mappings
+  static const String _processMappingsKey = 'process_mappings';
+
+  // Slider mappings
+  static const String _sliderMappingsKey = 'slider_mappings';
+
+  String get slider0Mapping => get(_slider0Key, defaultValue: '');
   set slider0Mapping(String value) => put(_slider0Key, value);
 
-  String get slider1Mapping => get(_slider1Key, defaultValue: 'spotify');
+  String get slider1Mapping => get(_slider1Key, defaultValue: '');
   set slider1Mapping(String value) => put(_slider1Key, value);
 
-  String get slider2Mapping => get(_slider2Key, defaultValue: 'soundboard');
+  String get slider2Mapping => get(_slider2Key, defaultValue: '');
   set slider2Mapping(String value) => put(_slider2Key, value);
 
-  String get slider3Mapping => get(_slider3Key, defaultValue: 'jinglepalette');
+  String get slider3Mapping => get(_slider3Key, defaultValue: '');
   set slider3Mapping(String value) => put(_slider3Key, value);
+
+  // Get/Set process to UI slider mappings
+  Map<String, String> get processMappings =>
+      get(_processMappingsKey, defaultValue: <String, String>{});
+  set processMappings(Map<String, String> value) =>
+      put(_processMappingsKey, value);
+
+  List<SliderMapping> get sliderMappings {
+    final dynamic data = get(
+      _sliderMappingsKey,
+      defaultValue: <SliderMapping>[],
+    );
+    if (data is List) {
+      return data.cast<SliderMapping>();
+    }
+    return <SliderMapping>[];
+  }
+
+  set sliderMappings(List<SliderMapping> value) =>
+      put(_sliderMappingsKey, value);
+
+  void addSliderMapping(SliderMapping mapping) {
+    final mappings = sliderMappings;
+    // Remove any existing mapping for this deej slider
+    mappings.removeWhere((m) => m.deejSliderIdx == mapping.deejSliderIdx);
+    mappings.add(mapping);
+    sliderMappings = mappings;
+  }
+
+  void removeSliderMapping(int deejSliderIdx) {
+    final mappings = sliderMappings;
+    mappings.removeWhere((m) => m.deejSliderIdx == deejSliderIdx);
+    sliderMappings = mappings;
+  }
+
+  SliderMapping? getMappingForDeejSlider(int deejSliderIdx) {
+    try {
+      return sliderMappings.firstWhere((m) => m.deejSliderIdx == deejSliderIdx);
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 extension GeneralSettingsExtension on SettingsBox {
@@ -156,4 +208,13 @@ extension GeneralSettingsExtension on SettingsBox {
   set serialAutoConnect(bool value) => put(Settings.serialAutoConnect, value);
   bool get serialAutoConnect =>
       get(Settings.serialAutoConnect, defaultValue: false);
+
+  set p1Volume(double value) => put(Settings.p1Volume, value);
+  double get p1Volume => get(Settings.p1Volume, defaultValue: 0.3);
+
+  set p2Volume(double value) => put(Settings.p2Volume, value);
+  double get p2Volume => get(Settings.p2Volume, defaultValue: 0.3);
+
+  set p3Volume(double value) => put(Settings.p3Volume, value);
+  double get p3Volume => get(Settings.p3Volume, defaultValue: 0.3);
 }
