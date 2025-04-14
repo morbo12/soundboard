@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:gap/gap.dart';
+import 'package:soundboard/features/screen_home/application/serialport_manager/class_serialport_provider_win32.dart';
 import 'package:soundboard/properties.dart';
-import 'package:soundboard/features/screen_home/presentation/volume/classes/class_column_volume.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SerialPortSettingsButton extends StatefulWidget {
@@ -90,6 +89,7 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
   List<String> parityOptions = ['None', 'Odd', 'Even', 'Mark', 'Space'];
   bool autoConnect = false;
   bool isConnecting = false;
+  String _currentProcess = '';
 
   @override
   void initState() {
@@ -100,7 +100,12 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
   void _refreshPortList() {
     setState(() {
-      availablePorts = SerialPort.availablePorts;
+      availablePorts =
+          ref
+              .read(serialPortManagerWin32Provider)
+              .portList
+              .map((port) => port.portName)
+              .toList();
     });
   }
 
@@ -151,8 +156,7 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
     });
 
     try {
-      // Use the provider to trigger connection
-      ref.read(serialPortProvider.notifier).connect();
+      ref.read(serialPortManagerWin32Provider).connect();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Connecting to serial port...')),
       );
@@ -167,8 +171,32 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
     }
   }
 
+  Future<void> _disconnectPort() async {
+    setState(() {
+      isConnecting = true;
+    });
+
+    try {
+      ref.read(serialPortManagerWin32Provider).disconnect();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Disconnected from serial port')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error disconnecting from port: $e')),
+      );
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final serialPortManager = ref.watch(serialPortManagerWin32Provider);
+    List<String> definedProcesses = SettingsBox().processMappings.keys.toList();
+
     return AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -221,7 +249,7 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
               else
                 Container(
                   margin: const EdgeInsets.only(top: 8, bottom: 16),
-                  height: 200,
+                  height: 100,
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(8),
@@ -271,8 +299,6 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
                   });
                 },
               ),
-
-              const Gap(16),
 
               // Connection settings section
               Text(
@@ -339,81 +365,6 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
                   }
                 },
               ),
-
-              const Gap(16),
-
-              // Process Name Mappings section
-              Text(
-                'Process Name Mappings',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const Divider(),
-              const Gap(8),
-
-              // Slider 0 Process Name
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Slider 0 Process Name',
-                  hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: Icon(Icons.slideshow),
-                ),
-                controller: TextEditingController(
-                  text: SettingsBox().slider0Mapping,
-                ),
-                onChanged: (value) {
-                  SettingsBox().slider0Mapping = value;
-                },
-              ),
-              const Gap(8),
-
-              // Slider 1 Process Name
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Slider 1 Process Name',
-                  hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: Icon(Icons.slideshow),
-                ),
-                controller: TextEditingController(
-                  text: SettingsBox().slider1Mapping,
-                ),
-                onChanged: (value) {
-                  SettingsBox().slider1Mapping = value;
-                },
-              ),
-              const Gap(8),
-
-              // Slider 2 Process Name
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Slider 2 Process Name',
-                  hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: Icon(Icons.slideshow),
-                ),
-                controller: TextEditingController(
-                  text: SettingsBox().slider2Mapping,
-                ),
-                onChanged: (value) {
-                  SettingsBox().slider2Mapping = value;
-                },
-              ),
-              const Gap(8),
-
-              // Slider 3 Process Name
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Slider 3 Process Name',
-                  hintText: 'Enter process name (e.g., discord.exe)',
-                  prefixIcon: Icon(Icons.slideshow),
-                ),
-                controller: TextEditingController(
-                  text: SettingsBox().slider3Mapping,
-                ),
-                onChanged: (value) {
-                  SettingsBox().slider3Mapping = value;
-                },
-              ),
             ],
           ),
         ),
@@ -435,6 +386,14 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                   : const Text('Connect'),
+        ),
+        ElevatedButton(
+          onPressed: serialPortManager.isConnected ? _disconnectPort : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: Theme.of(context).colorScheme.onError,
+          ),
+          child: const Text('Disconnect'),
         ),
       ],
     );

@@ -1,0 +1,185 @@
+import 'dart:async';
+import 'package:serial_port_win32/serial_port_win32.dart';
+import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/properties.dart';
+import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_processor.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class SerialPortManagerWin32 {
+  final Logger logger = const Logger('SerialPortManagerWin32');
+  final SerialProcessor _serialProcessor;
+  final Ref ref;
+
+  // Serial port state
+  List<PortInfo> portList = [];
+  SerialPort? _serialPort;
+  bool _isSerialConnected = false;
+  bool _isSerialReconnecting = false;
+  bool _explicitlyDisconnected = false;
+
+  // Timers
+  Timer? _serialReconnectTimer;
+  static const int _serialReconnectIntervalSeconds = 5;
+
+  SerialPortManagerWin32({required this.ref})
+    : _serialProcessor = SerialProcessor(ref) {
+    _initSerialPort();
+  }
+
+  void _initSerialPort() {
+    // Find available ports
+    _refreshPortList();
+
+    // Connect to the port if auto-connect is enabled
+    if (SettingsBox().serialAutoConnect &&
+        SettingsBox().serialPortName.isNotEmpty) {
+      connectToSerialPort();
+    }
+  }
+
+  void _refreshPortList() {
+    try {
+      portList = SerialPort.getPortsWithFullMessages();
+      logger.d('Found ${portList.length} serial ports');
+    } catch (e) {
+      logger.d('Error refreshing port list: $e');
+      portList = [];
+    }
+  }
+
+  void connectToSerialPort() {
+    final portName = SettingsBox().serialPortName;
+    PortInfo? targetPort;
+
+    try {
+      targetPort = portList.firstWhere((port) => port.portName == portName);
+    } catch (e) {
+      // If no matching port is found, use the first available port or null
+      logger.d(
+        'Configured port $portName not found, falling back to first available port',
+      );
+      targetPort = portList.isNotEmpty ? portList.first : null;
+    }
+
+    if (targetPort != null) {
+      _serialPort = SerialPort(
+        targetPort.portName,
+        openNow: false,
+        ByteSize: SettingsBox().serialDataBits,
+        BaudRate: SettingsBox().serialBaudRate,
+      );
+      _openSerialPort();
+    } else {
+      logger.d('No suitable serial port found for connection');
+      _startSerialReconnectTimer();
+    }
+  }
+
+  void _startSerialReconnectTimer() {
+    if (_isSerialReconnecting || _explicitlyDisconnected) return;
+
+    _isSerialReconnecting = true;
+    _serialReconnectTimer = Timer.periodic(
+      const Duration(seconds: _serialReconnectIntervalSeconds),
+      (timer) {
+        if (!_isSerialConnected && !_explicitlyDisconnected) {
+          logger.d('Attempting to reconnect to serial port...');
+          _refreshPortList();
+          connectToSerialPort();
+        } else {
+          _serialReconnectTimer?.cancel();
+          _isSerialReconnecting = false;
+        }
+      },
+    );
+  }
+
+  void _openSerialPort() {
+    if (_serialPort == null || _isSerialConnected) return;
+
+    try {
+      _serialPort!.open();
+
+      if (_serialPort!.isOpened) {
+        _isSerialConnected = true;
+        _isSerialReconnecting = false;
+        logger.d('${_serialPort!.portName} opened!');
+
+        // Start listening for data
+        _startListening();
+      } else {
+        logger.d('Failed to open serial port');
+        _handleSerialDisconnect();
+      }
+    } catch (e) {
+      logger.d('Error opening serial port: $e');
+      _handleSerialDisconnect();
+    }
+  }
+
+  void _startListening() {
+    if (_serialPort == null || !_serialPort!.isOpened) return;
+
+    // Start a periodic timer to read data
+    Timer.periodic(const Duration(milliseconds: 100), (timer) async {
+      if (!_serialPort!.isOpened) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        final data = await _serialPort!.readBytes(
+          1024,
+          timeout: const Duration(milliseconds: 50),
+        );
+        if (data.isNotEmpty) {
+          _serialProcessor.processStream(Stream.value(data));
+        }
+      } catch (e) {
+        logger.d('Error reading from serial port: $e');
+        _handleSerialDisconnect();
+      }
+    });
+  }
+
+  void _handleSerialDisconnect() {
+    _isSerialConnected = false;
+    _startSerialReconnectTimer();
+  }
+
+  void closeSerialPort() {
+    if (_serialPort != null && _serialPort!.isOpened) {
+      try {
+        _serialPort!.close();
+        logger.d('${_serialPort!.portName} closed!');
+      } catch (e) {
+        logger.d('Error closing serial port: $e');
+      } finally {
+        _isSerialConnected = false;
+        _explicitlyDisconnected = true;
+      }
+    }
+  }
+
+  bool get isConnected => _isSerialConnected;
+
+  void dispose() {
+    _serialReconnectTimer?.cancel();
+    closeSerialPort();
+  }
+
+  // Public methods for connection control
+  void connect() {
+    if (!_isSerialConnected) {
+      _explicitlyDisconnected = false;
+      connectToSerialPort();
+    }
+  }
+
+  void disconnect() {
+    if (_isSerialConnected) {
+      _explicitlyDisconnected = true;
+      closeSerialPort();
+    }
+  }
+}
