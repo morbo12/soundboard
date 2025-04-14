@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_deej_mappings.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_serial_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_spotify.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
@@ -46,7 +47,13 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(2),
               const SerialPortSettingsButton(),
               const Gap(10),
-
+              settingsHeaderText("Deej Mixer Serial Port Settings"),
+              settingsHeader2Text(
+                "Configure the serial port connection for your Deej hardware mixer",
+              ),
+              const Gap(2),
+              const DeejMappingsButton(),
+              const Gap(10),
               settingsHeaderText("Text to Speech Settings"),
               settingsHeader2Text(
                 "Configure Azure TTS settings for voice synthesis",

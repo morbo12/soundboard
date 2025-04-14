@@ -404,15 +404,15 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                     children: [
                       TextField(
                         controller: _penaltySearchController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
+                          contentPadding: EdgeInsets.symmetric(
                             horizontal: 8.0,
                             vertical: 4.0,
                           ),
                           hintText: 'Search penalty by code or name',
-                          hintStyle: const TextStyle(fontSize: 12),
-                          prefixIcon: const Icon(Icons.search, size: 20),
+                          hintStyle: TextStyle(fontSize: 12),
+                          prefixIcon: Icon(Icons.search, size: 20),
                         ),
                         style: const TextStyle(fontSize: 12),
                       ),
