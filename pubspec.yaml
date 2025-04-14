@@ -69,7 +69,8 @@ dependencies:
   shared_preferences: ^2.5.2
   win32audio: ^1.4.0
   flutter_libserialport: ^0.5.0
-  
+  serial_port_win32: ^2.1.12
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter
