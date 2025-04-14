@@ -12,6 +12,8 @@ import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/scrolling/presentation/scroll_config.dart';
 import 'package:soundboard/properties.dart'; // Local file for handling soundboard properties.
 import 'package:soundboard/player_app.dart'; // Local main app file.
+import 'package:soundboard/features/screen_settings/data/class_slider_mappings_adapter.dart';
+import 'package:hive/hive.dart';
 
 // External Imports (sorted by package name length, shortest first)
 import 'package:easy_hive/easy_hive.dart'; // Package for easy integration of Hive, a lightweight and fast NoSQL database.
@@ -32,6 +34,9 @@ void main() async {
 
   Directory settingsDir = await getApplicationSupportDirectory();
   logger.d("AppSupportDir: ${settingsDir.path} ");
+
+  // Register the SliderMappingAdapter
+  Hive.registerAdapter(SliderMappingAdapter());
 
   await EasyBox.initialize(subDir: settingsDir.path);
   await SettingsBox().init();
