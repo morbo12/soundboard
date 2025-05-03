@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/common_widgets/button.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_button.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/audioplayer_func.dart';
 import 'package:soundboard/utils/logger.dart';

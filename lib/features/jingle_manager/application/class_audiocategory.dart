@@ -13,5 +13,6 @@ enum AudioCategory {
   penaltyJingle,
   powerupJingle,
   awayTeamJingle,
-  homeTeamJingle
+  homeTeamJingle,
+  specialJingle,
 }

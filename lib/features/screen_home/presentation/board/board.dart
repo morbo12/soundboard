@@ -2,15 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+
 import 'package:soundboard/common_widgets/widget_match.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_0_player_progress_bar.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_3_ratata.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_4_lineup.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_5_timeout.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_1_stop_goal_row.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_section.dart';
 
 class BoardSection extends ConsumerWidget {
   final double width;
@@ -43,12 +42,7 @@ class BoardSection extends ConsumerWidget {
                 const Gap(10),
                 const RowPlayerPresentation(),
                 const Gap(10),
-                const Row1Ratata(),
-                const Gap(10),
-                const Row2lineup(),
-                const Gap(10),
-                const Row3timeout(),
-                const Gap(10),
+                const JingleGridSection(),
               ],
             ),
           ),

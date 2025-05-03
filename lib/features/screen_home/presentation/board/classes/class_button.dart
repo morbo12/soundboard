@@ -38,33 +38,39 @@ class ButtonState extends State<Button> {
     );
 
     ButtonStyle selectedButtonStyle = normalbuttonStyle.copyWith(
-        backgroundColor: WidgetStateProperty.all<Color>(
-            Theme.of(context).colorScheme.primaryContainer),
-        foregroundColor: WidgetStateProperty.all<Color>(
-            Theme.of(context).colorScheme.onPrimaryContainer));
+      backgroundColor: WidgetStateProperty.all<Color>(
+        Theme.of(context).colorScheme.primaryContainer,
+      ),
+      foregroundColor: WidgetStateProperty.all<Color>(
+        Theme.of(context).colorScheme.onPrimaryContainer,
+      ),
+    );
 
     ButtonStyle goalButtonStyle = normalbuttonStyle.copyWith(
       // backgroundColor: WidgetStateProperty.all<Color>(Color(0xFF00513B))
       backgroundColor: WidgetStateProperty.all<Color>(const Color(0xFF9CD67D)),
       foregroundColor: WidgetStateProperty.all<Color>(const Color(0xFF20281B)),
-      textStyle:
-          WidgetStateProperty.all<TextStyle>(const TextStyle(fontSize: 48)),
+      textStyle: WidgetStateProperty.all<TextStyle>(
+        const TextStyle(fontSize: 48),
+      ),
     );
 
     ButtonStyle stopButtonStyle = normalbuttonStyle.copyWith(
       backgroundColor: WidgetStateProperty.all<Color>(
-          Theme.of(context).colorScheme.errorContainer),
+        Theme.of(context).colorScheme.errorContainer,
+      ),
       foregroundColor: WidgetStateProperty.all<Color>(
-          Theme.of(context).colorScheme.onErrorContainer),
-      textStyle:
-          WidgetStateProperty.all<TextStyle>(const TextStyle(fontSize: 48)),
+        Theme.of(context).colorScheme.onErrorContainer,
+      ),
+      textStyle: WidgetStateProperty.all<TextStyle>(
+        const TextStyle(fontSize: 48),
+      ),
     );
 
     ButtonStyle disabledButtonStyle = normalbuttonStyle.copyWith(
-        backgroundColor:
-            WidgetStateProperty.all<Color>(const Color(0x14C4DFFF)),
-        foregroundColor:
-            WidgetStateProperty.all<Color>(const Color(0x61DFEBFB)));
+      backgroundColor: WidgetStateProperty.all<Color>(const Color(0x14C4DFFF)),
+      foregroundColor: WidgetStateProperty.all<Color>(const Color(0x61DFEBFB)),
+    );
 
     // No style was provided, use default
     if (widget.style == null) {
@@ -95,10 +101,10 @@ class ButtonState extends State<Button> {
     }
 
     return Expanded(
-        child: TextButton(
-      onPressed: widget.isDisabled == true ? null : widget.onTap,
-      style: buttonStyle,
-      child: FittedBox(
+      child: TextButton(
+        onPressed: widget.isDisabled == true ? null : widget.onTap,
+        style: buttonStyle,
+        child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Column(
             children: [
@@ -109,19 +115,21 @@ class ButtonState extends State<Button> {
               ),
               widget.secondaryText != "N/A"
                   ? Text(
-                      widget.secondaryText,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: (normalbuttonStyle.textStyle
-                                    ?.resolve({})?.fontSize ??
-                                28.0) *
-                            0.70,
-                      ),
-                    )
+                    widget.secondaryText,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize:
+                          (normalbuttonStyle.textStyle?.resolve({})?.fontSize ??
+                              28.0) *
+                          0.70,
+                    ),
+                  )
                   : Container(),
             ],
-          )),
-    ));
+          ),
+        ),
+      ),
+    );
   }
 }

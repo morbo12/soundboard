@@ -6,9 +6,12 @@ class AudioFile {
   final String displayName;
   late AudioPlayer audioPlayer2;
   AudioCategory audioCategory;
+  final bool isCategoryOnly;
 
-  AudioFile(
-      {required this.filePath,
-      required this.displayName,
-      required this.audioCategory});
+  AudioFile({
+    required this.filePath,
+    required this.displayName,
+    required this.audioCategory,
+    this.isCategoryOnly = false,
+  });
 }
