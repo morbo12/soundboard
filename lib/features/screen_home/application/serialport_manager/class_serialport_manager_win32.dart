@@ -4,6 +4,7 @@ import 'package:soundboard/utils/logger.dart';
 import 'package:soundboard/properties.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_processor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/utils/platform_utils.dart';
 
 class SerialPortManagerWin32 {
   final Logger logger = const Logger('SerialPortManagerWin32');
@@ -23,10 +24,17 @@ class SerialPortManagerWin32 {
 
   SerialPortManagerWin32({required this.ref})
     : _serialProcessor = SerialProcessor(ref) {
-    _initSerialPort();
+    if (PlatformUtils.isWindows) {
+      _initSerialPort();
+    } else {
+      logger.d(
+        'SerialPortManagerWin32: Windows-specific features not available on this platform',
+      );
+    }
   }
 
   void _initSerialPort() {
+    if (!PlatformUtils.isWindows) return;
     // Find available ports
     _refreshPortList();
 
@@ -38,6 +46,7 @@ class SerialPortManagerWin32 {
   }
 
   void _refreshPortList() {
+    if (!PlatformUtils.isWindows) return;
     try {
       portList = SerialPort.getPortsWithFullMessages();
       logger.d('Found ${portList.length} serial ports');
@@ -48,6 +57,7 @@ class SerialPortManagerWin32 {
   }
 
   void connectToSerialPort() {
+    if (!PlatformUtils.isWindows) return;
     final portName = SettingsBox().serialPortName;
     PortInfo? targetPort;
 
@@ -76,6 +86,7 @@ class SerialPortManagerWin32 {
   }
 
   void _startSerialReconnectTimer() {
+    if (!PlatformUtils.isWindows) return;
     if (_isSerialReconnecting || _explicitlyDisconnected) return;
 
     _isSerialReconnecting = true;
@@ -95,6 +106,7 @@ class SerialPortManagerWin32 {
   }
 
   void _openSerialPort() {
+    if (!PlatformUtils.isWindows) return;
     if (_serialPort == null || _isSerialConnected) return;
 
     try {
@@ -118,6 +130,7 @@ class SerialPortManagerWin32 {
   }
 
   void _startListening() {
+    if (!PlatformUtils.isWindows) return;
     if (_serialPort == null || !_serialPort!.isOpened) return;
 
     // Start a periodic timer to read data
@@ -143,11 +156,13 @@ class SerialPortManagerWin32 {
   }
 
   void _handleSerialDisconnect() {
+    if (!PlatformUtils.isWindows) return;
     _isSerialConnected = false;
     _startSerialReconnectTimer();
   }
 
   void closeSerialPort() {
+    if (!PlatformUtils.isWindows) return;
     if (_serialPort != null && _serialPort!.isOpened) {
       try {
         _serialPort!.close();
@@ -161,15 +176,17 @@ class SerialPortManagerWin32 {
     }
   }
 
-  bool get isConnected => _isSerialConnected;
+  bool get isConnected => PlatformUtils.isWindows ? _isSerialConnected : false;
 
   void dispose() {
+    if (!PlatformUtils.isWindows) return;
     _serialReconnectTimer?.cancel();
     closeSerialPort();
   }
 
   // Public methods for connection control
   void connect() {
+    if (!PlatformUtils.isWindows) return;
     if (!_isSerialConnected) {
       _explicitlyDisconnected = false;
       connectToSerialPort();
@@ -177,6 +194,7 @@ class SerialPortManagerWin32 {
   }
 
   void disconnect() {
+    if (!PlatformUtils.isWindows) return;
     if (_isSerialConnected) {
       _explicitlyDisconnected = true;
       closeSerialPort();
