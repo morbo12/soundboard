@@ -12,38 +12,36 @@ class PlayerProgressBar extends ConsumerStatefulWidget {
 }
 
 class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   // audioPlayer.dispose();
-  //   // hornAudioPlayer.dispose();
-  // }
   @override
   void initState() {
     super.initState();
 
     // Listen to system volume change
     Future.delayed(Duration.zero, () async {
-      jingleManager.audioManager.channel1.onDurationChanged
-          .listen((Duration d) {
+      jingleManager.audioManager.channel1.onDurationChanged.listen((
+        Duration d,
+      ) {
         //get the duration of audio
         ref.read(maxdurationProviderC1.notifier).state = d;
       });
 
-      jingleManager.audioManager.channel1.onPositionChanged
-          .listen((Duration p) {
+      jingleManager.audioManager.channel1.onPositionChanged.listen((
+        Duration p,
+      ) {
         // currentpos =
         ref.read(currentposProviderC1.notifier).state = p;
       });
 
-      jingleManager.audioManager.channel2.onDurationChanged
-          .listen((Duration d) {
+      jingleManager.audioManager.channel2.onDurationChanged.listen((
+        Duration d,
+      ) {
         //get the duration of audio
         ref.read(maxdurationProviderC2.notifier).state = d;
       });
 
-      jingleManager.audioManager.channel2.onPositionChanged
-          .listen((Duration p) {
+      jingleManager.audioManager.channel2.onPositionChanged.listen((
+        Duration p,
+      ) {
         ref.read(currentposProviderC2.notifier).state = p;
       });
     });
@@ -59,18 +57,6 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
 
     return Column(
       children: [
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //   children: [
-        //     AutoSizeText(
-        //       "Progress",
-        //       style: TextStyle(
-        //           fontSize: 6,
-        //           fontWeight: FontWeight.bold,
-        //           color: Theme.of(context).colorScheme.onBackground),
-        //     ),
-        //   ],
-        // ),
         Row(
           children: [
             Expanded(
@@ -87,18 +73,10 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
                 timeLabelLocation: TimeLabelLocation.sides,
                 timeLabelTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                ),
               ),
-              // child: Slider(
-              //   value: double.parse(currentpos.toString()),
-              //   min: 0,
-              //   max: double.parse(maxduration.toString()),
-              //   divisions: maxduration,
-              //   label: currentpostlabel,
-              //   activeColor: Theme.of(context).colorScheme.onBackground,
-              //   onChanged: (double value) {},
-              // ),
             ),
           ],
         ),
@@ -117,8 +95,9 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
                 timeLabelLocation: TimeLabelLocation.sides,
                 timeLabelTextStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                ),
               ),
             ),
           ],

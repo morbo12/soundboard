@@ -1,0 +1,477 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_large_button.dart';
+
+class DraggableJingleButton extends ConsumerWidget {
+  final int index;
+  final AudioFile? audioFile;
+  final List<AudioFile> specialJingles;
+
+  const DraggableJingleButton({
+    super.key,
+    required this.index,
+    this.audioFile,
+    required this.specialJingles,
+  });
+
+  ButtonStyle _getButtonStyle(
+    BuildContext context,
+    AudioCategory? category, {
+    bool isCategoryOnly = false,
+  }) {
+    ButtonStyle normalStyle = TextButton.styleFrom(
+      foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      minimumSize: const Size(0, 100),
+      textStyle: const TextStyle(fontSize: 48),
+      padding: const EdgeInsets.all(4),
+    );
+    ButtonStyle selectedButtonStyle = normalStyle.copyWith(
+      backgroundColor: WidgetStateProperty.all<Color>(
+        Theme.of(context).colorScheme.primaryContainer,
+      ),
+      foregroundColor: WidgetStateProperty.all<Color>(
+        Theme.of(context).colorScheme.onPrimaryContainer,
+      ),
+    );
+
+    if (category == null) {
+      return normalStyle.copyWith(
+        backgroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.surface.withAlpha(179),
+        ),
+        foregroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.onSurface.withAlpha(128),
+        ),
+      );
+    }
+
+    if (isCategoryOnly) {
+      normalStyle = normalStyle.copyWith(
+        backgroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.primaryContainer.withOpacity(0.7),
+        ),
+        foregroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
+        side: WidgetStateProperty.all<BorderSide>(
+          BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+        ),
+      );
+    }
+
+    switch (category) {
+      case AudioCategory.ratataJingle:
+      case AudioCategory.penaltyJingle:
+      case AudioCategory.lineupJingle:
+      case AudioCategory.hornJingle:
+      case AudioCategory.oneminJingle:
+      case AudioCategory.threeminJingle:
+      case AudioCategory.timeoutJingle:
+      case AudioCategory.powerupJingle:
+      case AudioCategory.awayTeamJingle:
+      case AudioCategory.homeTeamJingle:
+        return selectedButtonStyle;
+      case AudioCategory.specialJingle:
+        return normalStyle.copyWith(
+          backgroundColor: WidgetStateProperty.all<Color>(
+            const Color(0xFFE6B422), // Golden color for special jingles
+          ),
+        );
+      case AudioCategory.goalJingle:
+        return normalStyle.copyWith(
+          backgroundColor: WidgetStateProperty.all<Color>(
+            const Color(0xFF9CD67D),
+          ),
+          foregroundColor: WidgetStateProperty.all<Color>(
+            const Color(0xFF20281B),
+          ),
+        );
+      case AudioCategory.genericJingle:
+        return normalStyle.copyWith(
+          backgroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.primaryContainer,
+          ),
+          foregroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        );
+      case AudioCategory.clapJingle:
+        return normalStyle.copyWith(
+          backgroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.tertiaryContainer,
+          ),
+          foregroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.onTertiaryContainer,
+          ),
+        );
+      default:
+        return normalStyle;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final buttonStyle = _getButtonStyle(
+      context,
+      audioFile?.audioCategory,
+      isCategoryOnly: audioFile?.isCategoryOnly ?? false,
+    );
+    final displayText = audioFile?.displayName ?? 'Empty';
+
+    // Add a prefix to indicate category-only mode
+    final buttonText =
+        audioFile?.isCategoryOnly ?? false
+            ? '${displayText} - (Random)'
+            : displayText;
+
+    return DragTarget<int>(
+      onAcceptWithDetails: (details) {
+        ref
+            .read(jingleGridConfigProvider.notifier)
+            .swapPositions(details.data, index);
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Draggable<int>(
+          data: index,
+          feedback: SizedBox(
+            // Ensure size constraints
+            width: 120, // Use appropriate dimensions
+            height: 100,
+            child: LargeButton(
+              primaryText: buttonText,
+              onTap: () {}, // Feedback doesn't need tap functionality
+              style: buttonStyle,
+              // If LargeButton relies on Material (e.g., for InkWell),
+              // this might affect its appearance, but should fix the error.
+              // We might need to wrap it in a specific Material type later if needed.
+            ),
+          ),
+          childWhenDragging: LargeButton(
+            primaryText: '',
+            onTap: () {},
+            isDisabled: false,
+          ),
+          child: GestureDetector(
+            onLongPress: () => _handleLongPress(context, ref),
+            child: LargeButton(
+              primaryText: buttonText,
+              onTap: () => _handleTap(context, ref),
+              style: buttonStyle,
+              isDisabled: false,
+              isSelected: candidateData.isNotEmpty,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleTap(BuildContext context, WidgetRef ref) async {
+    if (audioFile != null) {
+      // The playAudioFile method now handles category-only mode internally
+      await jingleManager.audioManager.playAudioFile(audioFile!, ref);
+    } else {
+      _showJingleSelectionDialog(context, ref);
+    }
+  }
+
+  Future<void> _handleLongPress(BuildContext context, WidgetRef ref) async {
+    final choice = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Jingle Options'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.music_note),
+                  title: const Text('Change Jingle'),
+                  onTap: () => Navigator.of(context).pop('change_jingle'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('Change Display Name'),
+                  onTap: () => Navigator.of(context).pop('change_name'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info),
+                  title: const Text('Jingle Info'),
+                  onTap: () => Navigator.of(context).pop('show_info'),
+                ),
+              ],
+            ),
+          ),
+    );
+
+    if (!context.mounted) return;
+
+    switch (choice) {
+      case 'change_jingle':
+        await _showJingleSelectionDialog(context, ref);
+        break;
+      case 'change_name':
+        await _showChangeDisplayNameDialog(context, ref);
+        break;
+      case 'show_info':
+        await _showJingleInfo(context);
+        break;
+    }
+  }
+
+  Future<void> _showChangeDisplayNameDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    if (audioFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No jingle assigned to this button')),
+      );
+      return;
+    }
+
+    final TextEditingController controller = TextEditingController(
+      text: audioFile!.displayName,
+    );
+    final newName = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Change Display Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Display Name',
+                hintText: 'Enter new display name',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(controller.text),
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+    );
+
+    if (newName != null && newName.isNotEmpty) {
+      final updatedAudioFile = AudioFile(
+        displayName: newName,
+        filePath: audioFile!.filePath,
+        audioCategory: audioFile!.audioCategory,
+      );
+      ref
+          .read(jingleGridConfigProvider.notifier)
+          .assignJingle(index, updatedAudioFile);
+    }
+  }
+
+  Future<void> _showJingleInfo(BuildContext context) async {
+    if (audioFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No jingle assigned to this button')),
+      );
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Jingle Information'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Display Name: ${audioFile!.displayName}'),
+                const SizedBox(height: 8),
+                if (!audioFile!.isCategoryOnly)
+                  Text('File Path: ${audioFile!.filePath}')
+                else
+                  const Text('File Path: [Random from category]'),
+                const SizedBox(height: 8),
+                Text(
+                  'Category: ${audioFile!.audioCategory.toString().split('.').last}',
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Mode: ${audioFile!.isCategoryOnly ? "Random from category" : "Specific jingle"}',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _showJingleSelectionDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final categories = [
+      AudioCategory.genericJingle,
+      AudioCategory.goalJingle,
+      AudioCategory.clapJingle,
+      AudioCategory.lineupJingle,
+      AudioCategory.lineupBackgroundJingle,
+      AudioCategory.specialJingle,
+    ];
+
+    final selectedCategory = await showDialog<AudioCategory>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Select Jingle Category'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return LargeButton(
+                    primaryText: category.toString().split('.').last,
+                    onTap: () => Navigator.of(context).pop(category),
+                    style: _getButtonStyle(context, category),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+    );
+
+    if (selectedCategory != null) {
+      // Ask if the user wants to assign a specific jingle or the entire category
+      final selectionMode = await showDialog<String>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text(
+                'Select Mode for ${selectedCategory.toString().split('.').last}',
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.music_note),
+                    title: const Text('Specific Jingle'),
+                    subtitle: const Text(
+                      'Assign a specific jingle to this button',
+                    ),
+                    onTap: () => Navigator.of(context).pop('specific'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.shuffle),
+                    title: const Text('Random from Category'),
+                    subtitle: const Text(
+                      'Play a random jingle from this category',
+                    ),
+                    onTap: () => Navigator.of(context).pop('category'),
+                  ),
+                ],
+              ),
+            ),
+      );
+
+      if (selectionMode == 'category') {
+        // Assign the entire category
+        final categoryName = selectedCategory.toString().split('.').last;
+        final audioFile = AudioFile(
+          filePath: '', // Empty as we'll use the category for playback
+          displayName: categoryName,
+          audioCategory: selectedCategory,
+          isCategoryOnly: true,
+        );
+
+        ref
+            .read(jingleGridConfigProvider.notifier)
+            .assignJingle(index, audioFile);
+        return;
+      }
+      List<AudioFile> jingles = [];
+
+      if (selectedCategory == AudioCategory.specialJingle) {
+        jingles = await AudioConfigurations.getSpecialJingles();
+      } else {
+        jingles =
+            jingleManager.audioManager.audioInstances
+                .where((j) => j.audioCategory == selectedCategory)
+                .toList();
+      }
+
+      if (jingles.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'No jingles found for ${selectedCategory.toString().split('.').last}',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (!context.mounted) return;
+
+      final selectedJingle = await showDialog<AudioFile>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text(
+                'Select ${selectedCategory.toString().split('.').last}',
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: jingles.length,
+                  itemBuilder: (context, index) {
+                    final jingle = jingles[index];
+                    return LargeButton(
+                      primaryText: jingle.displayName,
+                      onTap: () => Navigator.of(context).pop(jingle),
+                      style: _getButtonStyle(context, jingle.audioCategory),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ),
+      );
+
+      if (selectedJingle != null) {
+        ref
+            .read(jingleGridConfigProvider.notifier)
+            .assignJingle(index, selectedJingle);
+      }
+    }
+  }
+}

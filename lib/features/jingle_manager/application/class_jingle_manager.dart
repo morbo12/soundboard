@@ -28,7 +28,7 @@ class JingleManager {
   AudioManager audioManager = AudioManager();
   final FileSystemHelper fileSystemHelper = FileSystemHelper();
   Function({required MsgType type, required String message})
-      showMessageCallback;
+  showMessageCallback;
   // Function(String) showErrorMessageCallback;
 
   JingleManager({
@@ -82,22 +82,28 @@ class JingleManager {
     } catch (e) {
       logger.e("Error loading audio configurations: $e");
       showMessageCallback(
-          type: MsgType.error, message: "Error: Failed to load audio files");
+        type: MsgType.error,
+        message: "Error: Failed to load audio files",
+      );
     }
   }
 
   Future<void> _initializeDirectories() async {
     try {
-      genericJinglesDir =
-          await fileSystemHelper.createDirectory("GenericJingles");
+      genericJinglesDir = await fileSystemHelper.createDirectory(
+        "GenericJingles",
+      );
       goalJinglesDir = await fileSystemHelper.createDirectory("GoalJingles");
       clapJinglesDir = await fileSystemHelper.createDirectory("ClapJingles");
-      lineupJinglesDir =
-          await fileSystemHelper.createDirectory("LineupJingles");
+      lineupJinglesDir = await fileSystemHelper.createDirectory(
+        "LineupJingles",
+      );
     } catch (e) {
       logger.e("Error initializing directories: $e");
       showMessageCallback(
-          type: MsgType.error, message: "Error: Failed to create directories");
+        type: MsgType.error,
+        message: "Error: Failed to create directories",
+      );
     }
   }
 
@@ -107,13 +113,13 @@ class JingleManager {
       List<Map<String, dynamic>> dirCategoryAssociations = [
         {
           'directory': genericJinglesDir,
-          'category': AudioCategory.genericJingle
+          'category': AudioCategory.genericJingle,
         },
         {'directory': goalJinglesDir, 'category': AudioCategory.goalJingle},
         {'directory': clapJinglesDir, 'category': AudioCategory.clapJingle},
         {
           'directory': lineupJinglesDir,
-          'category': AudioCategory.lineupBackgroundJingle
+          'category': AudioCategory.lineupBackgroundJingle,
         },
       ];
       // Iterate over each association and initialize files accordingly
@@ -123,7 +129,7 @@ class JingleManager {
           (File file) => audioManager.addInstance(
             AudioFile(
               filePath: file.path,
-              displayName: "",
+              displayName: file.uri.pathSegments.last.split('.').first,
               audioCategory: association['category'],
             ),
           ),

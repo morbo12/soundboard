@@ -264,6 +264,42 @@ class AudioManager {
     }
   }
 
+  /// Plays audio from a specific category with various playback options
+  Future<void> playAudioFile(
+    AudioFile audiofile,
+    WidgetRef ref, {
+    bool shortFade = true,
+  }) async {
+    try {
+      // If this is a category-only audio file, play a random audio from the category
+      if (audiofile.isCategoryOnly) {
+        await playAudio(
+          audiofile.audioCategory,
+          ref,
+          random: true,
+          shortFade: shortFade,
+        );
+        return;
+      }
+
+      final channel = _getAvailableChannel();
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d("[playAudio] fadeDuration is $fadeDuration");
+      logger.d(
+        "[playAudio] Playing ${audiofile.filePath} on channel ${channel.name}",
+      );
+      await _playAudioFile(
+        ref,
+        channel,
+        audiofile.filePath,
+        fadeDuration: fadeDuration,
+      );
+    } catch (e) {
+      logger.e("Error playing audio: $e");
+    }
+  }
+
   /// Selects a random audio file while avoiding recently played files
   AudioFile _selectRandomAudioFile(
     AudioCategory category,
