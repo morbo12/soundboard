@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/common_widgets/button.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/class_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
 
 class CleanCacheButton extends StatefulWidget {
@@ -52,8 +52,10 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
       });
 
       // Now we can safely use context since we're back in sync code
-      final shouldDelete =
-          await _showConfirmationDialog(cacheDir.path, formattedSize);
+      final shouldDelete = await _showConfirmationDialog(
+        cacheDir.path,
+        formattedSize,
+      );
 
       if (shouldDelete == true) {
         _showLoadingIndicator();
@@ -110,9 +112,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
               },
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Delete'),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
@@ -136,7 +136,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 20),
-              const Text("Clearing cache...")
+              const Text("Clearing cache..."),
             ],
           ),
         );
@@ -147,9 +147,11 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   void _showResultFeedback(bool success) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success
-            ? 'Cache successfully cleared'
-            : 'Cache directory not found or already empty'),
+        content: Text(
+          success
+              ? 'Cache successfully cleared'
+              : 'Cache directory not found or already empty',
+        ),
         backgroundColor: success ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 3),
       ),
