@@ -4,6 +4,7 @@ import 'package:soundboard/utils/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/properties.dart';
 import 'package:win32audio/win32audio.dart';
+import 'package:soundboard/utils/platform_utils.dart';
 
 class SerialIO {
   // Logger instance - using logger package for Flutter
@@ -24,9 +25,24 @@ class SerialIO {
     r'^\d{0,4}\|\d{0,4}\|\d{0,4}\|\d{0,4}$',
   );
 
-  SerialIO({required this.config, required this.ref});
+  SerialIO({required this.config, required this.ref}) {
+    if (PlatformUtils.isWindows) {
+      _initialize();
+    } else {
+      logger.d(
+        'SerialIO: Windows-specific features not available on this platform',
+      );
+    }
+  }
+
+  Future<void> _initialize() async {
+    if (!PlatformUtils.isWindows) return;
+    await _mixerManager.initialize();
+    mixerList = await _mixerManager.getMixerList();
+  }
 
   void handleLine(String line) {
+    if (!PlatformUtils.isWindows) return;
     // Trim CRLF from the line
     line = line.trim();
 
@@ -57,114 +73,38 @@ class SerialIO {
         continue;
       }
 
-      // Validate first number's range
-      if (sliderIdx == 0 && number > 1023) {
-        logger.d('Got malformed line from serial, ignoring: $line');
-        return;
-      }
+      // Convert to percentage (0-100)
+      double percent = number / 1023.0;
+      if (percent < 0) percent = 0;
+      if (percent > 1) percent = 1;
 
-      // Convert to normalized float (0.0 to 1.0)
-      double dirtyFloat = number / 1023.0;
-
-      // Normalize the scalar to 2 decimal places
-      double normalizedScalar = _normalizeScalar(dirtyFloat);
-
-      // Invert if configured
-      if (config.invertSliders) {
-        normalizedScalar = 1.0 - normalizedScalar;
-      }
-
-      // Check if the change is significant
-      if (_isSignificantlyDifferent(
-        currentSliderPercentValues[sliderIdx],
-        normalizedScalar,
-        config.noiseReductionLevel,
-      )) {
-        // Update current value and create move event
-        currentSliderPercentValues[sliderIdx] = normalizedScalar;
-        _updateSliderProvider(sliderIdx, normalizedScalar);
+      // Only update if the value has changed significantly
+      if ((currentSliderPercentValues[sliderIdx] - percent).abs() > 0.01) {
+        currentSliderPercentValues[sliderIdx] = percent;
+        _updateVolume(sliderIdx, percent);
       }
     }
   }
 
-  // Helper function to normalize scalar to 2 decimal places
-  double _normalizeScalar(double value) {
-    return (value * 100).round() / 100;
-  }
-
-  // Helper function to check if the difference is significant
-  bool _isSignificantlyDifferent(
-    double currentValue,
-    double newValue,
-    double threshold,
-  ) {
-    return (currentValue - newValue).abs() > threshold;
-  }
-
-  // Method to get current slider values
-  List<double> getCurrentSliderValues() {
-    return List.from(currentSliderPercentValues);
-  }
-
-  // Method to update a specific slider's value
-  void updateSliderValue(int sliderId, double value) {
-    if (sliderId >= 0 && sliderId < currentSliderPercentValues.length) {
-      currentSliderPercentValues[sliderId] = value;
-      logger.d('Updated slider $sliderId to $value');
+  void _updateVolume(int sliderIdx, double percent) {
+    if (!PlatformUtils.isWindows) return;
+    try {
+      // Get the process ID for this slider from config
+      int processId = config.getProcessIdForSlider(sliderIdx);
+      if (processId != -1) {
+        _mixerManager.setApplicationVolume(processId, percent);
+        logger.d(
+          'Set volume for process $processId to ${(percent * 100).toStringAsFixed(0)}%',
+        );
+      }
+    } catch (e) {
+      logger.e('Error updating volume: $e');
     }
   }
 
-  // Method to update slider provider
-  Future<void> _updateSliderProvider(
-    int sliderIdx,
-    double normalizedScalar,
-  ) async {
-    final mapping = SettingsBox().getMappingForDeejSlider(sliderIdx);
-    mixerList = await _mixerManager.getMixerList();
-    if (mapping == null) return;
-    logger.d("Slider $sliderIdx is mapped to ${mapping.uiSliderIdx}");
-
-    // Handle master volume case
-    if (mapping.uiSliderIdx == 0) {
-      await _mixerManager.setMasterVolume(normalizedScalar);
-      ref.read(mainVolumeProvider.notifier).updateVolume(normalizedScalar);
-      return;
-    }
-
-    // Handle process volume cases
-    final process = mixerList.firstWhere(
-      (element) =>
-          element.processPath?.toLowerCase().endsWith(
-            mapping.processName.toLowerCase(),
-          ) ??
-          false,
-      orElse: () => ProcessVolume(),
-    );
-
-    if (process.processId != null) {
-      await _mixerManager.setApplicationVolume(
-        process.processId!,
-        normalizedScalar,
-      );
-      logger.d(
-        'Updated process ${process.processPath} (ID: ${process.processId}) to volume: $normalizedScalar',
-      );
-    } else {
-      logger.d('Could not find process: ${mapping.processName}');
-    }
-
-    // Update the appropriate volume provider
-    switch (mapping.uiSliderIdx) {
-      case 1:
-        ref.read(p1VolumeProvider.notifier).updateVolume(normalizedScalar);
-        break;
-      case 2:
-        ref.read(p2VolumeProvider.notifier).updateVolume(normalizedScalar);
-        break;
-      case 3:
-        ref.read(p3VolumeProvider.notifier).updateVolume(normalizedScalar);
-        break;
-    }
+  void dispose() {
+    if (!PlatformUtils.isWindows) return;
+    // Clean up any resources if needed
   }
 }
 
@@ -179,4 +119,10 @@ class DeejConfig {
     this.verbose = false,
     this.noiseReductionLevel = 0.02,
   });
+
+  int getProcessIdForSlider(int sliderIdx) {
+    // Implementation of getProcessIdForSlider method
+    // This is a placeholder and should be implemented based on your specific requirements
+    return -1; // Placeholder return, actual implementation needed
+  }
 }

@@ -19,9 +19,10 @@ class VoiceManager {
     Voice(id: 2, name: "Mattias", shortName: "sv-SE-MattiasNeural"),
     Voice(id: 3, name: "Hillevi", shortName: "sv-SE-HilleviNeural"),
     Voice(
-        id: 4,
-        name: "Shimmer Multilingual (experimental)",
-        shortName: "en-US-SerenaMultilingualNeural")
+      id: 4,
+      name: "Ava Multilingual (experimental)",
+      shortName: "en-US-AvaMultilingualNeural",
+    ),
   ];
 
   // Method to get a list of all names
