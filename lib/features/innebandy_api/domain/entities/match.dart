@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/application/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_result.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_intermediate.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_result.dart';
+
 import 'package:soundboard/utils/logger.dart';
 
 // Define a StateProvider for IbyVenueMatch.

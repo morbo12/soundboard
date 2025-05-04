@@ -1,7 +1,8 @@
 // ssml_period_event.dart
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
+
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_intermediate.dart';
 import 'class_ssml_base.dart';
 
 class SsmlPeriodEvent extends BaseSsmlEvent {

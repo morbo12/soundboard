@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';

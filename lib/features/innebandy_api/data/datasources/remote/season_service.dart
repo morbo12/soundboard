@@ -1,5 +1,6 @@
+import 'package:soundboard/features/innebandy_api/core/config/api_constants.dart';
+
 import 'api_client.dart';
-import 'api_constants.dart';
 
 class SeasonService {
   final APIClient _apiClient;
