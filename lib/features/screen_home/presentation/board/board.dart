@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
-import 'package:soundboard/common_widgets/widget_match.dart';
-import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_0_player_progress_bar.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_1_stop_goal_row.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_section.dart';
+import 'package:soundboard/features/screen_home/presentation/board/classes/widget_match_card.dart';
 
 class BoardSection extends ConsumerWidget {
   final double width;
@@ -29,13 +28,7 @@ class BoardSection extends ConsumerWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(
-                  width: ScreenSizeUtil.getWidth(
-                    context,
-                    maxWidth: ScreenSizeUtil.getSoundboardSize(context),
-                  ),
-                  child: MatchButton2(match: selectedMatch, readonly: true),
-                ),
+                MatchCard(match: selectedMatch),
                 const PlayerProgressBar(),
                 const Gap(10),
                 const StopGoalRow(),

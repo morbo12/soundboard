@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/application/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
+
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/standings_service.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 
 /// Widget for displaying and selecting matches from a list.
@@ -30,6 +33,7 @@ class MatchSelector extends ConsumerWidget {
   Future<void> _getMatch(WidgetRef ref, int matchID) async {
     final apiClient = ref.watch(apiClientProvider);
     final matchService = MatchService(apiClient);
+    final standingsService = StandingsService(apiClient);
     final match = await matchService.getMatch(matchId: matchID);
 
     ref.read(selectedMatchProvider.notifier).state = match;
@@ -38,6 +42,9 @@ class MatchSelector extends ConsumerWidget {
       matchID,
       ref,
     );
+    // Fetch matches for the given criteria
+    ref.read(standingsProvider.notifier).state = await standingsService
+        .getCurrentStandings(match, ref);
   }
 
   @override
