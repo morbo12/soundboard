@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/application/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
+
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 import 'package:soundboard/utils/logger.dart';
 
@@ -94,17 +95,20 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                             streamerRunning
                                 ? null
                                 : startMatchStreaming(
-                                    matchId: selectedMatch.matchId);
+                                  matchId: selectedMatch.matchId,
+                                );
                             streamerRunning = true;
                           },
                           child: Text(
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
+                            ),
                             "Matchhändelser",
                           ),
                         ),
@@ -114,10 +118,11 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: Theme.of(context).colorScheme.surfaceTint),
+                        color: Theme.of(context).colorScheme.surfaceTint,
+                      ),
                     ),
                   ),
-                  const PeriodScores()
+                  const PeriodScores(),
                 ],
               ),
             ),
@@ -125,46 +130,48 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
             Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                    color: Theme.of(context).colorScheme.surfaceTint),
+                  color: Theme.of(context).colorScheme.surfaceTint,
+                ),
               ),
             ),
-            // Box for ListTiles
 
+            // Box for ListTiles
             SizedBox(
-              height: MediaQuery.of(context).size.height > 600
-                  ? MediaQuery.of(context).size.height -
-                      158 -
-                      DefaultConstants().appBarHeight
-                  : 500,
+              height:
+                  MediaQuery.of(context).size.height > 600
+                      ? MediaQuery.of(context).size.height -
+                          158 -
+                          DefaultConstants().appBarHeight
+                      : 500,
               child: StreamBuilder(
-                  stream: userStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List<IbyMatchEvent>? data = snapshot.data;
-                      return ListView.separated(
-                        controller: widget.scrollController,
-                        // reverse: true,
-                        shrinkWrap: true,
-                        itemCount: data!.length,
-                        itemBuilder: (context, index) {
-                          selectedMatch.matchStatus != 4
-                              ? liveindex =
-                                  index // Events are added on top during live
-                              : liveindex = data.length -
-                                  1 -
-                                  index; // Reverse index if match has ended
-                          return EventWidget(data: data[liveindex]);
-                        },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            const Divider(
-                          thickness: 1,
-                          height: 5,
-                        ),
-                      );
-                    } else {
-                      return const Text("No Data");
-                    }
-                  }),
+                stream: userStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List<IbyMatchEvent>? data = snapshot.data;
+                    return ListView.separated(
+                      controller: widget.scrollController,
+                      // reverse: true,
+                      shrinkWrap: true,
+                      itemCount: data!.length,
+                      itemBuilder: (context, index) {
+                        selectedMatch.matchStatus != 4
+                            ? liveindex =
+                                index // Events are added on top during live
+                            : liveindex =
+                                data.length -
+                                1 -
+                                index; // Reverse index if match has ended
+                        return EventWidget(data: data[liveindex]);
+                      },
+                      separatorBuilder:
+                          (BuildContext context, int index) =>
+                              const Divider(thickness: 1, height: 5),
+                    );
+                  } else {
+                    return const Text("No Data");
+                  }
+                },
+              ),
             ),
           ],
         ),
@@ -220,7 +227,8 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
         if (updatedMatch.matchStatus == 4) {
           if (kDebugMode) {
             logger.d(
-                "Timer cancelled direct as we are not Live - ${updatedMatch.matchStatus}");
+              "Timer cancelled direct as we are not Live - ${updatedMatch.matchStatus}",
+            );
           }
           timer.cancel();
           streamerRunning = false;
@@ -231,5 +239,6 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
       }
     });
   }
+
   // }
 }

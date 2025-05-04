@@ -1,8 +1,8 @@
 // ssml_goal_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
 import 'class_ssml_base.dart';
 
 class GoalPhrases {

@@ -1,9 +1,10 @@
 import 'package:intl/intl.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+
+import 'package:soundboard/features/innebandy_api/core/config/api_constants.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 
 import 'api_client.dart';
-import 'api_constants.dart';
 
 class MatchService {
   final APIClient _apiClient;

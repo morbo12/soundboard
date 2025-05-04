@@ -1,7 +1,7 @@
 // ssml_penalty_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'class_ssml_base.dart';
 

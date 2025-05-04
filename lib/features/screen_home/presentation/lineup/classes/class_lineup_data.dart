@@ -1,16 +1,19 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+
+import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 class LineupData extends ConsumerWidget {
   final double availableWidth;
   final double availableHeight;
 
-  const LineupData(
-      {required this.availableWidth, required this.availableHeight});
+  const LineupData({
+    required this.availableWidth,
+    required this.availableHeight,
+  });
 
   static const double _smallFontSize = 15.0;
 
@@ -33,32 +36,44 @@ class LineupData extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTeamColumn(context, ref, selectedMatch.homeTeam,
-              selectedMatchLineup.homeTeamPlayers, teamWidth),
+          _buildTeamColumn(
+            context,
+            ref,
+            selectedMatch.homeTeam,
+            selectedMatchLineup.homeTeamPlayers,
+            teamWidth,
+          ),
           Container(
             height: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             width: 1,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          _buildTeamColumn(context, ref, selectedMatch.awayTeam,
-              selectedMatchLineup.awayTeamPlayers, teamWidth),
+          _buildTeamColumn(
+            context,
+            ref,
+            selectedMatch.awayTeam,
+            selectedMatchLineup.awayTeamPlayers,
+            teamWidth,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTeamColumn(BuildContext context, WidgetRef ref, String teamName,
-      List<TeamPlayer>? players, double width) {
+  Widget _buildTeamColumn(
+    BuildContext context,
+    WidgetRef ref,
+    String teamName,
+    List<TeamPlayer>? players,
+    double width,
+  ) {
     return SizedBox(
       width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            teamName,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(teamName, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           _buildPlayerList(context, ref, players),
         ],
@@ -67,7 +82,10 @@ class LineupData extends ConsumerWidget {
   }
 
   Widget _buildPlayerList(
-      BuildContext context, WidgetRef ref, List<TeamPlayer>? players) {
+    BuildContext context,
+    WidgetRef ref,
+    List<TeamPlayer>? players,
+  ) {
     if (players == null || players.isEmpty) {
       return const Center(child: Text("No players"));
     }
@@ -166,8 +184,10 @@ class LineupData extends ConsumerWidget {
                     backgroundColor: getButtonColor(),
                     foregroundColor: getTextColor(),
                     // padding: EdgeInsets.zero,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 16,
+                    ),
                     minimumSize: const Size(0, 30),
                   ),
                   onPressed: () {
@@ -208,10 +228,11 @@ class LineupData extends ConsumerWidget {
           ),
         );
       },
-      separatorBuilder: (context, index) => Divider(
-        height: 0,
-        color: Theme.of(context).colorScheme.onInverseSurface,
-      ),
+      separatorBuilder:
+          (context, index) => Divider(
+            height: 0,
+            color: Theme.of(context).colorScheme.onInverseSurface,
+          ),
     );
   }
 }

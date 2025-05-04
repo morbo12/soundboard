@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
-import 'package:soundboard/features/innebandy_api/data/class_lineup.dart';
+
+import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'package:soundboard/utils/logger.dart';

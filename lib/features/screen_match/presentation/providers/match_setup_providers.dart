@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/data/class_federations.dart';
-import 'package:soundboard/features/innebandy_api/data/class_arena.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
+
+import 'package:soundboard/features/innebandy_api/domain/entities/arena.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/federation.dart';
+import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_match/application/match_setup_service.dart';
 import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
 import 'package:soundboard/properties.dart';
