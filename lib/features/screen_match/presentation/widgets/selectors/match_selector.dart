@@ -4,10 +4,13 @@ import 'package:intl/intl.dart';
 
 import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/features/innebandy_api/data/datasources/remote/player_statistics_service.dart';
 import 'package:soundboard/features/innebandy_api/data/datasources/remote/standings_service.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/features/innebandy_api/presentation/providers/player_statistics_provider.dart';
 import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 
 /// Widget for displaying and selecting matches from a list.
@@ -34,17 +37,23 @@ class MatchSelector extends ConsumerWidget {
     final apiClient = ref.watch(apiClientProvider);
     final matchService = MatchService(apiClient);
     final standingsService = StandingsService(apiClient);
+    final playerStatisticsService = PlayerStatisticsService(apiClient);
     final match = await matchService.getMatch(matchId: matchID);
 
+    // Update the selected match in the provider
     ref.read(selectedMatchProvider.notifier).state = match;
     await match.fetchLineup(ref);
     ref.read(lineupProvider.notifier).state = await match.getLineupByMatchId(
       matchID,
       ref,
     );
-    // Fetch matches for the given criteria
+    // Fetch standings for the given match
     ref.read(standingsProvider.notifier).state = await standingsService
         .getCurrentStandings(match, ref);
+
+    // Fetch player statistics for the given match
+    ref.read(playerStatisticsProvider.notifier).state =
+        await playerStatisticsService.getPlayerStatisticsFromMatch(match, ref);
   }
 
   @override
