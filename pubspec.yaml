@@ -130,18 +130,3 @@ flutter_launcher_icons:
   windows:
     generate: true
     image_path: "assets/icon/icon.jpg"
-  
-# msix_config:
-#   display_name: soundboard
-#   identity_name: io.lyxell.soundboard
-#   # msix_version: 1.0.0.0
-#   languages: sv-se
-#   logo_path: assets/icon/icon.jpg
-#   capabilities: internetClient
-#   certificate_path: C:\users\lars\flutter_code\cert\cert.pfx
-#   certificate_password: Key123
-#   install_certificate: false
-#   sign_msix: true
-#   # signtool_options: /fd SHA256 /f "C:\users\lars\flutter_code\cert.pfx" /p Key123
-#   app_installer:
-#     publish_folder_path: C:\Users\lars\OneDrive\Soundboard\Releases\io.lyxell.soundboard\windows
