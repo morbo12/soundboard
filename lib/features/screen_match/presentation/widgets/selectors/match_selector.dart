@@ -10,7 +10,6 @@ import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/innebandy_api/presentation/providers/player_statistics_provider.dart';
 import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
-import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 
 /// Widget for displaying and selecting matches from a list.

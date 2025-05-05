@@ -283,7 +283,9 @@ class StandingsDialog extends ConsumerWidget {
     }
 
     // Sort by points (descending)
-    final filteredStats = List<PlayerStatisticsRow>.from(playerStats.playerStatisticsRows);
+    final filteredStats = List<PlayerStatisticsRow>.from(
+      playerStats.playerStatisticsRows,
+    );
     filteredStats.sort((a, b) => b.points.compareTo(a.points));
 
     // Group by team
