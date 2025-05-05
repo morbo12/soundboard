@@ -206,6 +206,13 @@ class DraggableJingleButton extends ConsumerWidget {
                   title: const Text('Jingle Info'),
                   onTap: () => Navigator.of(context).pop('show_info'),
                 ),
+                if (audioFile !=
+                    null) // Only show delete option if a jingle is assigned
+                  ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.red),
+                    title: const Text('Delete Assignment'),
+                    onTap: () => Navigator.of(context).pop('delete_assignment'),
+                  ),
               ],
             ),
           ),
@@ -222,6 +229,9 @@ class DraggableJingleButton extends ConsumerWidget {
         break;
       case 'show_info':
         await _showJingleInfo(context);
+        break;
+      case 'delete_assignment':
+        await _deleteJingleAssignment(context, ref);
         break;
     }
   }
@@ -471,6 +481,45 @@ class DraggableJingleButton extends ConsumerWidget {
         ref
             .read(jingleGridConfigProvider.notifier)
             .assignJingle(index, selectedJingle);
+      }
+    }
+  }
+
+  Future<void> _deleteJingleAssignment(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    // Confirm deletion
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Deletion'),
+            content: const Text(
+              'Are you sure you want to remove this jingle assignment?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      // Remove the jingle assignment by setting it to null
+      ref.read(jingleGridConfigProvider.notifier).removeJingle(index);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Jingle assignment removed')),
+        );
       }
     }
   }
