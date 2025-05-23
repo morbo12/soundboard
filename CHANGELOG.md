@@ -6,50 +6,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ## [0.4.0-beta1] - 2025-04-12
+
 ### Added
+
 - Support for Deej soundboard using serial port, controlling Windows Mixer
 - Scratchpad for penalties
 - Long pressing lineup and events show the announcment text
+- VU-meter to visualize levels
+- Adjustable grid of buttons
+- Buttons can be assigned individual or categorys of jingles
+- Clicking on a match shows the current table of the serier and other available stats.
+-
 
 ### Changes
-- Modernized layout of settings
+
+- Modernized layout
 - TTS Settings moved into "settings"
 - Code generation by Cursor AI
+- New Application Cache dir
 
 ### Fixes
+
 - Lots of under-the-hood-updates to enhance layout and performance
 
 ### Removed
+
 - TTS Settings screen
 
 ## [0.3.15] - 2025-03-30
 
 ### Changed
+
 - Dropdown menus update for better visibility
 - Update 'Delete cache' logic/visual
 - SonarQube scanning
 
 ### Added
+
 - update debug code to a logger function
 
 ### Fixes
+
 - Lots of cleanup of unused code
 - added unit tests
 - add Const where appropriate
 - Say period event if period score is 0-0
 
-
 ## [0.3.14] - 2025-03-01
+
 ### Fixed
+
 - Fix: API Token is now caching properly
 - Overlay when creating tts from ssml
 - Period table handling corrected
-- "Notepad" corrected 
+- "Notepad" corrected
 - Android windows size corrected.
 
-
 ### Added
+
 - Support flac encoding (Windows, Android)
 - Support ogg encoding (Android)
 - Button for sequential play of jingle list
@@ -57,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Notepad" to display time, goal, assist and penalty in lineup
 
 ### Changed
+
 - Replaced picker due to dependencies
 - Selectorbutton now gives correct feedback
 - You can select any colorscheme from FlexColorScheme to the app
@@ -72,19 +89,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flutter version 3.29.0
 
 ### Removed
+
 - Unused buttons in settings
 - Lineup button in board (moved to lineup section)
 - msix module
 - cleanup unused code
 
 #### Flutter Pub upgrades
+
 ##### Major
+
 - Updated syncfusion_flutter_sliders from 27.1.52 to 28.1.41
 - Updated archive from 3.4.9 to 4.0.2
 - Updated syncfusion_flutter_core from 27.1.52 to 28.1.41
-- Updated _fe_analyzer_shared from 76.0.0 to 79.0.0
+- Updated \_fe_analyzer_shared from 76.0.0 to 79.0.0
 - Updated analyzer from 6.11.0 to 7.2.0
+
 ##### Minor
+
 - Updated build from 2.4.1 to 2.4.2
 - Updated build_config from 1.1.1 to 1.1.2
 - Updated build_daemon from 4.0.2 to 4.0.3
@@ -115,48 +137,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated web_socket_channel from 3.0.1 to 3.0.2
 - Updated win32 from 5.9.0 to 5.10.0
 
-
 ## [0.3.14-beta4] - 2025-02-01
+
 ### Added
+
 - Lineup now plays background music for home and away teams
 - A new features intro is added
+
 ### Changed
+
 - TTS AudioCodec audio48Khz192kBitrateMonoMp3 -> Webm24Khz16Bit24KbpsMonoOpus
+
 ### Fixed
+
 - Overlay when creating tts from ssml
 
 ### Removed
+
 - msix module
 - cleanup unused code
 
 ## [0.3.14-beta3] - 2025-02-01
 
 ### Changed
+
 - Scratchpad look and functionality updated
 - Random jingles has now a memory of the last 10 jingles to avoid playing the same jingle too often
 - Minor adjustments to Lineup data for better visibility
 - Playing channels now shows duration clock
 
 ### Fixed
+
 - Fix: API Token is now caching properly
 
 ## [0.3.14-beta2] - 2025-01-25
 
 ### Added
+
 - Button for sequential play of jingle list
 - Intermediate scores and ssml for vocies
 - "Notepad" to display time, goal, assist and penalty in lineup
+
 ### Changed
+
 - Rearranged buttons
 - Flutter version 3.27.3
+
 #### Flutter Pub upgrades
+
 ##### Major
+
 - Updated syncfusion_flutter_sliders from 27.1.52 to 28.1.41
 - Updated archive from 3.4.9 to 4.0.2
 - Updated syncfusion_flutter_core from 27.1.52 to 28.1.41
-- Updated _fe_analyzer_shared from 76.0.0 to 79.0.0
+- Updated \_fe_analyzer_shared from 76.0.0 to 79.0.0
 - Updated analyzer from 6.11.0 to 7.2.0
+
 ##### Minor
+
 - Updated build from 2.4.1 to 2.4.2
 - Updated build_config from 1.1.1 to 1.1.2
 - Updated build_daemon from 4.0.2 to 4.0.3
@@ -188,18 +226,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated win32 from 5.9.0 to 5.10.0
 
 ### Removed
+
 - Lineup button in board (moved to lineup section)
 
 ## [0.3.14-beta1] - 2024-12-23
 
 ### Added
+
 - Support flac encoding (Windows, Android)
 - Support ogg encoding (Android)
 
 ### Removed
+
 - Unused buttons in settings
 
 ## [0.3.13] - 2024-12-21
+
 - Fix: Update list of venues in Stockholm
 - Fix: Lineup is now displayed automatically
 - Update: flutter pub update
@@ -207,10 +249,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.12] - 2024-12-07
 
 ### Added
+
 - BREAKING CHANGE: Update build system to Visual Studio Community 2022
-    - requires vc_redist version > 14
-    - Windows 11: OK
-    - Windows 10: Update the VC redist package https://aka.ms/vs/17/release/vc_redist.x64.exe	
+  - requires vc_redist version > 14
+  - Windows 11: OK
+  - Windows 10: Update the VC redist package https://aka.ms/vs/17/release/vc_redist.x64.exe
 - Clickable lineup
 - Move to zip release
 - pipeline build
@@ -219,16 +262,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changelog entered into CHANGELOG.md
 
 ### Changed
-- adjusted lineup size
 
+- adjusted lineup size
 
 ## [0.3.12-beta4] - 2024-11-23
 
 ### Added
+
 - BREAKING CHANGE: Update build system to Visual Studio Community 2022
-    - requires vc_redist version > 14
-    - Windows 11: OK
-    - Windows 10: Update the VC redist package https://aka.ms/vs/17/release/vc_redist.x64.exe	
+  - requires vc_redist version > 14
+  - Windows 11: OK
+  - Windows 10: Update the VC redist package https://aka.ms/vs/17/release/vc_redist.x64.exe
 - Clickable lineup
 - Move to zip release
 - pipeline build
@@ -237,16 +281,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changelog entered into CHANGELOG.md
 
 ### Changed
+
 - adjusted lineup size
 
 ## [0.3.11] - 2024-11-08
 
 ### Added
+
 - Theme Changer
 
 ### Changed
+
 - bump pubspec versions
 - Lineup remodeled
 
 ### Removed
+
 - Volume control to master volume
