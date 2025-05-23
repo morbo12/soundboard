@@ -12,7 +12,7 @@ final filteredPlayerStatisticsProvider = Provider<PlayerStatistics?>((ref) {
   final playerStats = ref.watch(playerStatisticsProvider);
   final selectedMatch = ref.watch(selectedMatchProvider);
 
-  if (playerStats == null || selectedMatch == null) {
+  if (playerStats == null) {
     return playerStats;
   }
 

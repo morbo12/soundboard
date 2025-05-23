@@ -1,4 +1,3 @@
-import 'package:win32audio/win32audio.dart';
 import 'mixer_manager.dart';
 
 class MixerManagerExample {
