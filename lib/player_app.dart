@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:animated_introduction/animated_introduction.dart';
+import 'package:soundboard/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -185,9 +186,17 @@ class _PlayerState extends ConsumerState<Player> {
       appBar: AppBar(
         toolbarHeight: DefaultConstants().appBarHeight,
         elevation: 2,
-        title: Text(
-          'Game Soundboard ${_packageInfo.version}',
-          style: const TextStyle(fontSize: 12),
+        title: InkWell(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => const AboutDialogWidget(),
+            );
+          },
+          child: Text(
+            'FBTools Soundboard ${_packageInfo.version}',
+            style: const TextStyle(fontSize: 12),
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
