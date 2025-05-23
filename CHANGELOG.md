@@ -14,12 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Deej soundboard using serial port, controlling Windows Mixer
 - Scratchpad for penalties
 - Long pressing lineup and events show the announcment text
+- VU-meter to visualize levels
+- Adjustable grid of buttons
+- Buttons can be assigned individual or categorys of jingles
+- Clicking on a match shows the current table of the serier and other available stats.
+-
 
 ### Changes
 
-- Modernized layout of settings
+- Modernized layout
 - TTS Settings moved into "settings"
 - Code generation by Cursor AI
+- New Application Cache dir
 
 ### Fixes
 
