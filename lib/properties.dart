@@ -32,6 +32,8 @@ enum Settings {
   p1Volume,
   p2Volume,
   p3Volume,
+  gridColumns,
+  gridRows,
 }
 
 class SettingsBox extends EasyBox {
@@ -217,4 +219,11 @@ extension GeneralSettingsExtension on SettingsBox {
 
   set p3Volume(double value) => put(Settings.p3Volume, value);
   double get p3Volume => get(Settings.p3Volume, defaultValue: 0.3);
+
+  // Grid layout settings
+  set gridColumns(int value) => put(Settings.gridColumns, value);
+  int get gridColumns => get(Settings.gridColumns, defaultValue: 3);
+
+  set gridRows(int value) => put(Settings.gridRows, value);
+  int get gridRows => get(Settings.gridRows, defaultValue: 4);
 }

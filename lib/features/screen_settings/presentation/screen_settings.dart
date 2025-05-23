@@ -11,6 +11,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -70,11 +71,18 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SettingsSpotify(),
               const Gap(10),
 
+              settingsHeaderText("Grid Layout"),
+              settingsHeader2Text("Configure the layout of the jingle grid"),
+              const Gap(2),
+              const GridSettingsButton(),
+              const Gap(5),
+
               settingsHeaderText("Jinglar"),
               settingsHeader2Text("Hantera jinglar och ljudfiler"),
               const Gap(2),
               JingleSettings(),
               const Gap(5),
+
               settingsHeaderText("Enskilda jinglar"),
               settingsHeader2Text(
                 "Ladda upp en flac eller mp3-fil som kopplas till funktionen",
