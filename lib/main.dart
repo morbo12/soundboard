@@ -23,6 +23,7 @@ import 'package:easy_hive/easy_hive.dart'; // Package for easy integration of Hi
 import 'package:flutter/material.dart';
 import 'package:soundboard/theme_config.dart';
 import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/constants/globals.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,7 +92,7 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // navigatorKey: navigatorKey,
+      navigatorKey: navigatorKey,
       builder: (contex, child) {
         return ScrollConfiguration(
           behavior: MyCustomScrollBehavior(),

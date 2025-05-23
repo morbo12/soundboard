@@ -85,8 +85,9 @@ class StandingsDialog extends ConsumerWidget {
                       Tab(text: 'Player Statistics'),
                     ],
                     labelColor: theme.colorScheme.primary,
-                    unselectedLabelColor: theme.colorScheme.onSurface
-                        .withOpacity(0.6),
+                    unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(
+                      153,
+                    ),
                     indicatorColor: theme.colorScheme.primary,
                   ),
                   const SizedBox(height: 16),
@@ -129,12 +130,12 @@ class StandingsDialog extends ConsumerWidget {
               'S: Spelade matcher, V: Vunna matcher, O: Oavgjorda, F: Förluster, GM: Gjorda mål, IM: Insläppta mål, P: Poäng, Senaste 5: Form under de 5 senaste matcherna',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withAlpha(179),
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          Divider(color: theme.colorScheme.primary.withOpacity(0.3)),
+          Divider(color: theme.colorScheme.primary.withAlpha(77)),
           Table(
             columnWidths: const {
               0: FixedColumnWidth(32), // Position
@@ -175,7 +176,8 @@ class StandingsDialog extends ConsumerWidget {
                     color:
                         index.isEven
                             ? theme.colorScheme.surface
-                            : theme.colorScheme.surfaceVariant.withAlpha(3),
+                            : theme.colorScheme.surfaceContainerHighest
+                                .withAlpha(3),
                   ),
                   children: [
                     _buildCell(
@@ -307,12 +309,12 @@ class StandingsDialog extends ConsumerWidget {
               'Ma: Spelade matcher, Må: Gjorda mål, Ass: Målgivande passningar, Utv: Utvisningsminuter, P: Poäng',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withAlpha(179),
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          Divider(color: theme.colorScheme.primary.withOpacity(0.3)),
+          Divider(color: theme.colorScheme.primary.withAlpha(77)),
           ...statsByTeam.entries.map((entry) {
             final teamPlayers = entry.value;
             final teamName =
@@ -367,9 +369,8 @@ class StandingsDialog extends ConsumerWidget {
                           color:
                               index.isEven
                                   ? theme.colorScheme.surface
-                                  : theme.colorScheme.surfaceVariant.withAlpha(
-                                    3,
-                                  ),
+                                  : theme.colorScheme.surfaceContainerHighest
+                                      .withAlpha(3),
                         ),
                         children: [
                           Padding(
