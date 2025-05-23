@@ -32,7 +32,6 @@ class PeriodScores extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
-                  // fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
                 "${selectedMatch.goalsHomeTeam} - ${selectedMatch.goalsAwayTeam}",
@@ -130,7 +129,6 @@ class PeriodScores extends ConsumerWidget {
                 fontStyle: FontStyle.italic,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
-
               getPeriodScore(period),
             ),
           ],

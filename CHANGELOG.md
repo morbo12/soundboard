@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - VU-meter to visualize levels
 - Adjustable grid of buttons
 - Buttons can be assigned individual or categorys of jingles
-- Clicking on a match shows the current table of the serier and other available stats.
+- Clicking on a match shows the current table of the series and other available stats.
 -
 
 ### Changes

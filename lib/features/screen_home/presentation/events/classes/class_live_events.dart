@@ -11,6 +11,7 @@ import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
 
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
+import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
 import 'package:soundboard/utils/logger.dart';
 
 import '../../live/widget_event.dart';
@@ -123,6 +124,36 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
                     ),
                   ),
                   const PeriodScores(),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.surfaceTint,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => TtsDialog.show(context, ref),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.record_voice_over,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                        Text(
+                          '   Custom TTS',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -140,7 +171,7 @@ class _LiveEventsState extends ConsumerState<LiveEvents> {
               height:
                   MediaQuery.of(context).size.height > 600
                       ? MediaQuery.of(context).size.height -
-                          158 -
+                          205 -
                           DefaultConstants().appBarHeight
                       : 500,
               child: StreamBuilder(
