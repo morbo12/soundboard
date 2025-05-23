@@ -8,6 +8,8 @@ import 'package:soundboard/utils/logger.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:soundboard/features/screen_home/presentation/volume/classes/class_waveform_visualizer.dart'
+    show VUMeterVisualizer;
 
 // Global key to access the ColumnVolume widget
 final GlobalKey<_ColumnVolumeState> columnVolumeKey =
@@ -24,19 +26,11 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
   final Logger logger = const Logger('ColumnVolumeState');
 
   // Performance configuration
-  static const int _refreshIntervalSeconds = 3;
-  static const int _volumeDebounceMilliseconds = 50;
 
   Timer? _refreshTimer;
 
   // Debouncing
   final Map<String, Timer> _debounceTimers = {};
-  final Map<String, double> _lastVolumeValues = {};
-
-  DateTime _lastProcessRefresh = DateTime.now().subtract(
-    const Duration(days: 1),
-  );
-  static const Duration _processCacheValidity = Duration(minutes: 5);
 
   @override
   void dispose() {
@@ -73,8 +67,6 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to serial port connection state changes
-
     final c1VolumeValue = ref.watch(c1VolumeProvider);
     final c2VolumeValue = ref.watch(c2VolumeProvider);
     final c1PlayerState = ref.watch(c1StateProvider);
@@ -93,25 +85,48 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // First Row
+              // First Row with VU meter between channels
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildVolumeColumn('C1', c1PlayerState, c1VolumeValue.vol, (
-                      value,
-                    ) {
-                      ref
-                          .read(c1VolumeProvider.notifier)
-                          .updateVolume(value / 100);
-                    }),
-                    _buildVolumeColumn('C2', c2PlayerState, c2VolumeValue.vol, (
-                      value,
-                    ) {
-                      ref
-                          .watch(c2VolumeProvider.notifier)
-                          .updateVolume(value / 100);
-                    }),
+                    // C1 Volume
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'C1',
+                        c1PlayerState,
+                        c1VolumeValue.vol,
+                        (value) {
+                          ref
+                              .read(c1VolumeProvider.notifier)
+                              .updateVolume(value / 100);
+                        },
+                      ),
+                    ),
+                    // VU Meter in the middle
+                    SizedBox(
+                      width: 10,
+                      child: VUMeterVisualizer(
+                        channel1: jingleManager.audioManager.channel1,
+                        channel2: jingleManager.audioManager.channel2,
+                        isVisible: true,
+                        height: 210,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    // C2 Volume
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'C2',
+                        c2PlayerState,
+                        c2VolumeValue.vol,
+                        (value) {
+                          ref
+                              .read(c2VolumeProvider.notifier)
+                              .updateVolume(value / 100);
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -161,7 +176,6 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                             .updateVolume(value / 100);
                       },
                     ),
-
                     _buildVolumeColumn(
                       'P3',
                       PlayerState.stopped,
@@ -192,15 +206,21 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
     return Expanded(
       child: Column(
         children: [
-          // Modified order - slider first, then label
           Expanded(
-            child: SizedBox(
-              width: double.infinity,
-              child: _buildCustomSlider(
-                playerState: playerState,
-                volumeValue: volumeValue,
-                onVolumeChanged: onChanged,
-              ),
+            child: Row(
+              children: [
+                // Volume slider
+                Expanded(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: _buildCustomSlider(
+                      playerState: playerState,
+                      volumeValue: volumeValue,
+                      onVolumeChanged: onChanged,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           _buildCustomText(label),
@@ -248,30 +268,6 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
         onChanged: (dynamic value) => onVolumeChanged(value),
         value: volumeValue * 100,
       ),
-    );
-  }
-
-  void _debouncedVolumeChange(
-    String id,
-    double value,
-    Function(double) callback,
-  ) {
-    // Store the latest value
-    _lastVolumeValues[id] = value;
-
-    // Cancel existing timer if any
-    _debounceTimers[id]?.cancel();
-
-    // Create a new timer
-    _debounceTimers[id] = Timer(
-      const Duration(milliseconds: _volumeDebounceMilliseconds),
-      () {
-        // Only proceed if the component is still mounted
-        if (mounted) {
-          // Use the most recent value when the timer fires
-          callback(_lastVolumeValues[id] ?? value);
-        }
-      },
     );
   }
 }
