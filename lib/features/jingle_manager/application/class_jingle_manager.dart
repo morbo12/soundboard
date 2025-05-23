@@ -2,6 +2,8 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:soundboard/constants/globals.dart';
 import 'package:soundboard/features/jingle_manager/application/class_filesystem_helper.dart';
 import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
 import 'package:soundboard/constants/default_constants.dart';
@@ -42,8 +44,14 @@ class JingleManager {
     logger.d("Initializing DIRS");
 
     try {
+      // Check for migration before initializing directories
+      logger.d("Checking for migration");
+      await _checkAndHandleMigration();
+      logger.d("Migration checked");
       await _initializeDirectories();
+      logger.d("Directories initialized");
       await _loadAudioConfigurations();
+      logger.d("Audio configurations loaded");
       await initializeJingleFilesDirs();
 
       // Successfully initialized, show a success toast message.
@@ -58,6 +66,47 @@ class JingleManager {
         type: MsgType.error,
         message: "Error: Failed to initialize directories and files.",
       );
+    }
+  }
+
+  Future<void> _checkAndHandleMigration() async {
+    try {
+      final oldDir = await fileSystemHelper.checkMigrationNeeded();
+      if (oldDir != null) {
+        // Show a dialog to the user asking if they want to migrate
+        final shouldMigrate = await showDialog<bool>(
+          context: navigatorKey.currentContext!,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Migrate Cache Files'),
+                content: const Text(
+                  'Version 0.4 uses a new cache directory. I found files from the previous version of the app and I can move them to the new cache directory. This is a one-time migration and will only happen once.\n\nIf you do not migrate, you need to upload your jingles again.\n\nWould you like to migrate them to the new version?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+        );
+
+        if (shouldMigrate == true) {
+          // Perform the migration
+          await fileSystemHelper.migrateFiles(oldDir);
+          showMessageCallback(
+            type: MsgType.normal,
+            message: "Files migrated successfully!",
+          );
+        }
+      }
+    } catch (e) {
+      logger.e("Error during migration check: $e");
+      // Don't show error to user as this is not critical
     }
   }
 
