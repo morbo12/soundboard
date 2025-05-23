@@ -415,10 +415,11 @@ packages:
   flutter_libserialport:
     dependency: "direct main"
     description:
-      name: flutter_libserialport
-      sha256: d193b5ac819db6540d20cc8d20d9f5ec9e3396edb4d2c4a23c97863fa9132336
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: main
+      resolved-ref: bf6342c60e36a5a376123417932ad9454607a257
+      url: "https://github.com/NeariX67/flutter_libserialport"
+    source: git
     version: "0.5.0"
   flutter_localizations:
     dependency: "direct main"

@@ -70,7 +70,14 @@ dependencies:
   win32audio: ^1.4.0
   flutter_libserialport: ^0.5.0
   serial_port_win32: ^2.1.12
-    
+
+dependency_overrides:
+  # because of https://github.com/jpnurmi/flutter_libserialport/issues/128
+  flutter_libserialport:
+    git:
+      url: https://github.com/NeariX67/flutter_libserialport
+      ref: main
+      
 dev_dependencies:
   flutter_test:
     sdk: flutter
