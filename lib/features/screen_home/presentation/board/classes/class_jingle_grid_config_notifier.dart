@@ -2,8 +2,26 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/properties.dart';
+import 'package:soundboard/utils/logger.dart';
 import 'class_grid_jingle_config.dart';
 import 'default_jingle_assignments.dart';
+
+// Provider for grid settings
+final gridSettingsProvider =
+    StateNotifierProvider<GridSettingsNotifier, (int, int)>((ref) {
+      return GridSettingsNotifier();
+    });
+
+class GridSettingsNotifier extends StateNotifier<(int, int)> {
+  GridSettingsNotifier()
+    : super((SettingsBox().gridColumns, SettingsBox().gridRows));
+
+  void updateSettings(int columns, int rows) {
+    SettingsBox().gridColumns = columns;
+    SettingsBox().gridRows = rows;
+    state = (columns, rows);
+  }
+}
 
 // Provider to store the grid configuration
 final jingleGridConfigProvider =
@@ -16,6 +34,7 @@ final jingleGridConfigProvider =
 class JingleGridConfigNotifier extends StateNotifier<Map<int, AudioFile?>> {
   static const String _storageKey = 'jingle_grid_config';
   final _settingsBox = SettingsBox();
+  final Logger logger = const Logger('JingleGridConfigNotifier');
 
   JingleGridConfigNotifier() : super({}) {
     _initializeStorage();
@@ -55,8 +74,8 @@ class JingleGridConfigNotifier extends StateNotifier<Map<int, AudioFile?>> {
         });
 
         state = loadedState;
-      } catch (e) {
-        print('Error loading grid state: $e');
+      } catch (e, stackTrace) {
+        logger.e('Error loading grid state', e, stackTrace);
         await _initializeDefaultConfiguration();
       }
     }

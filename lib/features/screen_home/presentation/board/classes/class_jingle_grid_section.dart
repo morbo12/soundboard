@@ -6,14 +6,12 @@ import 'class_draggable_jingle_button.dart';
 import 'class_jingle_grid_config_notifier.dart';
 
 class JingleGridSection extends ConsumerWidget {
-  final int columns;
-  final int rows;
-
-  const JingleGridSection({super.key, this.columns = 3, this.rows = 4});
+  const JingleGridSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gridConfig = ref.watch(jingleGridConfigProvider);
+    final (columns, rows) = ref.watch(gridSettingsProvider);
 
     return FutureBuilder<List<AudioFile>>(
       future: AudioConfigurations.getSpecialJingles(),
