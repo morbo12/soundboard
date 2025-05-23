@@ -286,10 +286,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "27eb0ae77836989a3bc541ce55595e8ceee0992807f14511552a898ddd0d88ac"
+      sha256: "5b236382b47ee411741447c1f1e111459c941ea1b3f2b540dde54c210a3662af"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.1.0"
   dio:
     dependency: transitive
     description:
@@ -719,7 +719,7 @@ packages:
     source: hosted
     version: "3.2.0"
   path:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path
       sha256: "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
@@ -858,10 +858,10 @@ packages:
     dependency: "direct main"
     description:
       name: serial_port_win32
-      sha256: c4f64d42e4dff11aaf6fd729f612e5ceb6cfd7ff144bc9686b8d8f04f5180828
+      sha256: "97bb270983cd5ff3ce67fbc7db87789f52d4435d3141749a6144d8b1d02226a2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.12"
+    version: "2.2.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1015,18 +1015,18 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_core
-      sha256: "32649080c81f8699386988e27ea37b51f9c468f1e3a78a26f0540b665c762327"
+      sha256: "69fa2cccda6013770273fb726d03528c35d6ced00a28a7b21fae8c7d5c756a73"
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.4"
+    version: "29.2.5"
   syncfusion_flutter_sliders:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_sliders
-      sha256: "36c47dd7d04e2e21afd97f09da29f250e68b9e643e9b5ac24a1f803aac7a94b3"
+      sha256: "8c155af2bbd68bc4f4d3f5adcf63f2fafe5e085cebc58c02402ee4f4d8d4bb20"
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.4"
+    version: "29.2.5"
   synchronized:
     dependency: transitive
     description:
