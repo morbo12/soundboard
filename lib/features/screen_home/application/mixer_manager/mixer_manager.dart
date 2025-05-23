@@ -96,7 +96,7 @@ class MixerManager implements MixerManagerInterface {
   @override
   Future<double> getMasterVolume() async {
     if (!PlatformUtils.isWindows) return 0.0;
-    return await Audio.getVolume(AudioDeviceType.output) ?? 0.0;
+    return await Audio.getVolume(AudioDeviceType.output);
   }
 
   @override

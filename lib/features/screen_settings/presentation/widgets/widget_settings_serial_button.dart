@@ -89,7 +89,6 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
   List<String> parityOptions = ['None', 'Odd', 'Even', 'Mark', 'Space'];
   bool autoConnect = false;
   bool isConnecting = false;
-  String _currentProcess = '';
 
   @override
   void initState() {
@@ -195,7 +194,7 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     final serialPortManager = ref.watch(serialPortManagerWin32Provider);
-    List<String> definedProcesses = SettingsBox().processMappings.keys.toList();
+    SettingsBox().processMappings.keys.toList();
 
     return AlertDialog(
       title: Row(

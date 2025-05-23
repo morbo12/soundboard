@@ -55,7 +55,7 @@ class DraggableJingleButton extends ConsumerWidget {
     if (isCategoryOnly) {
       normalStyle = normalStyle.copyWith(
         backgroundColor: WidgetStateProperty.all<Color>(
-          Theme.of(context).colorScheme.primaryContainer.withOpacity(0.7),
+          Theme.of(context).colorScheme.primaryContainer.withAlpha(179),
         ),
         foregroundColor: WidgetStateProperty.all<Color>(
           Theme.of(context).colorScheme.onPrimaryContainer,

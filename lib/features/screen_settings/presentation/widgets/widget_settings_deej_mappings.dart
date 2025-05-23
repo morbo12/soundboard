@@ -49,7 +49,7 @@ class _DeejMappingsButtonState extends State<DeejMappingsButton> {
                   fontSize: 12,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                  ).colorScheme.onPrimaryContainer.withAlpha(204),
                 ),
               ),
             ],
