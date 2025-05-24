@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta2] - 2025-04-12
+
+### Added
+
+- VU-meter to visualize levels
+- Manual text can be transformed into Speech (TTS)
+
 ## [0.4.0-beta1] - 2025-04-12
 
 ### Added
@@ -14,11 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Deej soundboard using serial port, controlling Windows Mixer
 - Scratchpad for penalties
 - Long pressing lineup and events show the announcment text
-- VU-meter to visualize levels
 - Adjustable grid of buttons
 - Buttons can be assigned individual or categorys of jingles
 - Clicking on a match shows the current table of the series and other available stats.
--
 
 ### Changes
 
