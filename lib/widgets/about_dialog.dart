@@ -4,19 +4,46 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:gap/gap.dart';
 
 class AboutDialogWidget extends StatelessWidget {
-  const AboutDialogWidget({super.key});
+  final Future<PackageInfo>? packageInfoFuture;
+  final Future<bool> Function(Uri) urlLauncher;
+  final bool debugLogging;
+
+  const AboutDialogWidget({
+    super.key,
+    this.packageInfoFuture,
+    this.urlLauncher = launchUrl,
+    this.debugLogging = true,
+  });
 
   Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      throw Exception('Could not launch $url');
+    try {
+      if (!await urlLauncher(Uri.parse(url))) {
+        if (debugLogging) {
+          debugPrint('Could not launch $url');
+        }
+      }
+    } catch (e) {
+      if (debugLogging) {
+        debugPrint('Error launching URL: $e');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PackageInfo>(
-      future: PackageInfo.fromPlatform(),
+      future: packageInfoFuture ?? PackageInfo.fromPlatform(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          // Dismiss the dialog when there's an error
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+          return const SizedBox.shrink();
+        }
+
         if (!snapshot.hasData) {
           return const CircularProgressIndicator();
         }

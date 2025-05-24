@@ -228,7 +228,9 @@ class VUMeterPainter extends CustomPainter {
       if (peakHeight > currentHeight) {
         // Draw a more visible line for the peak
         paint.shader = null;
-        paint.color = Colors.white.withOpacity(0.6); // Increased opacity
+        paint.color = Colors.white.withAlpha(
+          153,
+        ); // Changed from withOpacity(0.6)
         paint.strokeWidth = 1.0; // Thicker line
         paint.style = PaintingStyle.stroke;
 
@@ -257,11 +259,10 @@ class VUMeterPainter extends CustomPainter {
   }
 
   void _drawScale(Canvas canvas, Size size, double scaleWidth) {
-    final paint =
-        Paint()
-          ..color = Colors.grey.shade600
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.5;
+    final paint = Paint()
+      ..color = Colors.grey.shade600
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,

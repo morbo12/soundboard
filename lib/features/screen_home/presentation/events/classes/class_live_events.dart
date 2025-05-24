@@ -1,17 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
 import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
-import 'package:soundboard/utils/logger.dart';
 import '../../live/widget_event.dart';
 
 part 'class_live_events.g.dart';
@@ -164,13 +161,12 @@ class LiveEvents extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (error, stackTrace) => Center(
-              child: Text(
-                'Error loading events: $error',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
+        error: (error, stackTrace) => Center(
+          child: Text(
+            'Error loading events: $error',
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
       ),
     );
   }
