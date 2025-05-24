@@ -8,14 +8,14 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.29.1'
-  JAVA_VERSION: '21'
+  FLUTTER_VERSION: "3.32.0"
+  JAVA_VERSION: "21"
 
 jobs:
   scan-job:
     timeout-minutes: 10
     name: SonarQube Scan Only
-    runs-on: windows-latest 
+    runs-on: windows-latest
     outputs:
       VERSION: ${{ steps.extract_info.outputs.VERSION }}
       NAME: ${{ steps.extract_info.outputs.NAME }}
@@ -25,32 +25,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-           
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
- 
+
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         env:
-            PUB_CACHE: 'D:\a\pub_cache'
+          PUB_CACHE: 'D:\a\pub_cache'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
+          channel: "stable"
           architecture: x64
           cache: true
-          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
-          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
 
       - name: Clean and Install Dependencies
         run: |
           flutter clean
           flutter pub get
-      
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
