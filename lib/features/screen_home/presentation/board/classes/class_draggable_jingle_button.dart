@@ -346,26 +346,26 @@ class DraggableJingleButton extends ConsumerWidget {
     final selectedCategory = await showDialog<AudioCategory>(
       context: context,
       builder:
-          (context) => AlertDialog(
+          (BuildContext dialogContext) => AlertDialog(
             title: const Text('Select Jingle Category'),
             content: SizedBox(
               width: double.maxFinite,
               child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: categories.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (dialogContext, index) {
                   final category = categories[index];
                   return LargeButton(
                     primaryText: category.toString().split('.').last,
-                    onTap: () => Navigator.of(context).pop(category),
-                    style: _getButtonStyle(context, category),
+                    onTap: () => Navigator.of(dialogContext).pop(category),
+                    style: _getButtonStyle(dialogContext, category),
                   );
                 },
               ),
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Navigator.of(dialogContext).pop(),
                 child: const Text('Cancel'),
               ),
             ],
@@ -377,7 +377,7 @@ class DraggableJingleButton extends ConsumerWidget {
       final selectionMode = await showDialog<String>(
         context: context,
         builder:
-            (context) => AlertDialog(
+            (BuildContext dialogContext) => AlertDialog(
               title: Text(
                 'Select Mode for ${selectedCategory.toString().split('.').last}',
               ),
@@ -390,7 +390,7 @@ class DraggableJingleButton extends ConsumerWidget {
                     subtitle: const Text(
                       'Assign a specific jingle to this button',
                     ),
-                    onTap: () => Navigator.of(context).pop('specific'),
+                    onTap: () => Navigator.of(dialogContext).pop('specific'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.shuffle),
@@ -398,7 +398,7 @@ class DraggableJingleButton extends ConsumerWidget {
                     subtitle: const Text(
                       'Play a random jingle from this category',
                     ),
-                    onTap: () => Navigator.of(context).pop('category'),
+                    onTap: () => Navigator.of(dialogContext).pop('category'),
                   ),
                 ],
               ),
@@ -449,7 +449,7 @@ class DraggableJingleButton extends ConsumerWidget {
       final selectedJingle = await showDialog<AudioFile>(
         context: context,
         builder:
-            (context) => AlertDialog(
+            (BuildContext dialogContext) => AlertDialog(
               title: Text(
                 'Select ${selectedCategory.toString().split('.').last}',
               ),
@@ -458,19 +458,22 @@ class DraggableJingleButton extends ConsumerWidget {
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: jingles.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (dialogContext, index) {
                     final jingle = jingles[index];
                     return LargeButton(
                       primaryText: jingle.displayName,
-                      onTap: () => Navigator.of(context).pop(jingle),
-                      style: _getButtonStyle(context, jingle.audioCategory),
+                      onTap: () => Navigator.of(dialogContext).pop(jingle),
+                      style: _getButtonStyle(
+                        dialogContext,
+                        jingle.audioCategory,
+                      ),
                     );
                   },
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancel'),
                 ),
               ],
