@@ -48,9 +48,9 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(2),
               const SerialPortSettingsButton(),
               const Gap(10),
-              settingsHeaderText("Deej Mixer Serial Port Settings"),
+              settingsHeaderText("Deej Mixer Slider mappings"),
               settingsHeader2Text(
-                "Configure the serial port connection for your Deej hardware mixer",
+                "Configure the mappings of sliders to processes for your Deej hardware mixer",
               ),
               const Gap(2),
               const DeejMappingsButton(),
