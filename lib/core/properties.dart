@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:soundboard/constants/default_constants.dart';
+import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:easy_hive/easy_hive.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
 
@@ -119,24 +119,23 @@ extension GeneralSettingsExtension on SettingsBox {
   }
 
   set themeMode(ThemeMode value) => put(Settings.themeMode, value.index);
-
   String get spotifyUri => get(
     Settings.spotifyUri,
-    defaultValue: DefaultConstants().spotifyUri,
+    defaultValue: AppConstants.defaultSpotifyUri,
   ); // Defaults to Spotify Top 100 World
   String get spotifyUrl => get(
     Settings.spotifyUrl,
-    defaultValue: DefaultConstants().spotifyUrl,
+    defaultValue: AppConstants.defaultSpotifyUrl,
   ); // Defaults to Spotify Top 100 World
 
   double get c1InitialVolume => get(
     Settings.c1InitialVolume,
-    defaultValue: kDebugMode ? 0.10 : DefaultConstants().c1InitialVolume,
+    defaultValue: kDebugMode ? 0.10 : AppConstants.defaultC1Volume,
   ); // 0.10 if we are in DebugMode
 
   double get c2InitialVolume => get(
     Settings.c2InitialVolume,
-    defaultValue: kDebugMode ? 0.10 : DefaultConstants().c2InitialVolume,
+    defaultValue: kDebugMode ? 0.10 : AppConstants.defaultC2Volume,
   ); // 0.10 if we are in DebugMode
   set spotifyUrl(String value) => put(Settings.spotifyUrl, value);
   set spotifyUri(String value) => put(Settings.spotifyUri, value);

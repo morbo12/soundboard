@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/constants/default_constants.dart';
+import 'package:soundboard/core/constants/message_types.dart';
+import 'package:soundboard/core/providers/config_providers.dart';
 import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
@@ -82,7 +84,7 @@ class _PlayerState extends ConsumerState<Player> {
       if (mounted && !_isLoading) {
         showMessage(
           message: 'Error initializing app: ${e.toString()}',
-          type: MsgType.error,
+          type: MessageType.error,
         );
       } else {
         print('App initialization error during startup: $e');
@@ -138,7 +140,7 @@ class _PlayerState extends ConsumerState<Player> {
       if (mounted && !_isLoading) {
         showMessage(
           message: 'Failed to initialize audio system: ${e.toString()}',
-          type: MsgType.error,
+          type: MessageType.error,
         );
       } else {
         print('JingleManager initialization error during app startup: $e');
@@ -156,7 +158,7 @@ class _PlayerState extends ConsumerState<Player> {
     }
   }
 
-  void showMessage({required String message, required MsgType type}) {
+  void showMessage({required String message, required MessageType type}) {
     // Only show message if context is available and mounted
     if (mounted && context.mounted) {
       FlutterToastr.show(
@@ -164,7 +166,7 @@ class _PlayerState extends ConsumerState<Player> {
         context,
         duration: FlutterToastr.lengthLong,
         position: FlutterToastr.bottom,
-        backgroundColor: type == MsgType.error ? Colors.red : Colors.green,
+        backgroundColor: type == MessageType.error ? Colors.red : Colors.green,
         textStyle: const TextStyle(color: Colors.white),
       );
     } else {
@@ -232,7 +234,7 @@ class _PlayerState extends ConsumerState<Player> {
           ? _buildMainContent(selectedIndex)
           : const Center(child: CircularProgressIndicator()),
       appBar: AppBar(
-        toolbarHeight: DefaultConstants().appBarHeight,
+        toolbarHeight: 15.0,
         elevation: 2,
         title: InkWell(
           onTap: () {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class BackgroundVolume extends StatefulWidget {
@@ -23,7 +23,7 @@ class _BackgroundVolumeState extends State<BackgroundVolume> {
         Column(
           children: [
             SizedBox(
-              width: ScreenSizeUtil.getWidth(context),
+              width: ResponsiveUtils.getWidth(context),
               child: Center(
                 child: SfSlider(
                   // Slider properties

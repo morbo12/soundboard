@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
 import 'package:soundboard/constants/default_constants.dart';
 
@@ -26,7 +27,10 @@ class JingleManagerNotifier extends AsyncNotifier<JingleManager> {
   /// Callback for showing messages from JingleManager
   /// During initialization, we only log messages to avoid UI issues
   /// Toast messages will be shown later when the UI is ready
-  void _showMessageCallback({required MsgType type, required String message}) {
+  void _showMessageCallback({
+    required MessageType type,
+    required String message,
+  }) {
     // During provider initialization, only log messages to avoid context issues
     // This prevents snackbar flashing during app startup
     print('JingleManager: [$type] $message');

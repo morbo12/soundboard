@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/constants/default_constants.dart';
+import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_deej_mappings.dart';
@@ -26,7 +27,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       body: Center(
         child: SizedBox(
-          width: ScreenSizeUtil.getWidth(context),
+          width: ResponsiveUtils.getWidth(context),
           child: ListView(
             children: [
               settingsHeaderText("Färgschema"),

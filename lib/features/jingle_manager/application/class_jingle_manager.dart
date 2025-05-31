@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/features/jingle_manager/application/class_filesystem_helper.dart';
 import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
 import 'package:soundboard/constants/default_constants.dart';
@@ -29,7 +30,7 @@ class JingleManager {
 
   AudioManager audioManager = AudioManager();
   final FileSystemHelper fileSystemHelper = FileSystemHelper();
-  Function({required MsgType type, required String message})
+  Function({required MessageType type, required String message})
   showMessageCallback;
   // Function(String) showErrorMessageCallback;
 
@@ -56,14 +57,14 @@ class JingleManager {
 
       // Successfully initialized, show a success toast message.
       showMessageCallback(
-        type: MsgType.normal,
+        type: MessageType.normal,
         message: "Jingles initialized successfully!",
       );
     } catch (e) {
       // Handle directory creation or file initialization errors.
       logger.d(e.toString());
       showMessageCallback(
-        type: MsgType.error,
+        type: MessageType.error,
         message: "Error: Failed to initialize directories and files.",
       );
     }
@@ -76,30 +77,29 @@ class JingleManager {
         // Show a dialog to the user asking if they want to migrate
         final shouldMigrate = await showDialog<bool>(
           context: navigatorKey.currentContext!,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Migrate Cache Files'),
-                content: const Text(
-                  'Version 0.4 uses a new cache directory. I found files from the previous version of the app and I can move them to the new cache directory. This is a one-time migration and will only happen once.\n\nIf you do not migrate, you need to upload your jingles again.\n\nWould you like to migrate them to the new version?',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('No'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Yes'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Migrate Cache Files'),
+            content: const Text(
+              'Version 0.4 uses a new cache directory. I found files from the previous version of the app and I can move them to the new cache directory. This is a one-time migration and will only happen once.\n\nIf you do not migrate, you need to upload your jingles again.\n\nWould you like to migrate them to the new version?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('No'),
               ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
         );
 
         if (shouldMigrate == true) {
           // Perform the migration
           await fileSystemHelper.migrateFiles(oldDir);
           showMessageCallback(
-            type: MsgType.normal,
+            type: MessageType.normal,
             message: "Files migrated successfully!",
           );
         }
@@ -131,7 +131,7 @@ class JingleManager {
     } catch (e) {
       logger.e("Error loading audio configurations: $e");
       showMessageCallback(
-        type: MsgType.error,
+        type: MessageType.error,
         message: "Error: Failed to load audio files",
       );
     }
@@ -150,7 +150,7 @@ class JingleManager {
     } catch (e) {
       logger.e("Error initializing directories: $e");
       showMessageCallback(
-        type: MsgType.error,
+        type: MessageType.error,
         message: "Error: Failed to create directories",
       );
     }

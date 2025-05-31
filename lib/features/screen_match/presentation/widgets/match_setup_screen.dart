@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/constants/default_constants.dart';
+import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/date_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/federation_selector.dart';
@@ -85,7 +85,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
             constraints: const BoxConstraints(maxWidth: 1200, minWidth: 600),
             child: Container(
               width: screenWidth * 0.8,
-              height: ScreenSizeUtil.getHeight(context),
+              height: ResponsiveUtils.getHeight(context),
               padding: const EdgeInsets.all(MatchSetupConstants.defaultPadding),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
