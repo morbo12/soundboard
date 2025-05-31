@@ -7,9 +7,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/core/constants/message_types.dart';
-import 'package:soundboard/core/providers/config_providers.dart';
 import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
@@ -210,7 +208,11 @@ class _PlayerState extends ConsumerState<Player> {
     final selectedIndex = ref.watch(selectedIndexProvider);
     if (_isLoading) {
       return const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(strokeCap: StrokeCap.round),
+          ),
+        ),
       );
     }
     // If intro is not completed, show intro screens
@@ -232,14 +234,17 @@ class _PlayerState extends ConsumerState<Player> {
     return Scaffold(
       body: isJingleManagerInitialized
           ? _buildMainContent(selectedIndex)
-          : const Center(child: CircularProgressIndicator()),
+          : const Center(
+              child: CircularProgressIndicator(strokeCap: StrokeCap.round),
+            ),
       appBar: AppBar(
-        toolbarHeight: 15.0,
-        elevation: 2,
+        toolbarHeight: 20.0,
         title: InkWell(
           onTap: () {
             showDialog(
               context: context,
+              useSafeArea: true,
+              barrierDismissible: true,
               builder: (context) => const AboutDialogWidget(),
             );
           },
@@ -249,40 +254,48 @@ class _PlayerState extends ConsumerState<Player> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        elevation: 2,
-        currentIndex: selectedIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        labelTextStyle: WidgetStateProperty.all(const TextStyle(fontSize: 10)),
+        height: 65,
+        elevation: 0,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
           if (index == 3) {
             launchSpotify();
           } else {
             ref.read(selectedIndexProvider.notifier).state = index;
           }
         },
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.shifting,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(FluentIcons.home_12_filled),
-            activeIcon: Icon(FluentIcons.home_12_filled),
+
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(FluentIcons.home_12_regular),
+            selectedIcon: Icon(FluentIcons.home_12_filled), // M3 selected state
+
             label: "Home",
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(FluentIcons.settings_28_regular),
-            activeIcon: Icon(FluentIcons.settings_16_filled),
+            selectedIcon: Icon(
+              FluentIcons.settings_28_filled,
+            ), // M3 selected state
+
             label: "Match",
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(FluentIcons.settings_16_regular),
-            activeIcon: Icon(FluentIcons.settings_16_filled),
+            selectedIcon: Icon(
+              FluentIcons.settings_16_filled,
+            ), // M3 selected state
+
             label: "Settings",
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(FluentIcons.music_note_2_16_regular),
-            activeIcon: Icon(FluentIcons.music_note_2_16_filled),
+            selectedIcon: Icon(
+              FluentIcons.music_note_2_16_filled,
+            ), // M3 selected state
+
             label: "Spotify",
           ),
         ],
