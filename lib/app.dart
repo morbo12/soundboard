@@ -9,7 +9,6 @@ import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
-import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';
@@ -54,6 +53,7 @@ class _PlayerState extends ConsumerState<Player> {
       imageAsset: 'assets/intros/intro2.png',
     ),
   ];
+
   void launchSpotify() async {
     final Uri url = Uri.parse(SettingsBox().spotifyUri);
     await launchUrl(url);
@@ -61,10 +61,6 @@ class _PlayerState extends ConsumerState<Player> {
 
   @override
   void initState() {
-    // _initPackageInfo();
-    // jingleManager = JingleManager(context);
-    // jingleManager.audioManager.setRef(ref);
-    // _initJingleManager();
     super.initState();
     _initializeApp();
   }
@@ -73,6 +69,7 @@ class _PlayerState extends ConsumerState<Player> {
   void dispose() {
     super.dispose();
   }
+
   Future<void> _initializeApp() async {
     try {
       await Future.wait([
@@ -81,70 +78,99 @@ class _PlayerState extends ConsumerState<Player> {
         _initJingleManager(),
       ]);
     } catch (e) {
-      showMessage(
-        message: 'Error initializing app: ${e.toString()}',
-        type: MsgType.error,
-      );
+      // Only show error message if we're past the loading phase to prevent snackbar flashing
+      if (mounted && !_isLoading) {
+        showMessage(
+          message: 'Error initializing app: ${e.toString()}',
+          type: MsgType.error,
+        );
+      } else {
+        print('App initialization error during startup: $e');
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }  Future<void> _initJingleManager() async {
-    // The JingleManager provider will initialize automatically when first accessed
-    // We just need to trigger it and wait for it to complete
-    final AsyncValue<JingleManager> jingleManagerAsync = ref.read(jingleManagerProvider);
-    
-    // Wait for initialization to complete
-    await jingleManagerAsync.when(
-      data: (jingleManager) async {
+      if (mounted) {
         setState(() {
-          isJingleManagerInitialized = true;
+          _isLoading = false;
         });
-      },
-      loading: () async {
-        // Wait for loading to complete by watching the provider
-        ref.listen(jingleManagerProvider, (previous, next) {
-          next.when(
-            data: (jingleManager) {
-              if (!isJingleManagerInitialized) {
+      }
+    }
+  }
+
+  Future<void> _initJingleManager() async {
+    // The JingleManager provider will initialize automatically when first accessed
+    // We just need to wait for it to complete initialization
+    try {
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      await jingleManagerAsync.when(
+        data: (jingleManager) async {
+          if (mounted) {
+            setState(() {
+              isJingleManagerInitialized = true;
+            });
+          }
+        },
+        loading: () async {
+          // Wait for the provider to finish loading by polling
+          while (mounted) {
+            await Future.delayed(const Duration(milliseconds: 100));
+            final currentState = ref.read(jingleManagerProvider);
+            if (currentState is AsyncData) {
+              if (mounted) {
                 setState(() {
                   isJingleManagerInitialized = true;
                 });
               }
-            },
-            loading: () {},
-            error: (error, stackTrace) {
-              showMessage(
-                message: 'Failed to initialize audio system: ${error.toString()}',
-                type: MsgType.error,
-              );
-            },
-          );
-        });
-      },
-      error: (error, stackTrace) async {
-        throw Exception(error);
-      },
-    );
+              break;
+            } else if (currentState is AsyncError) {
+              throw currentState.error ??
+                  Exception('Unknown JingleManager error');
+            }
+          }
+        },
+        error: (error, stackTrace) async {
+          // Log error but don't show toast during initialization to prevent flashing
+          print('JingleManager initialization failed: $error');
+          throw Exception('Failed to initialize JingleManager: $error');
+        },
+      );
+    } catch (e) {
+      // Only show error message if we're past the loading phase
+      if (mounted && !_isLoading) {
+        showMessage(
+          message: 'Failed to initialize audio system: ${e.toString()}',
+          type: MsgType.error,
+        );
+      } else {
+        print('JingleManager initialization error during app startup: $e');
+      }
+      rethrow;
+    }
   }
 
   Future<void> _initPackageInfo() async {
     final info = await PackageInfo.fromPlatform();
-    setState(() {
-      _packageInfo = info;
-    });
+    if (mounted) {
+      setState(() {
+        _packageInfo = info;
+      });
+    }
   }
 
   void showMessage({required String message, required MsgType type}) {
-    FlutterToastr.show(
-      message,
-      context,
-      duration: FlutterToastr.lengthLong,
-      position: FlutterToastr.bottom,
-      backgroundColor: type == MsgType.error ? Colors.red : Colors.green,
-      textStyle: const TextStyle(color: Colors.white),
-    );
+    // Only show message if context is available and mounted
+    if (mounted && context.mounted) {
+      FlutterToastr.show(
+        message,
+        context,
+        duration: FlutterToastr.lengthLong,
+        position: FlutterToastr.bottom,
+        backgroundColor: type == MsgType.error ? Colors.red : Colors.green,
+        textStyle: const TextStyle(color: Colors.white),
+      );
+    } else {
+      // Fallback to console logging if UI context is not available
+      print('Message [${type.name}]: $message');
+    }
   }
 
   Widget _buildMainContent(int currentIndex) {
@@ -160,17 +186,21 @@ class _PlayerState extends ConsumerState<Player> {
 
   Future<void> _loadIntroState() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isIntroCompleted = prefs.getBool(_introCompletedKey) ?? false;
-    });
+    if (mounted) {
+      setState(() {
+        _isIntroCompleted = prefs.getBool(_introCompletedKey) ?? false;
+      });
+    }
   }
 
   Future<void> _setIntroCompleted() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_introCompletedKey, true);
-    setState(() {
-      _isIntroCompleted = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isIntroCompleted = true;
+      });
+    }
   }
 
   @override
@@ -193,9 +223,7 @@ class _PlayerState extends ConsumerState<Player> {
         inactiveDotColor: Theme.of(context).colorScheme.onPrimaryFixed,
         indicatorType: IndicatorType.circle,
         onDone: () {
-          setState(() {
-            _setIntroCompleted();
-          });
+          _setIntroCompleted();
         },
       );
     }

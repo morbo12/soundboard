@@ -44,6 +44,7 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
 
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +53,14 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
       // Set up channel listeners
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       jingleManagerAsync.whenData((jingleManager) {
-        jingleManager.audioManager.channel1.onPlayerStateChanged.listen((state) {
+        jingleManager.audioManager.channel1.onPlayerStateChanged.listen((
+          state,
+        ) {
           ref.read(c1StateProvider.notifier).state = state;
         });
-        jingleManager.audioManager.channel2.onPlayerStateChanged.listen((state) {
+        jingleManager.audioManager.channel2.onPlayerStateChanged.listen((
+          state,
+        ) {
           ref.read(c2StateProvider.notifier).state = state;
         });
       });
@@ -104,12 +109,14 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                               .updateVolume(value / 100);
                         },
                       ),
-                    ),                    // VU Meter in the middle
+                    ), // VU Meter in the middle
                     SizedBox(
                       width: 10,
                       child: Consumer(
                         builder: (context, ref, child) {
-                          final jingleManagerAsync = ref.watch(jingleManagerProvider);
+                          final jingleManagerAsync = ref.watch(
+                            jingleManagerProvider,
+                          );
                           return jingleManagerAsync.when(
                             data: (jingleManager) => VUMeterVisualizer(
                               channel1: jingleManager.audioManager.channel1,
@@ -139,62 +146,66 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                     ),
                   ],
                 ),
-              ),
-
-              // Second Row
+              ), // Second Row
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildVolumeColumn(
-                      'Master',
-                      PlayerState.stopped,
-                      mainVolumeValue.vol,
-                      (value) {
-                        ref
-                            .watch(mainVolumeProvider.notifier)
-                            .updateVolume(value / 100);
-                      },
-                      isMaster: true,
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'Master',
+                        PlayerState.stopped,
+                        mainVolumeValue.vol,
+                        (value) {
+                          ref
+                              .watch(mainVolumeProvider.notifier)
+                              .updateVolume(value / 100);
+                        },
+                        isMaster: true,
+                      ),
                     ),
-                    _buildVolumeColumn(
-                      'P1',
-                      PlayerState.stopped,
-                      p1VolumeValue.vol,
-                      (value) {
-                        ref
-                            .watch(p1VolumeProvider.notifier)
-                            .updateVolume(value / 100);
-                      },
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'P1',
+                        PlayerState.stopped,
+                        p1VolumeValue.vol,
+                        (value) {
+                          ref
+                              .watch(p1VolumeProvider.notifier)
+                              .updateVolume(value / 100);
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              // Third Row
+              ), // Third Row
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildVolumeColumn(
-                      'P2',
-                      PlayerState.stopped,
-                      p2VolumeValue.vol,
-                      (value) {
-                        ref
-                            .watch(p2VolumeProvider.notifier)
-                            .updateVolume(value / 100);
-                      },
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'P2',
+                        PlayerState.stopped,
+                        p2VolumeValue.vol,
+                        (value) {
+                          ref
+                              .watch(p2VolumeProvider.notifier)
+                              .updateVolume(value / 100);
+                        },
+                      ),
                     ),
-                    _buildVolumeColumn(
-                      'P3',
-                      PlayerState.stopped,
-                      p3VolumeValue.vol,
-                      (value) {
-                        ref
-                            .watch(p3VolumeProvider.notifier)
-                            .updateVolume(value);
-                      },
+                    Expanded(
+                      child: _buildVolumeColumn(
+                        'P3',
+                        PlayerState.stopped,
+                        p3VolumeValue.vol,
+                        (value) {
+                          ref
+                              .watch(p3VolumeProvider.notifier)
+                              .updateVolume(value);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -213,29 +224,17 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
     Function(double) onChanged, {
     bool isMaster = false,
   }) {
-    return Expanded(
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                // Volume slider
-                Expanded(
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: _buildCustomSlider(
-                      playerState: playerState,
-                      volumeValue: volumeValue,
-                      onVolumeChanged: onChanged,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        Expanded(
+          child: _buildCustomSlider(
+            playerState: playerState,
+            volumeValue: volumeValue,
+            onVolumeChanged: onChanged,
           ),
-          _buildCustomText(label),
-        ],
-      ),
+        ),
+        _buildCustomText(label),
+      ],
     );
   }
 
