@@ -23,7 +23,7 @@ import 'package:easy_hive/easy_hive.dart'; // Package for easy integration of Hi
 import 'package:flutter/material.dart';
 import 'package:soundboard/core/theme/theme_config.dart';
 import 'package:soundboard/utils/logger.dart';
-import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/core/constants/globals.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
