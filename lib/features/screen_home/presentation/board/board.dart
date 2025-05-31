@@ -8,7 +8,7 @@ import 'package:soundboard/features/screen_home/presentation/board/classes/class
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_1_stop_goal_row.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_section.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/widget_match_card.dart';
+import 'package:soundboard/features/screen_home/presentation/board/widgets/widget_match_card.dart';
 
 class BoardSection extends ConsumerWidget {
   final double width;

@@ -2,12 +2,12 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/core/utils/providers.dart';
 
 class AppTheme {
   static const _commonSubThemes = FlexSubThemesData(
     blendOnColors: true,
-    defaultRadius: 5.0,
+    defaultRadius: 8.0,
     inputDecoratorIsFilled: true,
     alignedDropdown: true,
     tooltipRadius: 4,
@@ -43,8 +43,9 @@ class AppTheme {
 
     return baseTheme.copyWith(
       textTheme: GoogleFonts.notoSansTextTheme(baseTheme.textTheme),
-      primaryTextTheme:
-          GoogleFonts.notoSansTextTheme(baseTheme.primaryTextTheme),
+      primaryTextTheme: GoogleFonts.notoSansTextTheme(
+        baseTheme.primaryTextTheme,
+      ),
     );
   }
 

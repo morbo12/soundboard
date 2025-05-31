@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'class_draggable_jingle_button.dart';
+import '../../../../../common/widgets/class_draggable_jingle_button.dart';
 import 'class_jingle_grid_config_notifier.dart';
 
 class JingleGridSection extends ConsumerWidget {

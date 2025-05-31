@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 
 class PlayerProgressBar extends ConsumerStatefulWidget {
@@ -11,38 +11,40 @@ class PlayerProgressBar extends ConsumerStatefulWidget {
   ConsumerState<PlayerProgressBar> createState() => _PlayerProgressBarState();
 }
 
-class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
-  @override
+class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {  @override
   void initState() {
     super.initState();
 
     // Listen to system volume change
     Future.delayed(Duration.zero, () async {
-      jingleManager.audioManager.channel1.onDurationChanged.listen((
-        Duration d,
-      ) {
-        //get the duration of audio
-        ref.read(maxdurationProviderC1.notifier).state = d;
-      });
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      jingleManagerAsync.whenData((jingleManager) {
+        jingleManager.audioManager.channel1.onDurationChanged.listen((
+          Duration d,
+        ) {
+          //get the duration of audio
+          ref.read(maxdurationProviderC1.notifier).state = d;
+        });
 
-      jingleManager.audioManager.channel1.onPositionChanged.listen((
-        Duration p,
-      ) {
-        // currentpos =
-        ref.read(currentposProviderC1.notifier).state = p;
-      });
+        jingleManager.audioManager.channel1.onPositionChanged.listen((
+          Duration p,
+        ) {
+          // currentpos =
+          ref.read(currentposProviderC1.notifier).state = p;
+        });
 
-      jingleManager.audioManager.channel2.onDurationChanged.listen((
-        Duration d,
-      ) {
-        //get the duration of audio
-        ref.read(maxdurationProviderC2.notifier).state = d;
-      });
+        jingleManager.audioManager.channel2.onDurationChanged.listen((
+          Duration d,
+        ) {
+          //get the duration of audio
+          ref.read(maxdurationProviderC2.notifier).state = d;
+        });
 
-      jingleManager.audioManager.channel2.onPositionChanged.listen((
-        Duration p,
-      ) {
-        ref.read(currentposProviderC2.notifier).state = p;
+        jingleManager.audioManager.channel2.onPositionChanged.listen((
+          Duration p,
+        ) {
+          ref.read(currentposProviderC2.notifier).state = p;
+        });
       });
     });
   }
@@ -67,8 +69,9 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 // buffered: buffered,
                 total: maxdurationC1,
                 onSeek: (duration) {},
-                progressBarColor:
-                    Theme.of(context).colorScheme.onSecondaryContainer,
+                progressBarColor: Theme.of(
+                  context,
+                ).colorScheme.onSecondaryContainer,
                 thumbColor: Theme.of(context).colorScheme.onSecondaryContainer,
                 baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
                 timeLabelLocation: TimeLabelLocation.sides,
@@ -89,8 +92,9 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 // buffered: buffered,
                 total: maxdurationC2,
                 onSeek: (duration) {},
-                progressBarColor:
-                    Theme.of(context).colorScheme.onSecondaryContainer,
+                progressBarColor: Theme.of(
+                  context,
+                ).colorScheme.onSecondaryContainer,
                 thumbColor: Theme.of(context).colorScheme.onSecondaryContainer,
                 baseBarColor: Theme.of(context).colorScheme.onInverseSurface,
                 timeLabelLocation: TimeLabelLocation.sides,

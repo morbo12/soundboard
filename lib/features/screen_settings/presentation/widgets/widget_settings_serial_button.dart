@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/features/screen_home/application/serialport_manager/class_serialport_provider_win32.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SerialPortSettingsButton extends StatefulWidget {
@@ -16,10 +16,9 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
   @override
   Widget build(BuildContext context) {
     // Get current settings for button display
-    final portName =
-        SettingsBox().serialPortName.isEmpty
-            ? 'Not configured'
-            : SettingsBox().serialPortName;
+    final portName = SettingsBox().serialPortName.isEmpty
+        ? 'Not configured'
+        : SettingsBox().serialPortName;
     final autoConnect = SettingsBox().serialAutoConnect;
 
     return ElevatedButton(
@@ -99,12 +98,11 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
 
   void _refreshPortList() {
     setState(() {
-      availablePorts =
-          ref
-              .read(serialPortManagerWin32Provider)
-              .portList
-              .map((port) => port.portName)
-              .toList();
+      availablePorts = ref
+          .read(serialPortManagerWin32Provider)
+          .portList
+          .map((port) => port.portName)
+          .toList();
     });
   }
 
@@ -263,16 +261,14 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
                       return ListTile(
                         title: Text(port),
                         selected: isSelected,
-                        selectedTileColor:
-                            Theme.of(context).colorScheme.primaryContainer,
+                        selectedTileColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
                         leading: Icon(
                           Icons.usb,
-                          color:
-                              isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         onTap: () {
                           SettingsBox().serialPortName = port;
@@ -377,14 +373,14 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
         ),
         ElevatedButton(
           onPressed: isConnecting ? null : _connectToPort,
-          child:
-              isConnecting
-                  ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                  : const Text('Connect'),
+          style: ElevatedButton.styleFrom(),
+          child: isConnecting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Connect'),
         ),
         ElevatedButton(
           onPressed: serialPortManager.isConnected ? _disconnectPort : null,
@@ -434,13 +430,12 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
                       value: value,
                       isExpanded: true,
                       onChanged: onChanged,
-                      items:
-                          items.map<DropdownMenuItem<String>>((String item) {
-                            return DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item),
-                            );
-                          }).toList(),
+                      items: items.map<DropdownMenuItem<String>>((String item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),

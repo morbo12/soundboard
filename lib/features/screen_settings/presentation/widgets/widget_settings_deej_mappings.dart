@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 
 class DeejMappingsButton extends StatefulWidget {
   const DeejMappingsButton({super.key});
@@ -15,10 +15,9 @@ class _DeejMappingsButtonState extends State<DeejMappingsButton> {
   Widget build(BuildContext context) {
     // Get current mappings count for button display
     final mappingsCount = SettingsBox().sliderMappings.length;
-    final activeMappings =
-        SettingsBox().sliderMappings
-            .where((m) => m.processName.isNotEmpty)
-            .length;
+    final activeMappings = SettingsBox().sliderMappings
+        .where((m) => m.processName.isNotEmpty)
+        .length;
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -141,21 +140,20 @@ class _DeejMappingsDialogState extends State<DeejMappingsDialog> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children:
-                      _processNames.map((name) {
-                        return Chip(
-                          label: Text(name),
-                          onDeleted: () {
-                            setState(() {
-                              _processNames.remove(name);
-                              // Remove all mappings for this process
-                              SettingsBox().sliderMappings.removeWhere(
-                                (m) => m.processName == name,
-                              );
-                            });
-                          },
-                        );
-                      }).toList(),
+                  children: _processNames.map((name) {
+                    return Chip(
+                      label: Text(name),
+                      onDeleted: () {
+                        setState(() {
+                          _processNames.remove(name);
+                          // Remove all mappings for this process
+                          SettingsBox().sliderMappings.removeWhere(
+                            (m) => m.processName == name,
+                          );
+                        });
+                      },
+                    );
+                  }).toList(),
                 ),
               ],
 

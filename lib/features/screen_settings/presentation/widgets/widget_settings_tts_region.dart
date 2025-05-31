@@ -2,7 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class SettingsTtsRegion extends ConsumerStatefulWidget {
@@ -65,8 +65,9 @@ class _SettingsTtsRegionState extends ConsumerState<SettingsTtsRegion> {
                   return ListTile(
                     title: Text(region),
                     selected: region == selectedRegion,
-                    selectedTileColor:
-                        Theme.of(context).colorScheme.primaryContainer,
+                    selectedTileColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
                     onTap: () {
                       // Update the selected region
                       final regionId = AzureRegionManager().getIdByName(region);

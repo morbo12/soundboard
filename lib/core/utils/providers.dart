@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_mainvolume.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_system_mainvolume.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 
 final lineupFileProvider = StateProvider<String>((ref) {
   return "";
@@ -58,10 +58,11 @@ final voicesProvider = StateProvider<VoicesSuccessUniversal>((ref) {
   return VoicesSuccessUniversal(voices: [], code: 200, reason: "N/A");
 });
 
-final mainVolumeProvider = StateNotifierProvider<
-  SystemVolumeNotifier,
-  SystemVolume
->((ref) => SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)));
+final mainVolumeProvider =
+    StateNotifierProvider<SystemVolumeNotifier, SystemVolume>(
+      (ref) =>
+          SystemVolumeNotifier(SystemVolume(vol: SettingsBox().mainVolume)),
+    );
 
 final p1VolumeProvider =
     StateNotifierProvider<SystemVolumeNotifier, SystemVolume>(

@@ -10,8 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/scrolling/presentation/scroll_config.dart';
-import 'package:soundboard/properties.dart'; // Local file for handling soundboard properties.
-import 'package:soundboard/player_app.dart'; // Local main app file.
+import 'package:soundboard/core/properties.dart'; // Local file for handling soundboard properties.
+import 'package:soundboard/app.dart'; // Local main app file.
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings_adapter.dart';
 import 'package:hive/hive.dart';
 
@@ -21,7 +21,7 @@ import 'package:easy_hive/easy_hive.dart'; // Package for easy integration of Hi
 
 // Flutter Imports
 import 'package:flutter/material.dart';
-import 'package:soundboard/theme_config.dart';
+import 'package:soundboard/core/theme/theme_config.dart';
 import 'package:soundboard/utils/logger.dart';
 import 'package:soundboard/constants/globals.dart';
 

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class BackgroundVolume extends StatefulWidget {
-  const BackgroundVolume({
-    super.key,
-  });
+  const BackgroundVolume({super.key});
 
   @override
   State<BackgroundVolume> createState() => _BackgroundVolumeState();

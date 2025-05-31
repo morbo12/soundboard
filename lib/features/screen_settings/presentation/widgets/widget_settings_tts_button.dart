@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_voice.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_region.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_servicekey.dart';

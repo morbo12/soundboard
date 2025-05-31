@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:soundboard/constants/matchstatus.dart';
+import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
-import '../widgets/standings_dialog.dart';
+import 'standings_dialog.dart';
 
 class MatchCard extends ConsumerWidget {
   final IbyMatch match;
@@ -43,9 +43,8 @@ class MatchCard extends ConsumerWidget {
     if (standings != null) {
       showDialog(
         context: context,
-        builder:
-            (context) =>
-                StandingsDialog(competitionName: match.competitionName),
+        builder: (context) =>
+            StandingsDialog(competitionName: match.competitionName),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,17 +61,16 @@ class MatchCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final statusText =
         StatusDescriptions.descriptions[match.matchStatus] ?? 'N/A';
-    final statusColor =
-        match.matchStatus == 2
-            ? theme.colorScheme.tertiary
-            : match.matchStatus == 1
-            ? theme.colorScheme.secondary
-            : theme.colorScheme.primary;
+    final statusColor = match.matchStatus == 2
+        ? theme.colorScheme.tertiary
+        : match.matchStatus == 1
+        ? theme.colorScheme.secondary
+        : theme.colorScheme.primary;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       clipBehavior: Clip.antiAlias,
-      color: theme.colorScheme.surfaceContainerHigh,
+      color: theme.colorScheme.surfaceContainer,
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(8),

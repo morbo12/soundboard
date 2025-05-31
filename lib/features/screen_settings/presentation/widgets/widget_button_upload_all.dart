@@ -1,20 +1,21 @@
 import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_button.dart';
-import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/common/widgets/class_large_button.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/utils/logger.dart';
 
-class UploadButtonAll extends StatefulWidget {
+class UploadButtonAll extends ConsumerStatefulWidget {
   const UploadButtonAll({super.key}); // Updated constructor
 
   @override
-  UploadButtonToDirState createState() => UploadButtonToDirState();
+  ConsumerState<UploadButtonAll> createState() => UploadButtonToDirState();
 }
 
-class UploadButtonToDirState extends State<UploadButtonAll> {
+class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
   File? file;
   final ValueNotifier<String?> selectedPath = ValueNotifier(null);
   final Logger logger = const Logger('UploadButtonAll');
@@ -44,13 +45,14 @@ class UploadButtonToDirState extends State<UploadButtonAll> {
 
   @override
   Widget build(BuildContext context) {
-    return Button(
+    return LargeButton(
       style: ElevatedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
         backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
         fixedSize: const Size.fromHeight(100),
-        // side: BorderSide(
-        // width: 1, color: Theme.of(context).colorScheme.primaryContainer),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Less round corners
+        ),
       ),
       noLines: 1,
       isSelected: true,
@@ -66,7 +68,7 @@ class UploadButtonToDirState extends State<UploadButtonAll> {
               await _unzipFile(file: selectedPath.value);
             }
 
-            jingleManager.initialize();
+            ref.read(jingleManagerProvider.notifier).reinitialize();
           },
           onError: (errorMessage) {
             // Handle error, maybe show a snackbar

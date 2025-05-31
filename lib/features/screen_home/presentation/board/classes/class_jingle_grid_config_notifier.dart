@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 import 'class_grid_jingle_config.dart';
 import 'default_jingle_assignments.dart';

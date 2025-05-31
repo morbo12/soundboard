@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 
@@ -10,7 +10,7 @@ import 'package:soundboard/features/jingle_manager/application/class_audiocatego
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 // [Keep other imports...]
 
@@ -122,21 +122,19 @@ class _LineupState extends ConsumerState<Lineup> {
                   const SizedBox(height: 16),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-                    transitionBuilder: (
-                      Widget child,
-                      Animation<double> animation,
-                    ) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0.0, 0.5),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        ),
-                      );
-                    },
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.0, 0.5),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
                     child: Text(
                       loadingMessages[currentMessageIndex],
                       key: ValueKey<int>(currentMessageIndex),
@@ -222,26 +220,32 @@ class _LineupState extends ConsumerState<Lineup> {
   void _showTextDialog(BuildContext context, String text) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Lineup Announcement Text'),
-            content: SingleChildScrollView(child: Text(text)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Lineup Announcement Text'),
+        content: SingleChildScrollView(child: Text(text)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
+        ],
+      ),
     );
   }
-
   Future<void> _handlePlayLineup(dynamic selectedMatch) async {
     // Show loading indicator and start message rotation
     ref.read(isLoadingProvider.notifier).state = true;
     startMessageRotation();
 
     try {
+      // Get the jingle manager from provider
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      final jingleManager = await jingleManagerAsync.when(
+        data: (manager) => manager,
+        loading: () => throw Exception('JingleManager not loaded'),
+        error: (error, stack) => throw Exception('JingleManager error: $error'),
+      );
+
       final textToSpeechService = ref.read(textToSpeechServiceProvider);
       // final speech =
       //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);

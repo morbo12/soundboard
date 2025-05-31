@@ -5,7 +5,7 @@ import 'package:soundboard/features/innebandy_api/domain/entities/federation.dar
 import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_match/application/match_setup_service.dart';
 import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 
 final matchSetupServiceProvider = Provider((ref) => MatchSetupService(ref));
 

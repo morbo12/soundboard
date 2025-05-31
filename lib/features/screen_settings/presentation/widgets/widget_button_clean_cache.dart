@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_button.dart';
+import 'package:soundboard/common/widgets/class_large_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
 
 class CleanCacheButton extends StatefulWidget {
@@ -17,7 +17,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Button(
+        LargeButton(
           style: ElevatedButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
             backgroundColor: Theme.of(context).colorScheme.errorContainer,

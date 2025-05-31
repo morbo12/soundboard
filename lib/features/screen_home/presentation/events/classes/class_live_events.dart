@@ -104,7 +104,17 @@ class LiveEvents extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildStreamingButton(context, ref),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
           const PeriodScores(),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
           _buildTtsButton(context, ref),
         ],
       ),

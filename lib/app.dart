@@ -1,17 +1,17 @@
 import 'dart:async';
 
 import 'package:animated_introduction/animated_introduction.dart';
-import 'package:soundboard/widgets/about_dialog.dart';
+import 'package:soundboard/about/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';
 import 'package:soundboard/features/screen_settings/presentation/screen_settings.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -73,7 +73,6 @@ class _PlayerState extends ConsumerState<Player> {
   void dispose() {
     super.dispose();
   }
-
   Future<void> _initializeApp() async {
     try {
       await Future.wait([
@@ -91,21 +90,43 @@ class _PlayerState extends ConsumerState<Player> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _initJingleManager() async {
-    try {
-      jingleManager = JingleManager(showMessageCallback: showMessage);
-      await jingleManager.initialize();
-      setState(() {
-        isJingleManagerInitialized = true;
-      });
-    } catch (e) {
-      showMessage(
-        message: 'Failed to initialize audio system: ${e.toString()}',
-        type: MsgType.error,
-      );
-    }
+  }  Future<void> _initJingleManager() async {
+    // The JingleManager provider will initialize automatically when first accessed
+    // We just need to trigger it and wait for it to complete
+    final AsyncValue<JingleManager> jingleManagerAsync = ref.read(jingleManagerProvider);
+    
+    // Wait for initialization to complete
+    await jingleManagerAsync.when(
+      data: (jingleManager) async {
+        setState(() {
+          isJingleManagerInitialized = true;
+        });
+      },
+      loading: () async {
+        // Wait for loading to complete by watching the provider
+        ref.listen(jingleManagerProvider, (previous, next) {
+          next.when(
+            data: (jingleManager) {
+              if (!isJingleManagerInitialized) {
+                setState(() {
+                  isJingleManagerInitialized = true;
+                });
+              }
+            },
+            loading: () {},
+            error: (error, stackTrace) {
+              showMessage(
+                message: 'Failed to initialize audio system: ${error.toString()}',
+                type: MsgType.error,
+              );
+            },
+          );
+        });
+      },
+      error: (error, stackTrace) async {
+        throw Exception(error);
+      },
+    );
   }
 
   Future<void> _initPackageInfo() async {
@@ -179,10 +200,9 @@ class _PlayerState extends ConsumerState<Player> {
       );
     }
     return Scaffold(
-      body:
-          isJingleManagerInitialized
-              ? _buildMainContent(selectedIndex)
-              : const Center(child: CircularProgressIndicator()),
+      body: isJingleManagerInitialized
+          ? _buildMainContent(selectedIndex)
+          : const Center(child: CircularProgressIndicator()),
       appBar: AppBar(
         toolbarHeight: DefaultConstants().appBarHeight,
         elevation: 2,

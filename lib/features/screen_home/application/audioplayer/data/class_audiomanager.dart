@@ -9,12 +9,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:soundboard/constants/default_constants.dart';
 import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/player_fade.dart';
 import 'package:flutter/foundation.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 /// Enum representing the available audio channels
@@ -113,10 +113,9 @@ class AudioManager {
     try {
       final fade = Fade(ref);
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
-      final provider =
-          channel == AudioChannel.channel1
-              ? c1VolumeProvider
-              : c2VolumeProvider;
+      final provider = channel == AudioChannel.channel1
+          ? c1VolumeProvider
+          : c2VolumeProvider;
       logger.d(
         "[_fadeChannel] Fading channel ${channel.name} duration $duration",
       );
@@ -151,10 +150,9 @@ class AudioManager {
     bool isBackgroundMusic = false,
   }) async {
     try {
-      final otherChannel =
-          channel == AudioChannel.channel1
-              ? AudioChannel.channel2
-              : AudioChannel.channel1;
+      final otherChannel = channel == AudioChannel.channel1
+          ? AudioChannel.channel2
+          : AudioChannel.channel1;
 
       await _setChannelVolume(ref, channel, 0.0);
       logger.d("Fading and stopping channel ${otherChannel.name}");
@@ -207,10 +205,9 @@ class AudioManager {
       logger.d("Setting volume to $volume for channel ${channel.name}");
       await player.setVolume(volume);
 
-      final provider =
-          channel == AudioChannel.channel1
-              ? c1VolumeProvider
-              : c2VolumeProvider;
+      final provider = channel == AudioChannel.channel1
+          ? c1VolumeProvider
+          : c2VolumeProvider;
       ref.read(provider.notifier).updateVolume(volume);
     } catch (e) {
       logger.e("Error setting channel volume: $e");
@@ -227,10 +224,9 @@ class AudioManager {
     bool isBackgroundMusic = false,
   }) async {
     try {
-      final categoryInstances =
-          audioInstances
-              .where((instance) => instance.audioCategory == category)
-              .toList();
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
 
       if (categoryInstances.isEmpty) return;
 
@@ -244,8 +240,9 @@ class AudioManager {
         audioFile = categoryInstances[0];
       }
 
-      final channel =
-          isBackgroundMusic ? AudioChannel.channel1 : _getAvailableChannel();
+      final channel = isBackgroundMusic
+          ? AudioChannel.channel1
+          : _getAvailableChannel();
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
       logger.d("[playAudio] fadeDuration is $fadeDuration");
@@ -381,10 +378,9 @@ class AudioManager {
   Future<void> playHorn(WidgetRef ref) async {
     try {
       const category = AudioCategory.hornJingle;
-      final categoryInstances =
-          audioInstances
-              .where((instance) => instance.audioCategory == category)
-              .toList();
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
 
       if (categoryInstances.isEmpty) return;
 

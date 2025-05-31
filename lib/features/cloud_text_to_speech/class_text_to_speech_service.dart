@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/globals.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
@@ -61,9 +61,13 @@ class TextToSpeechService {
       pitch: 'default',
     );
 
-    final ttsResponse = await TtsMicrosoft.convertTts(params);
+    final ttsResponse = await TtsMicrosoft.convertTts(params);    logger.d("Lineup audio is complete");
 
-    logger.d("Lineup audio is complete");
+    final jingleManagerAsync = ref.read(jingleManagerProvider);
+    final jingleManager = jingleManagerAsync.maybeWhen(
+      data: (manager) => manager,
+      orElse: () => throw Exception("JingleManager not available"),
+    );
 
     List<AudioFile> lineupFilePath = jingleManager.audioManager.audioInstances
         .where(

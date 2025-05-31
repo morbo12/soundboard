@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 
 final voiceManagerProvider = StateProvider<int>((ref) {
   return SettingsBox().azVoiceId;
@@ -21,7 +21,7 @@ class VoiceManager {
     Voice(
       id: 4,
       name: "Ava Multilingual (experimental)",
-      shortName: "en-US-AvaMultilingualNeural",
+      shortName: "en-US-NovaTurboMultilingualNeural",
     ),
   ];
 

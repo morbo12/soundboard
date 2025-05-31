@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/utils/logger.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -44,18 +44,20 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
 
     super.dispose();
   }
-
   @override
   void initState() {
     super.initState();
 
     Future.delayed(Duration.zero, () {
       // Set up channel listeners
-      jingleManager.audioManager.channel1.onPlayerStateChanged.listen((state) {
-        ref.read(c1StateProvider.notifier).state = state;
-      });
-      jingleManager.audioManager.channel2.onPlayerStateChanged.listen((state) {
-        ref.read(c2StateProvider.notifier).state = state;
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      jingleManagerAsync.whenData((jingleManager) {
+        jingleManager.audioManager.channel1.onPlayerStateChanged.listen((state) {
+          ref.read(c1StateProvider.notifier).state = state;
+        });
+        jingleManager.audioManager.channel2.onPlayerStateChanged.listen((state) {
+          ref.read(c2StateProvider.notifier).state = state;
+        });
       });
     });
   }
@@ -102,16 +104,24 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                               .updateVolume(value / 100);
                         },
                       ),
-                    ),
-                    // VU Meter in the middle
+                    ),                    // VU Meter in the middle
                     SizedBox(
                       width: 10,
-                      child: VUMeterVisualizer(
-                        channel1: jingleManager.audioManager.channel1,
-                        channel2: jingleManager.audioManager.channel2,
-                        isVisible: true,
-                        height: 210,
-                        color: Theme.of(context).colorScheme.primary,
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          final jingleManagerAsync = ref.watch(jingleManagerProvider);
+                          return jingleManagerAsync.when(
+                            data: (jingleManager) => VUMeterVisualizer(
+                              channel1: jingleManager.audioManager.channel1,
+                              channel2: jingleManager.audioManager.channel2,
+                              isVisible: true,
+                              height: 210,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            loading: () => const SizedBox.shrink(),
+                            error: (error, stack) => const SizedBox.shrink(),
+                          );
+                        },
                       ),
                     ),
                     // C2 Volume
@@ -261,10 +271,9 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
         stepSize: 1,
         enableTooltip: false,
         inactiveColor: Theme.of(context).colorScheme.primaryContainer,
-        activeColor:
-            playerState == PlayerState.playing
-                ? Theme.of(context).colorScheme.errorContainer
-                : Theme.of(context).colorScheme.onSurface,
+        activeColor: playerState == PlayerState.playing
+            ? Theme.of(context).colorScheme.errorContainer
+            : Theme.of(context).colorScheme.onSurface,
         onChanged: (dynamic value) => onVolumeChanged(value),
         value: volumeValue * 100,
       ),

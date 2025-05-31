@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 class SettingsSpotify extends StatefulWidget {
@@ -80,77 +80,76 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Spotify Playlist Settings'),
-            content: SizedBox(
-              width: 500,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: ctrlSpotifyUrl,
-                    decoration: const InputDecoration(
-                      enabledBorder: OutlineInputBorder(),
-                      border: OutlineInputBorder(),
-                      labelText: "Spotify Playlist URL",
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                    ),
-                    onChanged: (text) {
-                      if (_debounce?.isActive ?? false) _debounce?.cancel();
-                      _debounce = Timer(const Duration(milliseconds: 2000), () {
-                        if (RegExp(
-                          r'^https:\/\/open.spotify.com\/playlist\/[a-zA-Z0-9]+',
-                        ).hasMatch(text)) {
-                          final uriParts = text.split('/');
-                          SettingsBox().spotifyUrl = text;
-                          if (uriParts.length > 4) {
-                            final playlistId = uriParts[4].split('?')[0];
-                            SettingsBox().spotifyUri =
-                                "spotify:playlist:$playlistId:play";
-                            FlutterToastr.show(
-                              "Spotify URL updated",
-                              context,
-                              duration: FlutterToastr.lengthLong,
-                              position: FlutterToastr.bottom,
-                              backgroundColor: Colors.green,
-                              textStyle: const TextStyle(color: Colors.white),
-                            );
-                          } else {
-                            FlutterToastr.show(
-                              "Invalid Spotify playlist URL",
-                              context,
-                              duration: FlutterToastr.lengthLong,
-                              position: FlutterToastr.bottom,
-                              backgroundColor: Colors.red,
-                              textStyle: const TextStyle(color: Colors.white),
-                            );
-                          }
-                        } else {
-                          FlutterToastr.show(
-                            "Invalid Spotify playlist URL",
-                            context,
-                            duration: FlutterToastr.lengthLong,
-                            position: FlutterToastr.bottom,
-                            backgroundColor: Colors.red,
-                            textStyle: const TextStyle(color: Colors.white),
-                          );
-                        }
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
+      builder: (context) => AlertDialog(
+        title: const Text('Spotify Playlist Settings'),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: ctrlSpotifyUrl,
+                decoration: const InputDecoration(
+                  enabledBorder: OutlineInputBorder(),
+                  border: OutlineInputBorder(),
+                  labelText: "Spotify Playlist URL",
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
+                ),
+                onChanged: (text) {
+                  if (_debounce?.isActive ?? false) _debounce?.cancel();
+                  _debounce = Timer(const Duration(milliseconds: 2000), () {
+                    if (RegExp(
+                      r'^https:\/\/open.spotify.com\/playlist\/[a-zA-Z0-9]+',
+                    ).hasMatch(text)) {
+                      final uriParts = text.split('/');
+                      SettingsBox().spotifyUrl = text;
+                      if (uriParts.length > 4) {
+                        final playlistId = uriParts[4].split('?')[0];
+                        SettingsBox().spotifyUri =
+                            "spotify:playlist:$playlistId:play";
+                        FlutterToastr.show(
+                          "Spotify URL updated",
+                          context,
+                          duration: FlutterToastr.lengthLong,
+                          position: FlutterToastr.bottom,
+                          backgroundColor: Colors.green,
+                          textStyle: const TextStyle(color: Colors.white),
+                        );
+                      } else {
+                        FlutterToastr.show(
+                          "Invalid Spotify playlist URL",
+                          context,
+                          duration: FlutterToastr.lengthLong,
+                          position: FlutterToastr.bottom,
+                          backgroundColor: Colors.red,
+                          textStyle: const TextStyle(color: Colors.white),
+                        );
+                      }
+                    } else {
+                      FlutterToastr.show(
+                        "Invalid Spotify playlist URL",
+                        context,
+                        duration: FlutterToastr.lengthLong,
+                        position: FlutterToastr.bottom,
+                        backgroundColor: Colors.red,
+                        textStyle: const TextStyle(color: Colors.white),
+                      );
+                    }
+                  });
                 },
-                child: const Text('Close'),
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 }

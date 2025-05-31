@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:serial_port_win32/serial_port_win32.dart';
 import 'package:soundboard/utils/logger.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_processor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/utils/platform_utils.dart';

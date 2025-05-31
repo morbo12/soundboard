@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_button.dart';
-import 'package:soundboard/constants/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/widgets/class_large_button.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/utils/logger.dart';
 
-class UploadButtonToSingle extends StatefulWidget {
+class UploadButtonToSingle extends ConsumerStatefulWidget {
   final AudioFile audiofile; // Updated to be more descriptive
 
   const UploadButtonToSingle({
@@ -15,10 +16,10 @@ class UploadButtonToSingle extends StatefulWidget {
   }); // Updated constructor
 
   @override
-  UploadButtonToSingleState createState() => UploadButtonToSingleState();
+  ConsumerState<UploadButtonToSingle> createState() => UploadButtonToSingleState();
 }
 
-class UploadButtonToSingleState extends State<UploadButtonToSingle> {
+class UploadButtonToSingleState extends ConsumerState<UploadButtonToSingle> {
   File? file;
   final ValueNotifier<String?> selectedPath = ValueNotifier(null);
   final Logger logger = const Logger('UploadButtonToSingle');
@@ -38,20 +39,22 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
 
   @override
   Widget build(BuildContext context) {
-    return Button(
+    return LargeButton(
       style: ElevatedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
         backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
         fixedSize: const Size.fromHeight(100),
-        // side: BorderSide(
-        // width: 1, color: Theme.of(context).colorScheme.primaryContainer),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Less round corners
+        ),
       ),
       noLines: 1,
       isSelected: true,
       onTap: () async {
         pickFile(
-          allowedExtensions:
-              Platform.isWindows ? ['mp3', 'flac'] : ['mp3', 'flac', 'ogg'],
+          allowedExtensions: Platform.isWindows
+              ? ['mp3', 'flac']
+              : ['mp3', 'flac', 'ogg'],
           onFileSelected: (filePath) async {
             if (!mounted) return;
 
@@ -68,7 +71,7 @@ class UploadButtonToSingleState extends State<UploadButtonToSingle> {
               await _copyFileToDestination(selectedPath.value);
             }
 
-            jingleManager.initialize();
+            ref.read(jingleManagerProvider.notifier).reinitialize();
           },
           onError: (errorMessage) {
             // Handle error, maybe show a snackbar

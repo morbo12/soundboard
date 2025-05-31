@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/utils/logger.dart';
 
 abstract class BaseSsmlEvent {
@@ -51,7 +51,6 @@ abstract class BaseSsmlEvent {
       textStyle: const TextStyle(color: Colors.white),
     );
   }
-
   /// Plays the announcement using TTS
   Future<void> playAnnouncement(String ssml) async {
     try {
@@ -59,6 +58,13 @@ abstract class BaseSsmlEvent {
       final result = await textToSpeechService.getTtsNoFile(text: ssml);
 
       await _updateCharCount(ssml);
+
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      final jingleManager = jingleManagerAsync.maybeWhen(
+        data: (manager) => manager,
+        orElse: () => throw Exception("JingleManager not available"),
+      );
+
       await jingleManager.audioManager.playBytes(
         audio: result.audio.buffer.asUint8List(),
         ref: ref,
