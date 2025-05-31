@@ -1,9 +1,10 @@
 ---
-applyTo: "**/*.dart"
+applyTo: "**"
 
 ---
 - Adhere to the official Flutter style guide.  This forms the foundation for maintainable and consistent code.
 - Utilize the latest stable version of Flutter, keeping up-to-date with new features and security patches. Review Flutter's breaking changes and migration guides during updates.
+- Add a comment at the end of the file: 'Contains AI-generated edits.'
 
 ## 1. Code Organization and Structure
 
