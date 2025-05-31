@@ -32,11 +32,10 @@ class DraggableJingleButton extends ConsumerWidget {
     ButtonStyle baseStyle =
         TextButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          backgroundColor: colorScheme.surfaceContainer,
+          backgroundColor: colorScheme.surfaceContainerLow,
           minimumSize: const Size(0, 100),
           textStyle: theme.textTheme.titleLarge,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          elevation: 0,
         ).copyWith(
           // Add state layer colors
           overlayColor: WidgetStatePropertyAll(

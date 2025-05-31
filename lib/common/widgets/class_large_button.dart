@@ -26,9 +26,6 @@ class LargeButton extends StatefulWidget {
 }
 
 class LargeButtonState extends State<LargeButton> {
-  bool _isHovered = false;
-  bool _isPressed = false;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -38,11 +35,10 @@ class LargeButtonState extends State<LargeButton> {
     ButtonStyle baseStyle =
         TextButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          backgroundColor: colorScheme.surface,
+          backgroundColor: colorScheme.surfaceContainerLow,
           minimumSize: const Size(0, 100),
           textStyle: theme.textTheme.titleLarge,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          elevation: 1,
         ).copyWith(
           // Add state layer colors
           overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
@@ -103,50 +99,28 @@ class LargeButtonState extends State<LargeButton> {
     }
 
     return Expanded(
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) => setState(() => _isPressed = false),
-          onTapCancel: () => setState(() => _isPressed = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              boxShadow: [
-                if (_isHovered && !(widget.isDisabled ?? false))
-                  BoxShadow(
-                    color: colorScheme.shadow.withAlpha(26),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
-            ),
-            child: ElevatedButton(
-              onPressed: widget.isDisabled == true ? null : widget.onTap,
-              style: buttonStyle,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.primaryText,
-                      maxLines: widget.noLines ?? 2,
-                      textAlign: TextAlign.center,
-                    ),
-                    if (widget.secondaryText != "N/A") ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.secondaryText,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
-                ),
+      child: ElevatedButton(
+        onPressed: widget.isDisabled == true ? null : widget.onTap,
+        style: buttonStyle,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.primaryText,
+                maxLines: widget.noLines ?? 2,
+                textAlign: TextAlign.center,
               ),
-            ),
+              if (widget.secondaryText != "N/A") ...[
+                const SizedBox(height: 4),
+                Text(
+                  widget.secondaryText,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
           ),
         ),
       ),
