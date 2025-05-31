@@ -17,15 +17,11 @@ class TextToSpeechService {
 
   TextToSpeechService(this.ref);
 
-  void initialize({
-    required InitParamsMicrosoft microsoftParams,
-  }) {
-    TtsMicrosoft.init(
-      params: microsoftParams,
-      withLogs: true,
-    );
+  void initialize({required InitParamsMicrosoft microsoftParams}) {
+    TtsMicrosoft.init(params: microsoftParams, withLogs: true);
     logger.d(
-        "TextToSpeechService initialized with Region: ${microsoftParams.region} and Key: ${microsoftParams.subscriptionKey}");
+      "TextToSpeechService initialized with Region: ${microsoftParams.region} and Key: ${microsoftParams.subscriptionKey}",
+    );
   }
 
   Future<String> getTts({required String text, String? voice}) async {
@@ -61,7 +57,8 @@ class TextToSpeechService {
       pitch: 'default',
     );
 
-    final ttsResponse = await TtsMicrosoft.convertTts(params);    logger.d("Lineup audio is complete");
+    final ttsResponse = await TtsMicrosoft.convertTts(params);
+    logger.d("Lineup audio is complete");
 
     final jingleManagerAsync = ref.read(jingleManagerProvider);
     final jingleManager = jingleManagerAsync.maybeWhen(
@@ -71,19 +68,23 @@ class TextToSpeechService {
 
     List<AudioFile> lineupFilePath = jingleManager.audioManager.audioInstances
         .where(
-            (instance) => instance.audioCategory == AudioCategory.lineupJingle)
+          (instance) => instance.audioCategory == AudioCategory.lineupJingle,
+        )
         .toList();
 
-    File(lineupFilePath[0].filePath)
-        .writeAsBytes(ttsResponse.audio, flush: true);
+    File(
+      lineupFilePath[0].filePath,
+    ).writeAsBytes(ttsResponse.audio, flush: true);
 
     logger.d("Lineup audio FILE is complete");
 
     return lineupFilePath[0].filePath;
   }
 
-  Future<AudioSuccessMicrosoft> getTtsNoFile(
-      {required String text, String? voice}) async {
+  Future<AudioSuccessMicrosoft> getTtsNoFile({
+    required String text,
+    String? voice,
+  }) async {
     var cachedVoices = ref.read(voicesProvider);
     final myVoiceId = ref.read(voiceManagerProvider);
 
@@ -109,14 +110,16 @@ class TextToSpeechService {
     logger.d("Voices are available!");
 
     logger.d(
-        "Select Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)} from ID: $myVoiceId");
+      "Select Voice is: ${VoiceManager.getAzVoiceName(myVoiceId)} from ID: $myVoiceId",
+    );
 
     final selectedVoice = cachedVoices.voices.firstWhere(
       (element) =>
           element.code.toLowerCase() ==
           VoiceManager.getAzVoiceName(myVoiceId).toLowerCase(),
       orElse: () => throw Exception(
-          "Voice not found."), // This ensures we handle the case when the voice is not found.
+        "Voice not found.",
+      ), // This ensures we handle the case when the voice is not found.
     );
 
     logger.d("Calling Azure Text2Speech with voice: ${selectedVoice.code}");

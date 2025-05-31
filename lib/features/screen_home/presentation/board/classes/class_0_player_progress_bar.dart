@@ -11,7 +11,8 @@ class PlayerProgressBar extends ConsumerStatefulWidget {
   ConsumerState<PlayerProgressBar> createState() => _PlayerProgressBarState();
 }
 
-class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {  @override
+class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
+  @override
   void initState() {
     super.initState();
 

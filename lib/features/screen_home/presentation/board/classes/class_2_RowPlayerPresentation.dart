@@ -13,7 +13,8 @@ class RowPlayerPresentation extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [        // Button to play 'RATATA' jingle
+      children: [
+        // Button to play 'RATATA' jingle
         LargeButton(
           isSelected: true,
           onTap: () {

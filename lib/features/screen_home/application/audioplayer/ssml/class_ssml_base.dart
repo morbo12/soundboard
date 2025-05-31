@@ -51,6 +51,7 @@ abstract class BaseSsmlEvent {
       textStyle: const TextStyle(color: Colors.white),
     );
   }
+
   /// Plays the announcement using TTS
   Future<void> playAnnouncement(String ssml) async {
     try {

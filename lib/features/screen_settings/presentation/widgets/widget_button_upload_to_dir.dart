@@ -50,6 +50,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final tmp_category = widget.directoryName == "GenericJingles"

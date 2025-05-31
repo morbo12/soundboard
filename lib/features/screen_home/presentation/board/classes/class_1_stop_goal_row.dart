@@ -15,7 +15,8 @@ class StopGoalRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [        LargeButton(
+      children: [
+        LargeButton(
           noLines: 1,
           onTap: () {
             logger.d("STOP was pressed");

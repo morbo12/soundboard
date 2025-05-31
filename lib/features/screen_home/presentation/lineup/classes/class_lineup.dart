@@ -232,6 +232,7 @@ class _LineupState extends ConsumerState<Lineup> {
       ),
     );
   }
+
   Future<void> _handlePlayLineup(dynamic selectedMatch) async {
     // Show loading indicator and start message rotation
     ref.read(isLoadingProvider.notifier).state = true;

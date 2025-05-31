@@ -14,7 +14,7 @@ class JingleSettings extends StatelessWidget {
     "GoalJingles",
     "ClapJingles",
     "IntroJingles",
-    "LineupJingles"
+    "LineupJingles",
   ];
 
   @override
@@ -56,67 +56,86 @@ class JingleSingleSettings extends ConsumerWidget {
     "Lineup",
     "Timeout",
     "HomeTeam",
-    "AwayTeam"
+    "AwayTeam",
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final jingleManagerAsync = ref.watch(jingleManagerProvider);
-    
+
     return jingleManagerAsync.when(
-      data: (jingleManager) => Column(children: [
-        Row(
-          children: [
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "GoalHorn")),
-            const Gap(5),
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "Ratata")),
-            const Gap(5),
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "PowerUp")),
-            const Gap(5),
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "Penalty")),
-          ],
-        ),
-        const Gap(5),
-        Row(
-          children: [
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "OneMin")),
-            const Gap(5),
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "ThreeMin")),
-            // const Gap(5),
-            // UploadButtonToSingle(
-            //     audiofile: jingleManager.audioManager.audioInstances
-            //         .firstWhere((element) => element.displayName == "Lineup")),
-            const Gap(5),
-            UploadButtonToSingle(
-                audiofile: jingleManager.audioManager.audioInstances
-                    .firstWhere((element) => element.displayName == "Timeout")),
-            const Gap(5),
-            UploadButtonToSingle(
+      data: (jingleManager) => Column(
+        children: [
+          Row(
+            children: [
+              UploadButtonToSingle(
                 audiofile: jingleManager.audioManager.audioInstances.firstWhere(
-                    (element) => element.displayName == "HomeJingle")),
-            const Gap(5),
-            UploadButtonToSingle(
+                  (element) => element.displayName == "GoalHorn",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
                 audiofile: jingleManager.audioManager.audioInstances.firstWhere(
-                    (element) => element.displayName == "AwayJingle")),
-          ],
-        ),
-      ]),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Text('Error loading jingle manager: $error'),
+                  (element) => element.displayName == "Ratata",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "PowerUp",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "Penalty",
+                ),
+              ),
+            ],
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "OneMin",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "ThreeMin",
+                ),
+              ),
+              // const Gap(5),
+              // UploadButtonToSingle(
+              //     audiofile: jingleManager.audioManager.audioInstances
+              //         .firstWhere((element) => element.displayName == "Lineup")),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "Timeout",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "HomeJingle",
+                ),
+              ),
+              const Gap(5),
+              UploadButtonToSingle(
+                audiofile: jingleManager.audioManager.audioInstances.firstWhere(
+                  (element) => element.displayName == "AwayJingle",
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) =>
+          Center(child: Text('Error loading jingle manager: $error')),
     );
   }
 }

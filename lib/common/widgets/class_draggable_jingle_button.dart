@@ -180,9 +180,9 @@ class DraggableJingleButton extends ConsumerWidget {
         },
         error: (error, stack) async {
           // Handle error state
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $error')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $error')));
         },
       );
     } else {

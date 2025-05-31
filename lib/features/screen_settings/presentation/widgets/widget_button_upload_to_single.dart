@@ -16,7 +16,8 @@ class UploadButtonToSingle extends ConsumerStatefulWidget {
   }); // Updated constructor
 
   @override
-  ConsumerState<UploadButtonToSingle> createState() => UploadButtonToSingleState();
+  ConsumerState<UploadButtonToSingle> createState() =>
+      UploadButtonToSingleState();
 }
 
 class UploadButtonToSingleState extends ConsumerState<UploadButtonToSingle> {
