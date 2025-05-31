@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:soundboard/widgets/about_dialog.dart';
+import 'package:soundboard/about/widgets/about_dialog.dart';
 
 class MockPackageInfo extends Mock implements PackageInfo {
   @override

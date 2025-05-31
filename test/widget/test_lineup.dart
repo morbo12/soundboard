@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup.dart';
 import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
-import 'package:soundboard/constants/providers.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 void main() {
@@ -27,7 +25,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -65,7 +63,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -126,7 +124,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -186,7 +184,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -300,7 +298,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -367,7 +365,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
@@ -453,7 +451,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Lineup(availableWidth: 300, availableHeight: 400),
           ),
