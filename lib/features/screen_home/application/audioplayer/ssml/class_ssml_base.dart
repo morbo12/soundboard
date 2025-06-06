@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 abstract class BaseSsmlEvent {
   final WidgetRef ref;

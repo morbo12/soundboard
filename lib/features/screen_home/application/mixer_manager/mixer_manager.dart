@@ -1,7 +1,7 @@
 import 'package:win32audio/win32audio.dart';
 import 'mixer_manager_interface.dart';
-import 'package:soundboard/utils/platform_utils.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/platform_utils.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class MixerManager implements MixerManagerInterface {
   static final MixerManager _instance = MixerManager._internal();

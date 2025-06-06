@@ -1,5 +1,5 @@
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
 import 'class_grid_jingle_config.dart';
 
 /// Defines the default jingle assignments for specific positions on the board

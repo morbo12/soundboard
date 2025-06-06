@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/constants/message_types.dart';
-import 'package:soundboard/features/jingle_manager/application/class_jingle_manager.dart';
+import 'package:soundboard/core/services/jingle_manager/class_jingle_manager.dart';
 
 /// Provider for the JingleManager instance
 /// This follows Riverpod best practices by managing the JingleManager lifecycle

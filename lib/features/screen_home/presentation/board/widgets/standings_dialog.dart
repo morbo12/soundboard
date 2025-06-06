@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/player_statistics.dart';
-import 'package:soundboard/features/innebandy_api/presentation/providers/player_statistics_provider.dart';
-import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/player_statistics.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 
 class StandingsDialog extends ConsumerWidget {
   final String competitionName;
@@ -12,32 +12,31 @@ class StandingsDialog extends ConsumerWidget {
   Widget _buildLastGamesIndicator(List<int> lastGames, ThemeData theme) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children:
-          lastGames.map((result) {
-            Color boxColor;
-            switch (result) {
-              case 6: // Win
-                boxColor = Colors.green;
-                break;
-              case 4: // Draw
-                boxColor = Colors.grey.shade600;
-                break;
-              case 1: // Loss
-                boxColor = Colors.red;
-                break;
-              default:
-                boxColor = Colors.grey;
-            }
-            return Container(
-              width: 12,
-              height: 12,
-              margin: const EdgeInsets.symmetric(horizontal: 1),
-              decoration: BoxDecoration(
-                color: boxColor.withAlpha(230),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            );
-          }).toList(),
+      children: lastGames.map((result) {
+        Color boxColor;
+        switch (result) {
+          case 6: // Win
+            boxColor = Colors.green;
+            break;
+          case 4: // Draw
+            boxColor = Colors.grey.shade600;
+            break;
+          case 1: // Loss
+            boxColor = Colors.red;
+            break;
+          default:
+            boxColor = Colors.grey;
+        }
+        return Container(
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.symmetric(horizontal: 1),
+          decoration: BoxDecoration(
+            color: boxColor.withAlpha(230),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -173,11 +172,11 @@ class StandingsDialog extends ConsumerWidget {
                 final isStrikethrough = row.teamStatusId == 5;
                 return TableRow(
                   decoration: BoxDecoration(
-                    color:
-                        index.isEven
-                            ? theme.colorScheme.surface
-                            : theme.colorScheme.surfaceContainerHighest
-                                .withAlpha(3),
+                    color: index.isEven
+                        ? theme.colorScheme.surface
+                        : theme.colorScheme.surfaceContainerHighest.withAlpha(
+                            3,
+                          ),
                   ),
                   children: [
                     _buildCell(
@@ -197,18 +196,17 @@ class StandingsDialog extends ConsumerWidget {
                               row.teamLogotypeUrl,
                               width: 20,
                               height: 20,
-                              errorBuilder:
-                                  (_, __, ___) => const SizedBox(width: 20),
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox(width: 20),
                             ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               row.teamName,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                decoration:
-                                    isStrikethrough
-                                        ? TextDecoration.lineThrough
-                                        : null,
+                                decoration: isStrikethrough
+                                    ? TextDecoration.lineThrough
+                                    : null,
                                 decorationThickness: 3.0,
                                 decorationStyle: TextDecorationStyle.solid,
                               ),
@@ -317,10 +315,9 @@ class StandingsDialog extends ConsumerWidget {
           Divider(color: theme.colorScheme.primary.withAlpha(77)),
           ...statsByTeam.entries.map((entry) {
             final teamPlayers = entry.value;
-            final teamName =
-                teamPlayers.isNotEmpty
-                    ? teamPlayers.first.teamName
-                    : 'Unknown Team';
+            final teamName = teamPlayers.isNotEmpty
+                ? teamPlayers.first.teamName
+                : 'Unknown Team';
 
             // Take only top 5 players per team
             final topPlayers = teamPlayers.take(5).toList();
@@ -366,11 +363,10 @@ class StandingsDialog extends ConsumerWidget {
                       final player = entry.value;
                       return TableRow(
                         decoration: BoxDecoration(
-                          color:
-                              index.isEven
-                                  ? theme.colorScheme.surface
-                                  : theme.colorScheme.surfaceContainerHighest
-                                      .withAlpha(3),
+                          color: index.isEven
+                              ? theme.colorScheme.surface
+                              : theme.colorScheme.surfaceContainerHighest
+                                    .withAlpha(3),
                         ),
                         children: [
                           Padding(

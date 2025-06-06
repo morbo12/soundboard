@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common/widgets/class_large_button.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class UploadButtonAll extends ConsumerStatefulWidget {
   const UploadButtonAll({super.key}); // Updated constructor

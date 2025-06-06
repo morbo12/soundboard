@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsTtsRegion extends ConsumerStatefulWidget {
   const SettingsTtsRegion({super.key});

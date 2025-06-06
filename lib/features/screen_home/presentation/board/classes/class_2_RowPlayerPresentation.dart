@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/common/widgets/class_large_button.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 
 class RowPlayerPresentation extends ConsumerWidget {
   const RowPlayerPresentation({super.key});

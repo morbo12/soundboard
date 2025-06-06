@@ -1,7 +1,7 @@
 // test/utils/logger_test.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 void main() {
   group('Logger', () {
@@ -84,7 +84,9 @@ void main() {
       expect(logOutput.length, equals(3));
       expect(logOutput[0], contains('[TestTag] E: Error occurred'));
       expect(
-          logOutput[1], contains('[TestTag] E: Error: Exception: Test error'));
+        logOutput[1],
+        contains('[TestTag] E: Error: Exception: Test error'),
+      );
       expect(logOutput[2], contains('[TestTag] E: StackTrace:'));
     });
 

@@ -5,12 +5,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:soundboard/core/constants/globals.dart';
 import 'package:soundboard/core/constants/message_types.dart';
-import 'package:soundboard/features/jingle_manager/application/class_filesystem_helper.dart';
-import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
+import 'package:soundboard/core/services/jingle_manager/class_filesystem_helper.dart';
+import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class JingleDirectories {
   static const String generic = "GenericJingles";

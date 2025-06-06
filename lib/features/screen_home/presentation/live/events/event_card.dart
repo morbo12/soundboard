@@ -2,13 +2,13 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_colors.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_goalevent.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_penaltyevent.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class EventCard extends ConsumerWidget {
   const EventCard({super.key, required this.data});
@@ -41,17 +41,16 @@ class EventCard extends ConsumerWidget {
   void _showTextDialog(BuildContext context, String text) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Announcement Text'),
-            content: SingleChildScrollView(child: Text(text)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Announcement Text'),
+        content: SingleChildScrollView(child: Text(text)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
+        ],
+      ),
     );
   }
 

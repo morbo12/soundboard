@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:serial_port_win32/serial_port_win32.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_processor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/utils/platform_utils.dart';
+import 'package:soundboard/core/utils/platform_utils.dart';
 
 class SerialPortManagerWin32 {
   final Logger logger = const Logger('SerialPortManagerWin32');

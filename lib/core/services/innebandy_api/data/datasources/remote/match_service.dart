@@ -1,8 +1,8 @@
 import 'package:intl/intl.dart';
 
-import 'package:soundboard/features/innebandy_api/core/config/api_constants.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/core/config/api_constants.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 
 import 'api_client.dart';
 

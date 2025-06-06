@@ -1,4 +1,4 @@
-import 'package:soundboard/features/innebandy_api/core/config/api_constants.dart';
+import 'package:soundboard/core/services/innebandy_api/core/config/api_constants.dart';
 
 import 'api_client.dart';
 

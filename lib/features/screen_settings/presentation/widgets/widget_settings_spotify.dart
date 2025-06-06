@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsSpotify extends StatefulWidget {
   const SettingsSpotify({super.key});

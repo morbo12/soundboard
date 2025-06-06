@@ -10,11 +10,11 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:soundboard/core/constants/globals.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/player_fade.dart';
 import 'package:flutter/foundation.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 /// Enum representing the available audio channels
 enum AudioChannel { channel1, channel2 }

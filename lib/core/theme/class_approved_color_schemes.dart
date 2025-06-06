@@ -1,5 +1,5 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class AppThemes {
   // Keep the original constants for reference
@@ -26,17 +26,16 @@ class AppThemes {
 
     // Then add all remaining schemes
     ...FlexScheme.values.where(
-      (scheme) =>
-          ![
-            greyLaw,
-            aquaBlue,
-            ebonyClay,
-            outerSpace,
-            blueWhale,
-            sanJuanBlue,
-            blueM3,
-            purpleBrown,
-          ].contains(scheme),
+      (scheme) => ![
+        greyLaw,
+        aquaBlue,
+        ebonyClay,
+        outerSpace,
+        blueWhale,
+        sanJuanBlue,
+        blueM3,
+        purpleBrown,
+      ].contains(scheme),
     ),
   ];
 
@@ -106,13 +105,9 @@ class AppThemes {
     }
 
     // Convert camelCase to words with spaces
-    final result =
-        name
-            .replaceAllMapped(
-              RegExp(r'([A-Z])'),
-              (match) => ' ${match.group(0)}',
-            )
-            .trim();
+    final result = name
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(0)}')
+        .trim();
 
     // Capitalize first letter
     if (result.isNotEmpty) {

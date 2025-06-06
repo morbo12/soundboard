@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 
 class AudioConfigurations {

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/datasources/remote/season_service.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/season_service.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 /// Service responsible for fetching and managing match data for the match setup screen.
 ///

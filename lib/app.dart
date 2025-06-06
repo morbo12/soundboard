@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/core/constants/message_types.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
 import 'class_ssml_goalevent.dart';
 import 'class_ssml_penaltyevent.dart';

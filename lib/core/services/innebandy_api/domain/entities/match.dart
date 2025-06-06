@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/data/datasources/remote/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/data/datasources/remote/match_service.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_intermediate.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_result.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_intermediate.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_result.dart';
 
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 // Define a StateProvider for IbyVenueMatch.
 final selectedMatchProvider = StateProvider<IbyMatch>((ref) {
@@ -219,19 +219,17 @@ class IbyMatch {
       referee2Id: json['Referee2ID'],
       referee2: json['Referee2'],
       shotsOnGoal: json['ShotsOnGoal'],
-      results:
-          json['Results'] != null
-              ? List<IbyMatchResult>.from(
-                json['Results'].map((event) => IbyMatchResult.fromJson(event)),
-              )
-              : null,
+      results: json['Results'] != null
+          ? List<IbyMatchResult>.from(
+              json['Results'].map((event) => IbyMatchResult.fromJson(event)),
+            )
+          : null,
       spectators: json['Spectators'],
-      events:
-          json['Events'] != null
-              ? List<IbyMatchEvent>.from(
-                json['Events'].map((event) => IbyMatchEvent.fromJson(event)),
-              )
-              : null,
+      events: json['Events'] != null
+          ? List<IbyMatchEvent>.from(
+              json['Events'].map((event) => IbyMatchEvent.fromJson(event)),
+            )
+          : null,
       round: json['Round'],
       roundName: json['RoundName'],
       matchDescription: json['MatchDescription'],
@@ -240,14 +238,13 @@ class IbyMatch {
       goalsAwayTeam: json['GoalsAwayTeam'],
       homeMatchTeamId: json['HomeMatchTeamID'],
       awayMatchTeamId: json['AwayMatchTeamID'],
-      intermediateResults:
-          json['IntermediateResults'] != null
-              ? List<IbyMatchIntermediateResult>.from(
-                json['IntermediateResults'].map(
-                  (event) => IbyMatchIntermediateResult.fromJson(event),
-                ),
-              )
-              : null,
+      intermediateResults: json['IntermediateResults'] != null
+          ? List<IbyMatchIntermediateResult>.from(
+              json['IntermediateResults'].map(
+                (event) => IbyMatchIntermediateResult.fromJson(event),
+              ),
+            )
+          : null,
       lastMatchChange: json['LastMatchChange'],
       lastMatchChangeComment: json['LastMatchChangeComment'],
       competitionLogotypeUrl: json['CompetitionLogotypeUrl'],
@@ -371,7 +368,8 @@ Välkomna! Testtext är nu slut
     <break time="1000ms" />
     """;
     } else {
-      ssml = """
+      ssml =
+          """
     Välkomna till $venue!
     <break time="1000ms" />
     ${stripTeamSuffix(homeTeam)} hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan ${stripTeamSuffix(homeTeam)} och ${stripTeamSuffix(awayTeam)}
@@ -402,10 +400,9 @@ Välkomna! Testtext är nu slut
           homeGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
         } else {
-          ssml +=
-              player.shirtNo == null
-                  ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-                  : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+          ssml += player.shirtNo == null
+              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
         }
       }
       ssml += homeGoalie;
@@ -441,10 +438,9 @@ Välkomna! Testtext är nu slut
           awayGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
         } else {
-          ssml +=
-              player.shirtNo == null
-                  ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-                  : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+          ssml += player.shirtNo == null
+              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
         }
       }
       ssml += awayGoalie;

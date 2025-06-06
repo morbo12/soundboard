@@ -1,19 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 enum PlayerState { normal, goal, assist, penalty }
 
 final playerStatesProvider =
-    StateNotifierProvider<PlayerStatesNotifier, Map<String, PlayerState>>(
-        (ref) {
-  return PlayerStatesNotifier();
-});
+    StateNotifierProvider<PlayerStatesNotifier, Map<String, PlayerState>>((
+      ref,
+    ) {
+      return PlayerStatesNotifier();
+    });
 
 class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
   PlayerStatesNotifier() : super({});
   final Logger logger = const Logger('PlayerStatesNotifier');
 
-// New read method
+  // New read method
   PlayerState readState(String playerId) {
     return state[playerId] ?? PlayerState.normal;
   }
@@ -22,8 +23,10 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     final allStates = ref.read(playerStatesProvider);
 
     return allStates.entries
-        .firstWhere((entry) => entry.value == PlayerState.goal,
-            orElse: () => const MapEntry('', PlayerState.normal))
+        .firstWhere(
+          (entry) => entry.value == PlayerState.goal,
+          orElse: () => const MapEntry('', PlayerState.normal),
+        )
         .key;
   }
 
@@ -31,8 +34,10 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     final allStates = ref.read(playerStatesProvider);
 
     return allStates.entries
-        .firstWhere((entry) => entry.value == PlayerState.assist,
-            orElse: () => const MapEntry('', PlayerState.normal))
+        .firstWhere(
+          (entry) => entry.value == PlayerState.assist,
+          orElse: () => const MapEntry('', PlayerState.normal),
+        )
         .key;
   }
 

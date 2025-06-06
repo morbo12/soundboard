@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsTtsServiceKey extends StatefulWidget {
   const SettingsTtsServiceKey({super.key});

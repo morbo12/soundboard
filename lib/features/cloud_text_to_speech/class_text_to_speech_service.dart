@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
   return VoicesSuccessMicrosoft(voices: []);

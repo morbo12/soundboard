@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 void main() {

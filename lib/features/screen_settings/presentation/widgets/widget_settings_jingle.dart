@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_upload_all.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_upload_to_dir.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_upload_to_single.dart';

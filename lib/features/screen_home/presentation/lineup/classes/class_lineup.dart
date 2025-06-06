@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 // [Keep other imports...]
 
 // Add the loading state provider

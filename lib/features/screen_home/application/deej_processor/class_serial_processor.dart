@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_IO.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SerialProcessor {

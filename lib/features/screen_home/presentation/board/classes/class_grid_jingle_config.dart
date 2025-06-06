@@ -1,4 +1,4 @@
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 
 class GridJingleConfig {
@@ -29,13 +29,12 @@ class GridJingleConfig {
       id: json['id'],
       displayName: json['displayName'],
       filePath: json['filePath'],
-      category:
-          json['category'] != null
-              ? AudioCategory.values.firstWhere(
-                (e) => e.toString() == json['category'],
-                orElse: () => AudioCategory.genericJingle,
-              )
-              : null,
+      category: json['category'] != null
+          ? AudioCategory.values.firstWhere(
+              (e) => e.toString() == json['category'],
+              orElse: () => AudioCategory.genericJingle,
+            )
+          : null,
       isCategoryOnly: json['isCategoryOnly'] ?? false,
     );
   }

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
-import 'package:soundboard/features/jingle_manager/application/class_filesystem_helper.dart';
+import 'package:soundboard/core/services/jingle_manager/class_filesystem_helper.dart';
 
 // Testable version of FileSystemHelper that doesn't use platform channels
 class TestableFileSystemHelper extends FileSystemHelper {

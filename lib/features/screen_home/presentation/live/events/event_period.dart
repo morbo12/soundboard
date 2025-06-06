@@ -1,9 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class PeriodEvent extends ConsumerWidget {
   const PeriodEvent({super.key, required this.data});
@@ -18,13 +18,12 @@ class PeriodEvent extends ConsumerWidget {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed:
-                data.matchEventTypeId == 8
-                    ? null
-                    : () {
-                      EventCardSsml(ref: ref, data: data).getEventText(context);
-                      logger.d("End period Button pressed");
-                    },
+            onPressed: data.matchEventTypeId == 8
+                ? null
+                : () {
+                    EventCardSsml(ref: ref, data: data).getEventText(context);
+                    logger.d("End period Button pressed");
+                  },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.resolveWith<Color?>(
                 (states) => Theme.of(context).colorScheme.onInverseSurface,

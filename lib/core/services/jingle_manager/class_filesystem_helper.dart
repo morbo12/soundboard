@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import '../../../utils/logger.dart';
+import '../../utils/logger.dart';
 
 class FileSystemHelper {
   static final _logger = const Logger('FileSystemHelper');

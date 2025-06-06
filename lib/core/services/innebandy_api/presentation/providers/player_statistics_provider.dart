@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/player_statistics.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/player_statistics.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 
 /// Provider that holds the current player statistics data
 final playerStatisticsProvider = StateProvider<PlayerStatistics?>(
@@ -21,13 +21,11 @@ final filteredPlayerStatisticsProvider = Provider<PlayerStatistics?>((ref) {
   final awayTeamId = selectedMatch.awayTeamId;
 
   // Filter player statistics to only include players from the teams in the current match
-  final filteredRows =
-      playerStats.playerStatisticsRows
-          .where(
-            (player) =>
-                player.teamId == homeTeamId || player.teamId == awayTeamId,
-          )
-          .toList();
+  final filteredRows = playerStats.playerStatisticsRows
+      .where(
+        (player) => player.teamId == homeTeamId || player.teamId == awayTeamId,
+      )
+      .toList();
 
   return PlayerStatistics(playerStatisticsRows: filteredRows);
 });

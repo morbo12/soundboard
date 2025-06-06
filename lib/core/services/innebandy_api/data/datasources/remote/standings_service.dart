@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:soundboard/features/innebandy_api/core/config/api_constants.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/standings.dart';
-import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/core/config/api_constants.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/standings.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'api_client.dart';
 
 class StandingsService {

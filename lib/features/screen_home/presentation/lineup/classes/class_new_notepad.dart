@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 
-import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class GoalInputWidget extends ConsumerStatefulWidget {
   final String team;
@@ -76,10 +76,9 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
       if (number < 1 || number > 99) return '';
 
       final lineup = ref.read(lineupProvider);
-      final players =
-          widget.team == "homeTeam"
-              ? lineup.homeTeamPlayers
-              : lineup.awayTeamPlayers;
+      final players = widget.team == "homeTeam"
+          ? lineup.homeTeamPlayers
+          : lineup.awayTeamPlayers;
 
       final player = players.firstWhere(
         (p) => p.shirtNo == number,
@@ -118,12 +117,11 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
             style: const TextStyle(fontSize: 12),
             keyboardType: TextInputType.number,
             onChanged: _processInput,
-            onTap:
-                () => setState(() {
-                  _scorer = '';
-                  _assist = '';
-                  playerState.clearAllStates();
-                }),
+            onTap: () => setState(() {
+              _scorer = '';
+              _assist = '';
+              playerState.clearAllStates();
+            }),
           ),
         ),
         if (_time.isNotEmpty || _scorer.isNotEmpty || _assist.isNotEmpty)
@@ -144,8 +142,9 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                       'Tid: $_time',
                       style: TextStyle(
                         fontSize: 12,
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -221,26 +220,25 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
         // Check if search text starts with a number (code search)
         final isCodeSearch = RegExp(r'^\d').hasMatch(searchText);
 
-        _filteredPenalties =
-            PenaltyTypes.penaltyTypes.where((penalty) {
-              if (isCodeSearch) {
-                // Search by code (exact match)
-                return penalty.code == searchText;
-              } else {
-                // Search by name (exact word match)
-                final searchWords = searchText.toLowerCase().split(' ');
-                final penaltyWords = penalty.name.toLowerCase().split(' ');
+        _filteredPenalties = PenaltyTypes.penaltyTypes.where((penalty) {
+          if (isCodeSearch) {
+            // Search by code (exact match)
+            return penalty.code == searchText;
+          } else {
+            // Search by name (exact word match)
+            final searchWords = searchText.toLowerCase().split(' ');
+            final penaltyWords = penalty.name.toLowerCase().split(' ');
 
-                // Check if any word in the search text matches any word in the penalty name
-                return searchWords.any(
-                  (searchWord) => penaltyWords.any(
-                    (penaltyWord) =>
-                        penaltyWord == searchWord ||
-                        penaltyWord.startsWith(searchWord),
-                  ),
-                );
-              }
-            }).toList();
+            // Check if any word in the search text matches any word in the penalty name
+            return searchWords.any(
+              (searchWord) => penaltyWords.any(
+                (penaltyWord) =>
+                    penaltyWord == searchWord ||
+                    penaltyWord.startsWith(searchWord),
+              ),
+            );
+          }
+        }).toList();
 
         logger.d('Search type: ${isCodeSearch ? 'Code' : 'Name'}');
         logger.d('Found ${_filteredPenalties.length} matching penalties');
@@ -328,10 +326,9 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
       if (number < 1 || number > 99) return '';
 
       final lineup = ref.read(lineupProvider);
-      final players =
-          widget.team == "homeTeam"
-              ? lineup.homeTeamPlayers
-              : lineup.awayTeamPlayers;
+      final players = widget.team == "homeTeam"
+          ? lineup.homeTeamPlayers
+          : lineup.awayTeamPlayers;
 
       final player = players.firstWhere(
         (p) => p.shirtNo == number,
@@ -390,12 +387,11 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                 style: const TextStyle(fontSize: 12),
                 keyboardType: TextInputType.number,
                 onChanged: _processInput,
-                onTap:
-                    () => setState(() {
-                      _player = '';
-                      _penaltyCode = '';
-                      playerState.clearAllStates();
-                    }),
+                onTap: () => setState(() {
+                  _player = '';
+                  _penaltyCode = '';
+                  playerState.clearAllStates();
+                }),
               ),
               if (_showPenaltySearch)
                 Container(
@@ -420,48 +416,47 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                       Flexible(
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 150),
-                          child:
-                              _filteredPenalties.isEmpty
-                                  ? const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text(
-                                        'No penalties found',
-                                        style: TextStyle(fontSize: 12),
-                                      ),
+                          child: _filteredPenalties.isEmpty
+                              ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'No penalties found',
+                                      style: TextStyle(fontSize: 12),
                                     ),
-                                  )
-                                  : ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                    itemCount: _filteredPenalties.length,
-                                    itemBuilder: (context, index) {
-                                      final penalty = _filteredPenalties[index];
-                                      return ListTile(
-                                        dense: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 8.0,
-                                              vertical: 0.0,
-                                            ),
-                                        title: Text(
-                                          '${penalty.code} - ${penalty.name}',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                        subtitle: Text(
-                                          'Time: ${penalty.penaltyTime}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        onTap: () {
-                                          setState(() {
-                                            _penaltyCode = penalty.code;
-                                            _showPenaltySearch = false;
-                                          });
-                                        },
-                                      );
-                                    },
                                   ),
+                                )
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemCount: _filteredPenalties.length,
+                                  itemBuilder: (context, index) {
+                                    final penalty = _filteredPenalties[index];
+                                    return ListTile(
+                                      dense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 8.0,
+                                            vertical: 0.0,
+                                          ),
+                                      title: Text(
+                                        '${penalty.code} - ${penalty.name}',
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                      subtitle: Text(
+                                        'Time: ${penalty.penaltyTime}',
+                                        style: const TextStyle(fontSize: 10),
+                                      ),
+                                      onTap: () {
+                                        setState(() {
+                                          _penaltyCode = penalty.code;
+                                          _showPenaltySearch = false;
+                                        });
+                                      },
+                                    );
+                                  },
+                                ),
                         ),
                       ),
                     ],
@@ -488,8 +483,9 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                       'Tid: $_time',
                       style: TextStyle(
                         fontSize: 12,
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

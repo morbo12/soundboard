@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/features/jingle_manager/application/class_static_audiofiles.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
 import 'package:soundboard/common/widgets/class_normal_button.dart';

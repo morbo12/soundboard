@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
-import 'package:soundboard/features/jingle_manager/application/jingle_manager_provider.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 void playGoal2(WidgetRef ref) async {
   const Logger logger = Logger('playGoal2');

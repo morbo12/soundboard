@@ -1,8 +1,8 @@
 import 'package:soundboard/features/screen_home/application/mixer_manager/mixer_manager.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:win32audio/win32audio.dart';
-import 'package:soundboard/utils/platform_utils.dart';
+import 'package:soundboard/core/utils/platform_utils.dart';
 
 class SerialIO {
   // Logger instance - using logger package for Flutter

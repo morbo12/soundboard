@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
-import 'package:soundboard/features/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'standings_dialog.dart';
 
 class MatchCard extends ConsumerWidget {

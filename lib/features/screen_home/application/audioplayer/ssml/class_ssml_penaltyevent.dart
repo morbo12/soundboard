@@ -1,7 +1,7 @@
 // ssml_penalty_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'class_ssml_base.dart';
 
@@ -18,21 +18,24 @@ class PenaltyTemplates {
   >
   templates = [
     // Standard format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       Nummer $number, $name 
       i $team utvisas $penalty. 
       Tid: <say-as interpret-as='duration' format='ms'>$time</say-as>
     ''',
 
     // Time-first format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       Vid <say-as interpret-as='duration' format='ms'>$time</say-as> i $period
       utvisas nummer $number, $name 
       i $team för $penalty
     ''',
 
     // Team-focused format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       $team får en utvisning. 
       $penalty på nummer $number, $name.
       Tid: <say-as interpret-as='duration' format='ms'>$time</say-as>

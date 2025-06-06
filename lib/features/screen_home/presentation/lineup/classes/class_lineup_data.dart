@@ -2,8 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:soundboard/features/innebandy_api/domain/entities/lineup.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
 
 class LineupData extends ConsumerWidget {
@@ -228,11 +228,10 @@ class LineupData extends ConsumerWidget {
           ),
         );
       },
-      separatorBuilder:
-          (context, index) => Divider(
-            height: 0,
-            color: Theme.of(context).colorScheme.onInverseSurface,
-          ),
+      separatorBuilder: (context, index) => Divider(
+        height: 0,
+        color: Theme.of(context).colorScheme.onInverseSurface,
+      ),
     );
   }
 }

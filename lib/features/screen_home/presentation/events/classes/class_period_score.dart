@@ -1,10 +1,10 @@
 // First, create a separate widget for the period scores to better manage the state
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/features/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_periodevent.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_divider.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:collection/collection.dart';
 
 class PeriodScores extends ConsumerWidget {
@@ -109,8 +109,8 @@ class PeriodScores extends ConsumerWidget {
 
     return Expanded(
       child: TextButton(
-        onPressed:
-            () => SsmlPeriodEvent(period: period, ref: ref).getSay(context),
+        onPressed: () =>
+            SsmlPeriodEvent(period: period, ref: ref).getSay(context),
         child: Column(
           children: [
             Text(

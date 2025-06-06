@@ -2,16 +2,17 @@
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
-Future<void> pickFile(
-    {required List<String> allowedExtensions,
-    Function(String filePath)? onFileSelected,
-    Function(List<File> files)? onMultipleFilesSelected,
-    bool allowMultiple = false,
-    Function(String errorMessage)? onError,
-    VoidCallback? onCancelled,
-    final Logger logger = const Logger('pickFile')}) async {
+Future<void> pickFile({
+  required List<String> allowedExtensions,
+  Function(String filePath)? onFileSelected,
+  Function(List<File> files)? onMultipleFilesSelected,
+  bool allowMultiple = false,
+  Function(String errorMessage)? onError,
+  VoidCallback? onCancelled,
+  final Logger logger = const Logger('pickFile'),
+}) async {
   try {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,

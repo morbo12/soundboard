@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_mainvolume.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class Fade {
   static const double MIN_VOLUME = 0.0;
@@ -70,8 +70,9 @@ class Fade {
   }
 
   double _calculateNextVolume(double current, double target) {
-    double next =
-        target > current ? current + VOLUME_STEP : current - VOLUME_STEP;
+    double next = target > current
+        ? current + VOLUME_STEP
+        : current - VOLUME_STEP;
     return (next * 100).round() / 100; // Round to 2 decimal places
   }
 
