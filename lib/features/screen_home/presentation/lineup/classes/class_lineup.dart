@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';

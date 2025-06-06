@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:soundboard/features/cloud_text_to_speech/class_azure_region.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_region.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/utils/scroll_config.dart';
 import 'package:soundboard/core/properties.dart'; // Local file for handling soundboard properties.
 import 'package:soundboard/app.dart'; // Local main app file.

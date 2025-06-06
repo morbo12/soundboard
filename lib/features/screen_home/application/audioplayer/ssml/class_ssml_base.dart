@@ -5,7 +5,7 @@ import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
