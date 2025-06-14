@@ -1,42 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/models/enum_goaltypes.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
-enum PlayerState { normal, goal, assist, penalty }
-
-final playerStatesProvider =
-    StateNotifierProvider<PlayerStatesNotifier, Map<String, PlayerState>>((
+final GoalTypeStatesProvider =
+    StateNotifierProvider<GoalTypeStatesNotifier, Map<String, GoalTypeState>>((
       ref,
     ) {
-      return PlayerStatesNotifier();
+      return GoalTypeStatesNotifier();
     });
 
-class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
-  PlayerStatesNotifier() : super({});
-  final Logger logger = const Logger('PlayerStatesNotifier');
+class GoalTypeStatesNotifier extends StateNotifier<Map<String, GoalTypeState>> {
+  GoalTypeStatesNotifier() : super({});
+  final Logger logger = const Logger('GoalTypeStatesNotifier');
 
   // New read method
-  PlayerState readState(String playerId) {
-    return state[playerId] ?? PlayerState.normal;
+  GoalTypeState readState(String playerId) {
+    return state[playerId] ?? GoalTypeState.normal;
   }
 
   String? getGoalScorer(WidgetRef ref) {
-    final allStates = ref.read(playerStatesProvider);
+    final allStates = ref.read(GoalTypeStatesProvider);
 
     return allStates.entries
         .firstWhere(
-          (entry) => entry.value == PlayerState.goal,
-          orElse: () => const MapEntry('', PlayerState.normal),
+          (entry) => entry.value == GoalTypeState.goal,
+          orElse: () => const MapEntry('', GoalTypeState.normal),
         )
         .key;
   }
 
   String? getAssistMaker(WidgetRef ref) {
-    final allStates = ref.read(playerStatesProvider);
+    final allStates = ref.read(GoalTypeStatesProvider);
 
     return allStates.entries
         .firstWhere(
-          (entry) => entry.value == PlayerState.assist,
-          orElse: () => const MapEntry('', PlayerState.normal),
+          (entry) => entry.value == GoalTypeState.assist,
+          orElse: () => const MapEntry('', GoalTypeState.normal),
         )
         .key;
   }
@@ -45,11 +44,11 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     if (playerId.isEmpty) return;
 
     // Clear any existing goal states
-    final updatedState = Map<String, PlayerState>.from(state)
-      ..removeWhere((key, value) => value == PlayerState.goal);
+    final updatedState = Map<String, GoalTypeState>.from(state)
+      ..removeWhere((key, value) => value == GoalTypeState.goal);
 
     // Then set the new goal state
-    updatedState[playerId] = PlayerState.goal;
+    updatedState[playerId] = GoalTypeState.goal;
 
     state = updatedState;
   }
@@ -58,11 +57,11 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
     if (playerId.isEmpty) return;
 
     // Clear any existing assist states
-    final updatedState = Map<String, PlayerState>.from(state)
-      ..removeWhere((key, value) => value == PlayerState.assist);
+    final updatedState = Map<String, GoalTypeState>.from(state)
+      ..removeWhere((key, value) => value == GoalTypeState.assist);
 
     // Then set the new assist state
-    updatedState[playerId] = PlayerState.assist;
+    updatedState[playerId] = GoalTypeState.assist;
 
     state = updatedState;
     logger.d("Assist state: ${state[playerId]}");
@@ -70,15 +69,15 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
 
   void setPenaltyState(String playerId) {
     // First, clear any existing assist states
-    final clearedAssistStates = Map<String, PlayerState>.from(state)
-      ..removeWhere((key, value) => value == PlayerState.penalty);
+    final clearedAssistStates = Map<String, GoalTypeState>.from(state)
+      ..removeWhere((key, value) => value == GoalTypeState.penalty);
 
     // Then set the new assist state
     state = {
       ...clearedAssistStates,
-      playerId: state[playerId] == PlayerState.penalty
-          ? PlayerState.normal
-          : PlayerState.penalty,
+      playerId: state[playerId] == GoalTypeState.penalty
+          ? GoalTypeState.normal
+          : GoalTypeState.penalty,
     };
   }
 
@@ -88,8 +87,8 @@ class PlayerStatesNotifier extends StateNotifier<Map<String, PlayerState>> {
   }
 
   // Optional: Method to clear specific player state
-  void clearPlayerState(String playerId) {
-    final newState = Map<String, PlayerState>.from(state);
+  void clearGoalTypeState(String playerId) {
+    final newState = Map<String, GoalTypeState>.from(state);
     newState.remove(playerId);
     state = newState;
   }

@@ -7,6 +7,7 @@ import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/a
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
 import '../../live/widget_event.dart';
@@ -15,6 +16,8 @@ part 'class_live_events.g.dart';
 
 @riverpod
 class MatchEventsStream extends _$MatchEventsStream {
+  static const _logger = Logger('MatchEventsStream');
+
   Timer? _timer;
   final _streamController = StreamController<List<IbyMatchEvent>>.broadcast();
   bool _isInitialized = false;
@@ -58,12 +61,11 @@ class MatchEventsStream extends _$MatchEventsStream {
       final match = await service.getMatch(matchId: matchId);
       ref.read(selectedMatchProvider.notifier).state = match;
       _streamController.add(match.events ?? []);
-
       if (match.matchStatus == 4) {
         stopStreaming();
       }
     } catch (e) {
-      debugPrint('Error fetching match: $e');
+      _logger.e('Error fetching match', e);
     }
   }
 
@@ -212,3 +214,5 @@ class LiveEvents extends ConsumerWidget {
     );
   }
 }
+
+// Contains AI-generated edits.

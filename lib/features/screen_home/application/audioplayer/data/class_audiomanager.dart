@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:soundboard/core/constants/globals.dart';
+import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';

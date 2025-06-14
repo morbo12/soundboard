@@ -40,7 +40,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
       logger.d('Assist: $_assist');
 
       // Update player states if valid
-      final playerState = ref.read(playerStatesProvider.notifier);
+      final playerState = ref.read(GoalTypeStatesProvider.notifier);
       if (_scorer.isNotEmpty) {
         logger.d('Setting scorer state: $_scorer');
         playerState.setGoalState(_scorer);
@@ -93,7 +93,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.read(playerStatesProvider.notifier);
+    final playerState = ref.read(GoalTypeStatesProvider.notifier);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -259,7 +259,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
         if (newPlayer != _player) {
           _player = newPlayer;
           // Update player states if valid
-          final playerState = ref.read(playerStatesProvider.notifier);
+          final playerState = ref.read(GoalTypeStatesProvider.notifier);
           if (_player.isNotEmpty) {
             logger.d('Setting penalty state: $_player');
             playerState.setPenaltyState(_player);
@@ -349,7 +349,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.read(playerStatesProvider.notifier);
+    final playerState = ref.read(GoalTypeStatesProvider.notifier);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,

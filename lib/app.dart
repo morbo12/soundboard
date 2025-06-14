@@ -9,6 +9,7 @@ import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';
@@ -26,6 +27,8 @@ class Player extends ConsumerStatefulWidget {
 }
 
 class _PlayerState extends ConsumerState<Player> {
+  static const _logger = Logger('Player');
+
   // ignore: unused_field
   PackageInfo _packageInfo = PackageInfo(
     appName: 'Unknown',
@@ -85,7 +88,7 @@ class _PlayerState extends ConsumerState<Player> {
           type: MessageType.error,
         );
       } else {
-        print('App initialization error during startup: $e');
+        _logger.e('App initialization error during startup', e);
       }
     } finally {
       if (mounted) {
@@ -129,7 +132,7 @@ class _PlayerState extends ConsumerState<Player> {
         },
         error: (error, stackTrace) async {
           // Log error but don't show toast during initialization to prevent flashing
-          print('JingleManager initialization failed: $error');
+          _logger.e('JingleManager initialization failed', error, stackTrace);
           throw Exception('Failed to initialize JingleManager: $error');
         },
       );
@@ -141,7 +144,7 @@ class _PlayerState extends ConsumerState<Player> {
           type: MessageType.error,
         );
       } else {
-        print('JingleManager initialization error during app startup: $e');
+        _logger.e('JingleManager initialization error during app startup', e);
       }
       rethrow;
     }
@@ -169,7 +172,7 @@ class _PlayerState extends ConsumerState<Player> {
       );
     } else {
       // Fallback to console logging if UI context is not available
-      print('Message [${type.name}]: $message');
+      _logger.i('Message [${type.name}]: $message');
     }
   }
 
@@ -303,3 +306,5 @@ class _PlayerState extends ConsumerState<Player> {
     );
   }
 }
+
+// Contains AI-generated edits.

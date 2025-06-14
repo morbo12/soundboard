@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/models/enum_goaltypes.dart';
 
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
@@ -89,7 +90,7 @@ class LineupData extends ConsumerWidget {
     if (players == null || players.isEmpty) {
       return const Center(child: Text("No players"));
     }
-    final buttonStates = ref.watch(playerStatesProvider);
+    final buttonStates = ref.watch(GoalTypeStatesProvider);
     final Map<String, String> positionMapping = {
       'Målvakt': 'MV',
       'Forward': 'F',
@@ -108,48 +109,48 @@ class LineupData extends ConsumerWidget {
       itemBuilder: (context, index) {
         final player = players[index];
         final playerId = '${player.shirtNo}-${player.name}';
-        var buttonState = buttonStates[playerId] ?? PlayerState.normal;
+        var buttonState = buttonStates[playerId] ?? GoalTypeState.normal;
         // Auto-highlight based on entered numbers
 
         Color getButtonColor() {
           switch (buttonState) {
-            case PlayerState.normal:
+            case GoalTypeState.normal:
               return Theme.of(context).colorScheme.surface;
-            case PlayerState.goal:
+            case GoalTypeState.goal:
               return Theme.of(context).colorScheme.primaryContainer;
-            case PlayerState.assist:
+            case GoalTypeState.assist:
               return Theme.of(context)
                   .colorScheme
                   .secondaryContainer; // You can change this to any color you prefer for long press
-            case PlayerState.penalty:
+            case GoalTypeState.penalty:
               return Theme.of(context).colorScheme.errorContainer;
           }
         }
 
         Color getTextColor() {
           switch (buttonState) {
-            case PlayerState.normal:
+            case GoalTypeState.normal:
               return Theme.of(context).colorScheme.onSurface;
-            case PlayerState.goal:
+            case GoalTypeState.goal:
               return Theme.of(context).colorScheme.onPrimaryContainer;
-            case PlayerState.assist:
+            case GoalTypeState.assist:
               return Theme.of(context)
                   .colorScheme
                   .onSecondaryContainer; // Adjust this based on your long press color
-            case PlayerState.penalty:
+            case GoalTypeState.penalty:
               return Theme.of(context).colorScheme.onErrorContainer;
           }
         }
 
         String getButtonStateText() {
           switch (buttonState) {
-            case PlayerState.normal:
+            case GoalTypeState.normal:
               return '';
-            case PlayerState.goal:
+            case GoalTypeState.goal:
               return 'MÅL';
-            case PlayerState.assist:
+            case GoalTypeState.assist:
               return 'ASSIST';
-            case PlayerState.penalty:
+            case GoalTypeState.penalty:
               return 'UTVISNING';
           }
         }
@@ -192,12 +193,12 @@ class LineupData extends ConsumerWidget {
                   ),
                   onPressed: () {
                     ref
-                        .read(playerStatesProvider.notifier)
+                        .read(GoalTypeStatesProvider.notifier)
                         .setGoalState(playerId);
                   },
                   onLongPress: () {
                     ref
-                        .read(playerStatesProvider.notifier)
+                        .read(GoalTypeStatesProvider.notifier)
                         .setAssistState(playerId);
                   },
                   child: Row(
