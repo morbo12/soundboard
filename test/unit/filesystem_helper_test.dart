@@ -41,7 +41,7 @@ class TestableFileSystemHelper extends FileSystemHelper {
   Future<void> migrateFiles(Directory oldDir) async {
     try {
       await _migrateDirectoryContents(oldDir, baseDir);
-    } catch (e, stackTrace) {
+    } catch (e) {
       rethrow;
     }
   }

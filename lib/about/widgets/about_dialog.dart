@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:soundboard/core/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:gap/gap.dart';
 
 class AboutDialogWidget extends StatelessWidget {
+  static const _logger = Logger('AboutDialogWidget');
+
   final Future<PackageInfo>? packageInfoFuture;
   final Future<bool> Function(Uri) urlLauncher;
   final bool debugLogging;
@@ -19,12 +22,12 @@ class AboutDialogWidget extends StatelessWidget {
     try {
       if (!await urlLauncher(Uri.parse(url))) {
         if (debugLogging) {
-          debugPrint('Could not launch $url');
+          _logger.w('Could not launch $url');
         }
       }
     } catch (e) {
       if (debugLogging) {
-        debugPrint('Error launching URL: $e');
+        _logger.e('Error launching URL', e);
       }
     }
   }
@@ -105,3 +108,5 @@ class AboutDialogWidget extends StatelessWidget {
     );
   }
 }
+
+// Contains AI-generated edits.

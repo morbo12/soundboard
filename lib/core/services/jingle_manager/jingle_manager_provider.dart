@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/jingle_manager/class_jingle_manager.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 /// Provider for the JingleManager instance
 /// This follows Riverpod best practices by managing the JingleManager lifecycle
@@ -12,6 +13,8 @@ final jingleManagerProvider =
 
 /// Notifier for managing JingleManager state and initialization
 class JingleManagerNotifier extends AsyncNotifier<JingleManager> {
+  static const _logger = Logger('JingleManagerNotifier');
+
   @override
   Future<JingleManager> build() async {
     // Initialize the JingleManager when the provider is first accessed
@@ -32,7 +35,7 @@ class JingleManagerNotifier extends AsyncNotifier<JingleManager> {
   }) {
     // During provider initialization, only log messages to avoid context issues
     // This prevents snackbar flashing during app startup
-    print('JingleManager: [$type] $message');
+    _logger.i('[$type] $message');
 
     // Note: If you need to show messages after initialization is complete,
     // use a separate messaging system or state management
@@ -64,3 +67,5 @@ final audioManagerProvider = Provider<AsyncValue<dynamic>>((ref) {
     error: (error, stackTrace) => AsyncValue.error(error, stackTrace),
   );
 });
+
+// Contains AI-generated edits.
