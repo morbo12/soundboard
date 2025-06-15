@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/models/enum_goaltypes.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
@@ -319,9 +320,9 @@ void main() {
     await tester.pump();
 
     // Verify player states are updated
-    final playerStates = container.read(playerStatesProvider);
-    expect(playerStates['10-Player 1'], equals(PlayerState.goal));
-    expect(playerStates['11-Player 2'], equals(PlayerState.assist));
+    final playerStates = container.read(GoalTypeStatesProvider);
+    expect(playerStates['10-Player 1'], equals(GoalTypeState.goal));
+    expect(playerStates['11-Player 2'], equals(GoalTypeState.assist));
 
     // Verify goal input display
     expect(find.text('Tid: 01:12'), findsOneWidget);
@@ -386,8 +387,8 @@ void main() {
     await tester.pump();
 
     // Verify player state is updated
-    final playerStates = container.read(playerStatesProvider);
-    expect(playerStates['10-Player 1'], equals(PlayerState.penalty));
+    final playerStates = container.read(GoalTypeStatesProvider);
+    expect(playerStates['10-Player 1'], equals(GoalTypeState.penalty));
 
     // Verify penalty input display
     expect(find.text('Tid: 01:12'), findsOneWidget);
@@ -468,7 +469,7 @@ void main() {
     await tester.pump();
 
     // Verify no goal state is set
-    final playerStates = container.read(playerStatesProvider);
+    final playerStates = container.read(GoalTypeStatesProvider);
     expect(playerStates['10-Player 1'], isNull);
 
     // Test invalid player number
