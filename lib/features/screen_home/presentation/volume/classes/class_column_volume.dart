@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/providers/audioplayers_providers.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/volume_control_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -25,6 +26,7 @@ class ColumnVolume extends ConsumerStatefulWidget {
 
 class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
   final Logger logger = const Logger('ColumnVolumeState');
+  late final VolumeControlService _volumeControlService;
 
   // Performance configuration
 
@@ -49,6 +51,9 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
   @override
   void initState() {
     super.initState();
+
+    // Initialize volume control service
+    _volumeControlService = ref.read(volumeControlServiceProvider);
 
     Future.delayed(Duration.zero, () {
       // Set up channel listeners
@@ -158,9 +163,10 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                         PlayerState.stopped,
                         mainVolumeValue.vol,
                         (value) {
-                          ref
-                              .watch(mainVolumeProvider.notifier)
-                              .updateVolume(value / 100);
+                          _volumeControlService.updateVolumeFromUI(
+                            0,
+                            value / 100,
+                          );
                         },
                         isMaster: true,
                       ),
@@ -171,9 +177,10 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                         PlayerState.stopped,
                         p1VolumeValue.vol,
                         (value) {
-                          ref
-                              .watch(p1VolumeProvider.notifier)
-                              .updateVolume(value / 100);
+                          _volumeControlService.updateVolumeFromUI(
+                            1,
+                            value / 100,
+                          );
                         },
                       ),
                     ),
@@ -190,9 +197,10 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                         PlayerState.stopped,
                         p2VolumeValue.vol,
                         (value) {
-                          ref
-                              .watch(p2VolumeProvider.notifier)
-                              .updateVolume(value / 100);
+                          _volumeControlService.updateVolumeFromUI(
+                            2,
+                            value / 100,
+                          );
                         },
                       ),
                     ),
@@ -202,9 +210,10 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                         PlayerState.stopped,
                         p3VolumeValue.vol,
                         (value) {
-                          ref
-                              .watch(p3VolumeProvider.notifier)
-                              .updateVolume(value);
+                          _volumeControlService.updateVolumeFromUI(
+                            3,
+                            value / 100,
+                          );
                         },
                       ),
                     ),
@@ -280,3 +289,5 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
     );
   }
 }
+
+// Contains AI-generated edits.

@@ -8,7 +8,7 @@ import 'package:soundboard/core/utils/platform_utils.dart';
 
 class SerialPortManagerWin32 {
   final Logger logger = const Logger('SerialPortManagerWin32');
-  final SerialProcessor _serialProcessor;
+  SerialProcessor? _serialProcessor;
   final Ref ref;
 
   // Serial port state
@@ -17,18 +17,33 @@ class SerialPortManagerWin32 {
   bool _isSerialConnected = false;
   bool _isSerialReconnecting = false;
   bool _explicitlyDisconnected = false;
-
   // Timers
   Timer? _serialReconnectTimer;
   static const int _serialReconnectIntervalSeconds = 5;
-
-  SerialPortManagerWin32({required this.ref})
-    : _serialProcessor = SerialProcessor(ref) {
+  SerialPortManagerWin32({required this.ref}) {
     if (PlatformUtils.isWindows) {
+      // Initialize asynchronously - initialization will happen when needed
       _initSerialPort();
     } else {
       logger.d(
         'SerialPortManagerWin32: Windows-specific features not available on this platform',
+      );
+    }
+  }
+
+  /// Initialize the serial processor with proper async setup
+  Future<void> _initializeSerialProcessor() async {
+    if (_serialProcessor != null) return; // Already initialized
+
+    try {
+      _serialProcessor = SerialProcessor(ref);
+      await _serialProcessor!.initialize();
+      logger.i(
+        'SerialPortManagerWin32: SerialProcessor initialized successfully',
+      );
+    } catch (e) {
+      logger.e(
+        'SerialPortManagerWin32: Failed to initialize SerialProcessor: $e',
       );
     }
   }
@@ -117,8 +132,16 @@ class SerialPortManagerWin32 {
         _isSerialReconnecting = false;
         logger.d('${_serialPort!.portName} opened!');
 
-        // Start listening for data
-        _startListening();
+        // Initialize the serial processor before starting to listen
+        _initializeSerialProcessor()
+            .then((_) {
+              // Start listening for data after processor is initialized
+              _startListening();
+            })
+            .catchError((error) {
+              logger.e('Failed to initialize serial processor: $error');
+              _handleSerialDisconnect();
+            });
       } else {
         logger.d('Failed to open serial port');
         _handleSerialDisconnect();
@@ -146,7 +169,7 @@ class SerialPortManagerWin32 {
           timeout: const Duration(milliseconds: 50),
         );
         if (data.isNotEmpty) {
-          _serialProcessor.processStream(Stream.value(data));
+          _serialProcessor?.processStream(Stream.value(data));
         }
       } catch (e) {
         logger.d('Error reading from serial port: $e');

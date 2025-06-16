@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:soundboard/features/screen_home/application/deej_processor/class_serial_IO.dart';
+import 'package:soundboard/features/screen_home/application/deej_processor/deej_processor_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,22 +10,34 @@ class SerialProcessor {
   StringBuffer _buffer = StringBuffer();
   final Logger logger = const Logger('SerialProcessor');
 
-  final config = DeejConfig(
-    invertSliders: false,
-    verbose: true,
-    noiseReductionLevel: 0.02,
-  );
   // SerialIO instance for handling serial communication
   // and processing slider values
-  late final SerialIO serialIO;
+  SerialIO? _serialIO;
   AsciiDecoder asciiDecoder = const AsciiDecoder(allowInvalid: true);
   final Ref ref;
 
-  SerialProcessor(this.ref) {
-    serialIO = SerialIO(config: config, ref: ref);
+  SerialProcessor(this.ref);
+
+  /// Initialize with DeejProcessorService
+  Future<void> initialize() async {
+    try {
+      final deejProcessorService = await ref.read(
+        deejProcessorServiceProvider.future,
+      );
+      _serialIO = SerialIO(deejProcessorService: deejProcessorService);
+      logger.i('SerialProcessor: Initialized with DeejProcessorService');
+    } catch (e) {
+      logger.e('SerialProcessor: Failed to initialize: $e');
+      rethrow;
+    }
   }
 
   void processStream(Stream<Uint8List> stream) {
+    if (_serialIO == null) {
+      logger.w('SerialProcessor: Not initialized, cannot process stream');
+      return;
+    }
+
     stream.listen(
       (data) {
         // Uint8List raw = data;
@@ -42,7 +55,7 @@ class SerialProcessor {
           // logger.d('Found a EOL: ${completeMessage}');
 
           // Process the complete message
-          serialIO.handleLine(completeMessage);
+          _serialIO!.handleLine(completeMessage);
 
           // Update buffer with remaining data (if any)
           _buffer.clear();
@@ -63,3 +76,5 @@ class SerialProcessor {
     );
   }
 }
+
+// Contains AI-generated edits.
