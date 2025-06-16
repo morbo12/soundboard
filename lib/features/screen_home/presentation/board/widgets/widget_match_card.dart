@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'standings_dialog.dart';
 
 class MatchCard extends ConsumerWidget {
@@ -54,6 +56,137 @@ class MatchCard extends ConsumerWidget {
         ),
       );
     }
+  }
+
+  /// Checks if standings data is available
+  bool _hasStandingsData(WidgetRef ref) {
+    final standings = ref.watch(standingsProvider);
+    return standings != null && standings.standingsRows.isNotEmpty;
+  }
+
+  /// Checks if player statistics data is available
+  bool _hasPlayerStatistics(WidgetRef ref) {
+    final playerStats = ref.watch(playerStatisticsProvider);
+    return playerStats != null && playerStats.playerStatisticsRows.isNotEmpty;
+  }
+
+  /// Checks if lineup data is available and has players
+  bool _hasLineupData(WidgetRef ref) {
+    final lineup = ref.watch(lineupProvider);
+    return lineup.matchId != 0 &&
+        (lineup.homeTeamPlayers.isNotEmpty ||
+            lineup.awayTeamPlayers.isNotEmpty);
+  }
+
+  /// Checks if match has events data
+  bool _hasEventsData() {
+    return match.events != null && match.events!.isNotEmpty;
+  }
+
+  /// Builds stats availability indicators
+  Widget _buildStatsIndicators(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final indicators = <Widget>[];
+
+    // Standings indicator
+    if (_hasStandingsData(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Standings available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.leaderboard,
+              size: 12,
+              color: theme.colorScheme.onPrimary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Player statistics indicator
+    if (_hasPlayerStatistics(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Player statistics available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.secondary.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.bar_chart,
+              size: 12,
+              color: theme.colorScheme.onSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Lineup indicator
+    if (_hasLineupData(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Team lineups available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.tertiary.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.people,
+              size: 12,
+              color: theme.colorScheme.onTertiary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Events indicator
+    if (_hasEventsData()) {
+      indicators.add(
+        Tooltip(
+          message: 'Match events available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.event_note,
+              size: 12,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (indicators.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: indicators
+          .map(
+            (indicator) => Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: indicator,
+            ),
+          )
+          .toList(),
+    );
   }
 
   @override
@@ -112,7 +245,16 @@ class MatchCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              // Stats indicators row
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                child: Row(
+                  children: [
+                    _buildStatsIndicators(context, ref),
+                    const Spacer(),
+                  ],
+                ),
+              ),
               // Date and Time Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -239,6 +381,7 @@ class MatchCard extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -246,3 +389,5 @@ class MatchCard extends ConsumerWidget {
     );
   }
 }
+
+// Contains AI-generated edits.
