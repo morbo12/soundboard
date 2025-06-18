@@ -81,13 +81,31 @@ class DraggableJingleButton extends ConsumerWidget {
         );
       case AudioCategory.specialJingle:
         return baseStyle.copyWith(
-          backgroundColor: const WidgetStatePropertyAll(Color(0xFFE6B422)),
-          foregroundColor: const WidgetStatePropertyAll(Color(0xFF20281B)),
+          backgroundColor: WidgetStatePropertyAll(
+            Color.alphaBlend(
+              const Color(
+                0xFFE6B422,
+              ).withAlpha(128), // Yellow tint with 50% opacity
+              colorScheme.primaryContainer,
+            ),
+          ),
+          foregroundColor: WidgetStatePropertyAll(
+            colorScheme.onPrimaryContainer,
+          ),
         );
       case AudioCategory.goalJingle:
         return baseStyle.copyWith(
-          backgroundColor: const WidgetStatePropertyAll(Color(0xFF9CD67D)),
-          foregroundColor: const WidgetStatePropertyAll(Color(0xFF20281B)),
+          backgroundColor: WidgetStatePropertyAll(
+            Color.alphaBlend(
+              const Color(
+                0xFF4CAF50,
+              ).withAlpha(128), // Green tint with 50% opacity
+              colorScheme.primaryContainer,
+            ),
+          ),
+          foregroundColor: WidgetStatePropertyAll(
+            colorScheme.onPrimaryContainer,
+          ),
         );
       case AudioCategory.genericJingle:
         return baseStyle.copyWith(
