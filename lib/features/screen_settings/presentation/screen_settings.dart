@@ -36,7 +36,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const MyColorScheme(),
               const Gap(10),
 
-              settingsHeaderText("Kanalens volym för bakgrund"),
+              settingsHeaderText("Bakgrundskanalens volym"),
               const Gap(2),
               const BackgroundVolume(),
               const Gap(10),
