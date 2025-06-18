@@ -138,7 +138,7 @@ class LiveEvents extends ConsumerWidget {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
