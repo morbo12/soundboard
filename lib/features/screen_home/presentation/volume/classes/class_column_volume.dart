@@ -116,26 +116,41 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                         },
                       ),
                     ), // VU Meter in the middle
-                    SizedBox(
-                      width: 10,
-                      child: Consumer(
-                        builder: (context, ref, child) {
-                          final jingleManagerAsync = ref.watch(
-                            jingleManagerProvider,
-                          );
-                          return jingleManagerAsync.when(
-                            data: (jingleManager) => VUMeterVisualizer(
-                              channel1: jingleManager.audioManager.channel1,
-                              channel2: jingleManager.audioManager.channel2,
-                              isVisible: true,
-                              height: 210,
-                              color: Theme.of(context).colorScheme.primary,
+                    Column(
+                      children: [
+                        _buildCustomText(' '),
+                        _buildCustomText(' '),
+                        Expanded(
+                          child: SizedBox(
+                            width: 10,
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final jingleManagerAsync = ref.watch(
+                                  jingleManagerProvider,
+                                );
+                                return jingleManagerAsync.when(
+                                  data: (jingleManager) => VUMeterVisualizer(
+                                    channel1:
+                                        jingleManager.audioManager.channel1,
+                                    channel2:
+                                        jingleManager.audioManager.channel2,
+                                    isVisible: true,
+                                    height: double.infinity - 129,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                  loading: () => const SizedBox.shrink(),
+                                  error: (error, stack) =>
+                                      const SizedBox.shrink(),
+                                );
+                              },
                             ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (error, stack) => const SizedBox.shrink(),
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        _buildCustomText(' '),
+                        _buildCustomText('VU'),
+                      ],
                     ),
                     // C2 Volume
                     Expanded(
