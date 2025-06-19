@@ -13,10 +13,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:soundboard/features/screen_home/presentation/volume/classes/class_waveform_visualizer.dart'
     show VUMeterVisualizer;
 
-// Global key to access the ColumnVolume widget
-final GlobalKey<_ColumnVolumeState> columnVolumeKey =
-    GlobalKey<_ColumnVolumeState>();
-
 class ColumnVolume extends ConsumerStatefulWidget {
   const ColumnVolume({super.key});
 
@@ -28,22 +24,9 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
   final Logger logger = const Logger('ColumnVolumeState');
   late final VolumeControlService _volumeControlService;
 
-  // Performance configuration
-
-  Timer? _refreshTimer;
-
-  // Debouncing
-  final Map<String, Timer> _debounceTimers = {};
-
   @override
   void dispose() {
-    _refreshTimer?.cancel();
-
     // Cancel all debounce timers
-    for (final timer in _debounceTimers.values) {
-      timer.cancel();
-    }
-    _debounceTimers.clear();
 
     super.dispose();
   }
@@ -71,11 +54,6 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
         });
       });
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override
@@ -183,7 +161,6 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
                             value / 100,
                           );
                         },
-                        isMaster: true,
                       ),
                     ),
                     Expanded(
@@ -246,9 +223,8 @@ class _ColumnVolumeState extends ConsumerState<ColumnVolume> {
     String label,
     PlayerState playerState,
     double volumeValue,
-    Function(double) onChanged, {
-    bool isMaster = false,
-  }) {
+    Function(double) onChanged,
+  ) {
     return Column(
       children: [
         Expanded(
