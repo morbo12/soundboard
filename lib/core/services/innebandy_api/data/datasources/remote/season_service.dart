@@ -13,6 +13,17 @@ class SeasonService {
       var data = response.data.where((val) => val["IsCurrentSeason"] == true);
       // dev.log('access token is -> $data');
       final seasonID = data.first["SeasonID"];
+
+      // Handle edge case: During June 20 - September 1st, return previous season ID
+      final now = DateTime.now();
+      final currentYear = now.year;
+      final june20 = DateTime(currentYear, 6, 20);
+      final september1 = DateTime(currentYear, 9, 1);
+
+      if (now.isAfter(june20) && now.isBefore(september1)) {
+        return seasonID - 1;
+      }
+
       return seasonID;
 
       // var data = response.data;
