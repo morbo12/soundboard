@@ -5,12 +5,17 @@ applyTo: "**"
 - Adhere to the official Flutter style guide. This forms the foundation for maintainable and consistent code.
 - Utilize the latest stable version of Flutter, keeping up-to-date with new features and security patches. Review Flutter's breaking changes and migration guides during updates.
 - Add a comment at the end of the file: 'Contains AI-generated edits.'
+- Reuse existing shells and terminals to avoid missing output.
+- Avoid starting debug sessions, as I usually run the app in debug mode myself.
+- Keep it simple. Avoid complex solution structures unless necessary. Use the simplest solution that meets the requirements.
+- User material design components and patterns where applicable, as they are well-tested and provide a consistent user experience.
 
 ## 1. Code Organization and Structure
 
 - **1.1 Directory Structure Best Practices:**
 
   - **`lib/` (Source Code):**
+
     - Use a feature-based structure, grouping related components into modules.
     - Example:
 
@@ -37,6 +42,7 @@ applyTo: "**"
       │ └── utils/
       ├── main.dart
       └── app.dart
+
   - **`test/` (Tests):** Mirror the `lib/` structure for easy test discovery.
   - **`android/`, `ios/`, `web/`, `macos/`, `windows/`, `linux/` (Platform-Specific Code):** Contain platform-specific native code. Limit direct modification unless necessary; utilize Flutter's platform channels.
   - **`assets/` (Assets):** Store images, fonts, and other static resources. Organize subfolders by type (e.g., `images/`, `fonts/`, `data/`). Use `pubspec.yaml` to declare assets.
