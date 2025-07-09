@@ -12,30 +12,36 @@ class PeriodEvent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: data.matchEventTypeId == 8
-                ? null
-                : () {
-                    EventCardSsml(ref: ref, data: data).getEventText(context);
-                    logger.d("End period Button pressed");
-                  },
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                (states) => Theme.of(context).colorScheme.onInverseSurface,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: data.matchEventTypeId == 8
+                  ? null
+                  : () {
+                      EventCardSsml(ref: ref, data: data).getEventText(context);
+                      logger.d("End period Button pressed");
+                    },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                  (states) => Theme.of(context).colorScheme.onInverseSurface,
+                ),
+              ),
+              child: AutoSizeText(
+                "${data.matchEventTypeId == 8 ? "Start" : "Slut"} period ${data.period}",
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            child: AutoSizeText(
-              "${data.matchEventTypeId == 8 ? "Start" : "Slut"} period ${data.period}",
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -11,7 +11,11 @@ class MatchEventColors {
       case MatchEventType.mal:
         return Theme.of(context).colorScheme.primaryContainer;
       case MatchEventType.utvisning:
-        return Theme.of(context).colorScheme.error;
+        return Color.lerp(
+          Theme.of(context).colorScheme.errorContainer,
+          Colors.pink.shade100,
+          0.5,
+        )!.withAlpha(200);
 
       case MatchEventType.malvaktIn:
       case MatchEventType.malvaktUt:
@@ -29,7 +33,7 @@ class MatchEventColors {
       case MatchEventType.mal:
         return Theme.of(context).colorScheme.onPrimaryContainer;
       case MatchEventType.utvisning:
-        return Theme.of(context).colorScheme.onError;
+        return Theme.of(context).colorScheme.onErrorContainer;
       case MatchEventType.malvaktIn:
       case MatchEventType.malvaktUt:
         return Theme.of(context).colorScheme.onSecondaryContainer;

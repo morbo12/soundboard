@@ -56,39 +56,40 @@ class EventCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListTile(
-      isThreeLine: true,
-      // dense: true,
-      visualDensity: VisualDensity.compact,
-      onTap: () {
-        EventCardSsml(ref: ref, data: data).getEventText(context);
-        logger.d("Button pressed");
-      },
-      onLongPress: () {
-        final text = _getEventText(context, ref);
-        _showTextDialog(context, text);
-      },
-      leading: Icon(
-        _getEventIcon(data.matchEventTypeId),
-        color: Theme.of(context).colorScheme.onPrimary,
-      ),
-      textColor: MatchEventColors(data.matchEventTypeId).getTextColor(context),
-      tileColor: MatchEventColors(data.matchEventTypeId).getTileColor(context),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-          width: 1,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: ListTile(
+        isThreeLine: true,
+        // dense: true,
+        visualDensity: VisualDensity.compact,
+        onTap: () {
+          EventCardSsml(ref: ref, data: data).getEventText(context);
+          logger.d("Button pressed");
+        },
+        onLongPress: () {
+          final text = _getEventText(context, ref);
+          _showTextDialog(context, text);
+        },
+        leading: Icon(
+          _getEventIcon(data.matchEventTypeId),
+          color: Theme.of(context).colorScheme.onPrimary,
         ),
-        borderRadius: BorderRadius.circular(5),
+        textColor: MatchEventColors(
+          data.matchEventTypeId,
+        ).getTextColor(context),
+        tileColor: MatchEventColors(
+          data.matchEventTypeId,
+        ).getTileColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildEventHeader(),
+            // _buildEventDetails(),
+          ],
+        ),
+        subtitle: _buildEventDetails(),
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildEventHeader(),
-          // _buildEventDetails(),
-        ],
-      ),
-      subtitle: _buildEventDetails(),
     );
   }
 

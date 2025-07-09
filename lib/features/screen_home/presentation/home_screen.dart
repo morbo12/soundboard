@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/presentation/board/board.dart';
 import 'package:soundboard/features/screen_home/presentation/events/events.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/lineup.dart';
-import 'package:soundboard/features/screen_home/presentation/volume/volume.dart';
 
 /// Main screen that displays the soundboard interface.
 ///
@@ -88,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             return Row(
               children: [
                 BoardSection(width: boardWidth),
-                VolumeSection(width: volumeWidth),
+                // VolumeSection(width: volumeWidth),
                 EventsSection(
                   scrollController: scrollController,
                   width: eventsWidth,

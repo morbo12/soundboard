@@ -15,7 +15,7 @@ class LineupSection extends StatelessWidget {
         children: [
           VerticalDivider(
             thickness: 1.0,
-            width: 0.0,
+            width: 20.0,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           Expanded(
