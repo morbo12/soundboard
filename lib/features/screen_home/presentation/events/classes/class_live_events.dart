@@ -8,8 +8,7 @@ import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/m
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/core/utils/logger.dart';
-import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
-import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
+import 'package:soundboard/features/screen_home/presentation/events/widgets/live_match_card.dart';
 import '../../live/widget_event.dart';
 
 part 'class_live_events.g.dart';
@@ -82,135 +81,55 @@ class LiveEvents extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      width: 350,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Column(
-          children: [
-            _buildHeader(context, ref),
-            _buildEventsList(context, ref),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildStreamingButton(context, ref),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-          const PeriodScores(),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-          _buildTtsButton(context, ref),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStreamingButton(BuildContext context, WidgetRef ref) {
     final selectedMatch = ref.watch(selectedMatchProvider);
-    return TextButton(
-      onPressed: () {
-        if (selectedMatch.matchId != 0) {
-          ref
-              .read(matchEventsStreamProvider.notifier)
-              .startStreaming(selectedMatch.matchId);
-        }
-      },
-      child: Text(
-        'Matchhändelser',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        children: [
+          LiveMatchCard(match: selectedMatch),
+          const SizedBox(height: 4),
+          Expanded(
+            child: selectedMatch.matchId != 0
+                ? _buildEventsList(context, ref)
+                : const Center(child: Text('Select a match to view events')),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildEventsList(BuildContext context, WidgetRef ref) {
-    final isStreaming =
-        ref.read(matchEventsStreamProvider.notifier)._timer?.isActive ?? false;
-
-    return Expanded(
-      child: ref
-          .watch(matchEventsStreamProvider)
-          .when(
-            data: (events) {
-              // Only show loading when actively streaming and have no events
-              if (isStreaming && events.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final selectedMatch = ref.watch(selectedMatchProvider);
-              final isLive = selectedMatch.matchStatus != 4;
-
-              return ListView.builder(
-                controller: scrollController,
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final eventIndex = isLive ? index : events.length - 1 - index;
-                  return EventWidget(
-                    key: ValueKey(
-                      '${events[eventIndex].matchEventId}_${events[eventIndex].timeStamp}',
-                    ),
-                    data: events[eventIndex],
-                  );
-                },
-              );
-            },
-            loading: () {
-              // Only show loading indicator if we're actively streaming
-              return isStreaming
-                  ? const Center(child: CircularProgressIndicator())
-                  : const SizedBox.shrink();
-            },
-            error: (error, stackTrace) => Center(
-              child: Text(
-                'Error loading events: $error',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
+    return ref
+        .watch(matchEventsStreamProvider)
+        .when(
+          data: (events) => _buildEventsListView(events, ref),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Text(
+              'Error loading events: $error',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
-    );
+        );
   }
 
-  Widget _buildTtsButton(BuildContext context, WidgetRef ref) {
-    return TextButton(
-      onPressed: () => TtsDialog.show(context, ref),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.record_voice_over,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Custom TTS',
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildEventsListView(List<IbyMatchEvent> events, WidgetRef ref) {
+    if (events.isEmpty) return const Center(child: Text('No events yet'));
+
+    final selectedMatch = ref.watch(selectedMatchProvider);
+    final isLive = selectedMatch.matchStatus != 4;
+
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: events.length,
+      itemBuilder: (context, index) {
+        final eventIndex = isLive ? index : events.length - 1 - index;
+        return EventWidget(
+          key: ValueKey('${events[eventIndex].matchEventId}'),
+          data: events[eventIndex],
+        );
+      },
     );
   }
 }
