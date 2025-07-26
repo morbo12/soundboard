@@ -21,7 +21,17 @@ class VoiceManager {
     Voice(
       id: 4,
       name: "Ava Multilingual (experimental)",
-      shortName: "en-US-NovaTurboMultilingualNeural",
+      shortName: "en-US-Ava:DragonHDLatestNeural",
+    ),
+    Voice(
+      id: 5,
+      name: "Steffan Multilingual (experimental)",
+      shortName: "en-US-Steffan:DragonHDLatestNeural",
+    ),
+    Voice(
+      id: 6,
+      name: "Emma Multilingual (experimental)",
+      shortName: "en-US-Emma:DragonHDLatestNeural",
     ),
   ];
 
