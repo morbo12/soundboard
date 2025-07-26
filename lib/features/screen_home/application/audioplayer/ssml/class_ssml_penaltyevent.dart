@@ -85,9 +85,11 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
       penaltyInfo,
     );
 
-    return _addProsodyVariation(
-      _addRandomPauses(announcement.trim().replaceAll(RegExp(r'\s+'), ' ')),
+    return _addRandomPauses(
+      announcement.trim().replaceAll(RegExp(r'\s+'), ' '),
     );
+
+    ;
   }
 
   String _formatTime() {
@@ -103,6 +105,13 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
       return penaltyInfo['name'] ?? 'okänd utvisning';
     }
     return "${penaltyInfo['time']} för ${penaltyInfo['name']}";
+  }
+
+  String _addLang(String text, {String lang = 'sv-SE'}) {
+    return wrapWithLang(
+      text,
+      lang: lang,
+    ).replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   String _addProsodyVariation(String text) {

@@ -22,6 +22,10 @@ abstract class BaseSsmlEvent {
       teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
 
   /// Wraps text with SSML prosody tags
+  String wrapWithLang(String text, {String lang = 'sv-SE'}) =>
+      "<lang xml:lang='$lang'>$text</lang>";
+
+  /// Wraps text with SSML prosody tags
   String wrapWithProsody(
     String text, {
     String rate = 'medium',
