@@ -5,6 +5,7 @@ import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
@@ -204,10 +205,9 @@ class _LineupState extends ConsumerState<Lineup> {
   }
 
   String _getLineupText(dynamic selectedMatch) {
-    final introText = _stripSsmlTags(selectedMatch.introSsml);
-    final homeTeamText = _stripSsmlTags(selectedMatch.homeTeamSsml);
-
-    final awayTeamText = _stripSsmlTags(selectedMatch.awayTeamSsml);
+    final introText = _stripSsmlTags(selectedMatch.introSsml(ref));
+    final homeTeamText = _stripSsmlTags(selectedMatch.homeTeamSsml(ref));
+    final awayTeamText = _stripSsmlTags(selectedMatch.awayTeamSsml(ref));
 
     return "$introText\n\n$awayTeamText\n\n$homeTeamText";
   }
@@ -239,6 +239,16 @@ class _LineupState extends ConsumerState<Lineup> {
     startMessageRotation();
 
     try {
+      // Debug: Check the lineup data before generating SSML
+      final lineupData = ref.read(lineupProvider);
+      logger.d("[_handlePlayLineup] Lineup matchId: ${lineupData.matchId}");
+      logger.d(
+        "[_handlePlayLineup] Home team players count: ${lineupData.homeTeamPlayers.length}",
+      );
+      logger.d(
+        "[_handlePlayLineup] Away team players count: ${lineupData.awayTeamPlayers.length}",
+      );
+
       // Get the jingle manager from provider
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       final jingleManager = await jingleManagerAsync.when(
@@ -252,21 +262,22 @@ class _LineupState extends ConsumerState<Lineup> {
       //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
 
       final welcomeTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.introSsml,
+        text: selectedMatch.introSsml(ref),
       );
       final homeTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.homeTeamSsml,
+        text: selectedMatch.homeTeamSsml(ref),
       );
       final awayTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.awayTeamSsml,
+        text: selectedMatch.awayTeamSsml(ref),
       );
 
       stopMessageRotation();
       ref.read(isLoadingProvider.notifier).state = false;
 
       ref.read(azCharCountProvider.notifier).state +=
-          selectedMatch.ssml.length as int;
-      SettingsBox().azCharCount += selectedMatch.ssml.length as int;
+          selectedMatch.generateSsml(ref).length as int;
+      SettingsBox().azCharCount +=
+          selectedMatch.generateSsml(ref).length as int;
 
       // Play background music
 

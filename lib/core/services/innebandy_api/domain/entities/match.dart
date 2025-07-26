@@ -279,67 +279,86 @@ class IbyMatch {
   @override
   int get hashCode => matchId.hashCode;
 
+  /// Fetches the lineup for this match and updates both the instance and provider.
+  ///
+  /// This method handles errors gracefully and ensures the lineup is available
+  /// both on the match instance and in the global provider state.
   Future<void> fetchLineup(WidgetRef ref) async {
-    // Assuming you have a function getLineupByMatchId that makes the API call.
-    lineup = await getLineupByMatchId(matchId, ref);
+    try {
+      logger.d("Fetching lineup for match $matchId");
+      lineup = await getLineupByMatchId(matchId, ref);
+
+      // Update the global lineup provider
+      ref.read(lineupProvider.notifier).state = lineup!;
+
+      logger.d("Successfully fetched lineup for match $matchId");
+    } catch (e) {
+      logger.e("Failed to fetch lineup for match $matchId: $e");
+      rethrow; // Re-throw to allow caller to handle the error
+    }
   }
 
-  Future<IbyMatchLineup> getLineupByMatchId(int matchId, ref) async {
-    logger.d("_getLineup");
+  /// Gets the lineup for a specific match ID.
+  ///
+  /// [matchId] The ID of the match to fetch lineup for
+  /// [ref] The WidgetRef for accessing providers
+  ///
+  /// Returns the lineup data for the match
+  /// Throws an exception if the API call fails
+  Future<IbyMatchLineup> getLineupByMatchId(int matchId, WidgetRef ref) async {
+    logger.d("Getting lineup for match $matchId");
 
-    // final apiClient = APIClient();
     final apiClient = ref.watch(apiClientProvider);
-
     final matchService = MatchService(apiClient);
 
-    IbyMatchLineup lineup = await matchService.getLineupOfMatch(
-      matchId: matchId,
-    );
-    return lineup;
+    try {
+      final lineup = await matchService.getLineupOfMatch(matchId: matchId);
+      return lineup;
+    } catch (e) {
+      logger.e("API call failed for match lineup $matchId: $e");
+      rethrow;
+    }
   }
 
   String stripTeamSuffix(String teamName) {
     return teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
   }
 
-  // Getter for the full SSML content
+  // Getter for the full SSML content - deprecated, use generateSsml(ref) instead
   String get ssml {
-    return generateSsml();
+    throw UnsupportedError(
+      'Use generateSsml(ref) instead to access lineup data from provider',
+    );
   }
 
-  // Getters for the three SSML parts
-  String get introSsml {
-    return _generateWelcomeMessage();
+  // Getters for the three SSML parts - these now require a ref to access the provider
+  String introSsml(WidgetRef ref) {
+    return _generateWelcomeMessage(ref);
   }
 
-  String get homeTeamSsml {
-    return _generateHomeTeamLineup();
+  String homeTeamSsml(WidgetRef ref) {
+    return _generateHomeTeamLineup(ref);
   }
 
-  String get awayTeamSsml {
-    return _generateAwayTeamLineup();
+  String awayTeamSsml(WidgetRef ref) {
+    return _generateAwayTeamLineup(ref);
   }
 
-  String generateSsml() {
+  /// Generates complete SSML for the match including intro, away team, home team, and referee info
+  String generateSsml(WidgetRef ref) {
+    final lineup = ref.read(lineupProvider);
     String ssml;
-    if (lineup == null) {
-      // ssml =
-      // '<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" version="1.0" xml:lang="en-US">\n<lang xml:lang="sv-SE">';
-      // ssml += '<mstts:express-as style="sports_commentary">';
+
+    // Check if we have valid lineup data (not the default empty state)
+    if (lineup.matchId == 0 || lineup.homeTeamPlayers.isEmpty) {
+      logger.d("No valid lineup data found, using test SSML");
       ssml = _generateTestSsml();
-      // ssml += "</mstts:express-as></lang></speak>";
     } else {
-      // ssml =
-      // '<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="sv-SE">\n<lang xml:lang="sv-SE">';
-
-      // Split into intro ssml, home ssml and away ssml
-      // sync run of home and away tts to jingles.
-
-      ssml = _generateWelcomeMessage();
-      ssml += _generateAwayTeamLineup();
-      ssml += _generateHomeTeamLineup();
+      logger.d("Valid lineup data found, generating real SSML");
+      ssml = _generateWelcomeMessage(ref);
+      ssml += _generateAwayTeamLineup(ref);
+      ssml += _generateHomeTeamLineup(ref);
       ssml += _generateRefereeMessage();
-      // ssml += "</lang></speak>";
     }
     return ssml;
   }
@@ -358,9 +377,12 @@ Välkomna! Testtext är nu slut
     return testssml;
   }
 
-  String _generateWelcomeMessage() {
+  String _generateWelcomeMessage(WidgetRef ref) {
+    final lineup = ref.read(lineupProvider);
     final String ssml;
-    if (lineup == null) {
+
+    // Check if we have valid lineup data
+    if (lineup.matchId == 0 || lineup.homeTeamPlayers.isEmpty) {
       ssml = """
     Välkomna till Testhallen!
     <break time="1000ms" />
@@ -379,9 +401,12 @@ Välkomna! Testtext är nu slut
     return ssml;
   }
 
-  String _generateHomeTeamLineup() {
+  String _generateHomeTeamLineup(WidgetRef ref) {
+    final lineup = ref.read(lineupProvider);
     String ssml;
-    if (lineup == null) {
+
+    // Check if we have valid lineup data
+    if (lineup.matchId == 0 || lineup.homeTeamPlayers.isEmpty) {
       ssml = """
     Hemmalaget ställer upp med följande spelare<break time='750ms' />
     Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
@@ -395,7 +420,7 @@ Välkomna! Testtext är nu slut
           "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />\n";
       String homeGoalie =
           "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
-      for (TeamPlayer player in lineup!.homeTeamPlayers) {
+      for (TeamPlayer player in lineup.homeTeamPlayers) {
         if (player.position == "Målvakt") {
           homeGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
@@ -409,7 +434,7 @@ Välkomna! Testtext är nu slut
       ssml += "<break time=\"500ms\" />\n";
       ssml +=
           "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />\n";
-      for (TeamTeamPerson teamPerson in lineup!.homeTeamTeamPersons) {
+      for (TeamTeamPerson teamPerson in lineup.homeTeamTeamPersons) {
         ssml +=
             "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='1000ms' />\n";
       }
@@ -418,9 +443,12 @@ Välkomna! Testtext är nu slut
     return ssml;
   }
 
-  String _generateAwayTeamLineup() {
+  String _generateAwayTeamLineup(WidgetRef ref) {
+    final lineup = ref.read(lineupProvider);
     String ssml;
-    if (lineup == null) {
+
+    // Check if we have valid lineup data
+    if (lineup.matchId == 0 || lineup.awayTeamPlayers.isEmpty) {
       ssml = """
     Bortalaget ställer upp med följande spelare<break time='750ms' />
     Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
@@ -433,7 +461,7 @@ Välkomna! Testtext är nu slut
           "${stripTeamSuffix(awayTeam)} ställer upp med följande spelare<break time='750ms' />\n";
       String awayGoalie =
           "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
-      for (TeamPlayer player in lineup!.awayTeamPlayers) {
+      for (TeamPlayer player in lineup.awayTeamPlayers) {
         if (player.position == "Målvakt") {
           awayGoalie =
               "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
@@ -447,7 +475,7 @@ Välkomna! Testtext är nu slut
       ssml += "<break time=\"500ms\" />\n";
       ssml +=
           "Ledare för ${stripTeamSuffix(awayTeam)} är<break time='750ms' />\n";
-      for (TeamTeamPerson teamPerson in lineup!.awayTeamTeamPersons) {
+      for (TeamTeamPerson teamPerson in lineup.awayTeamTeamPersons) {
         ssml +=
             "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='750ms' />\n";
       }

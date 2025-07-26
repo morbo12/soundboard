@@ -6,7 +6,6 @@ import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/a
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/player_statistics_service.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/standings_service.dart';
-import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
@@ -28,31 +27,42 @@ class MatchSelector extends ConsumerWidget {
   /// This method:
   /// 1. Fetches the complete match details
   /// 2. Updates the selected match in the state
-  /// 3. Fetches the lineup for the selected match
-  /// 4. Updates the lineup in the state
+  /// 3. Fetches the lineup for the selected match (which also updates the lineup provider)
+  /// 4. Fetches standings and player statistics
   ///
   /// [matchID] is the unique identifier of the selected match.
   Future<void> _getMatch(WidgetRef ref, int matchID) async {
-    final apiClient = ref.watch(apiClientProvider);
-    final matchService = MatchService(apiClient);
-    final standingsService = StandingsService(apiClient);
-    final playerStatisticsService = PlayerStatisticsService(apiClient);
-    final match = await matchService.getMatch(matchId: matchID);
+    try {
+      final apiClient = ref.watch(apiClientProvider);
+      final matchService = MatchService(apiClient);
+      final standingsService = StandingsService(apiClient);
+      final playerStatisticsService = PlayerStatisticsService(apiClient);
 
-    // Update the selected match in the provider
-    ref.read(selectedMatchProvider.notifier).state = match;
-    await match.fetchLineup(ref);
-    ref.read(lineupProvider.notifier).state = await match.getLineupByMatchId(
-      matchID,
-      ref,
-    );
-    // Fetch standings for the given match
-    ref.read(standingsProvider.notifier).state = await standingsService
-        .getCurrentStandings(match, ref);
+      // Fetch the complete match details
+      final match = await matchService.getMatch(matchId: matchID);
 
-    // Fetch player statistics for the given match
-    ref.read(playerStatisticsProvider.notifier).state =
-        await playerStatisticsService.getPlayerStatisticsFromMatch(match, ref);
+      // Update the selected match in the provider
+      ref.read(selectedMatchProvider.notifier).state = match;
+
+      // Fetch lineup (this will also update the lineupProvider internally)
+      await match.fetchLineup(ref);
+
+      // Fetch standings for the given match
+      ref.read(standingsProvider.notifier).state = await standingsService
+          .getCurrentStandings(match, ref);
+
+      // Fetch player statistics for the given match
+      ref
+          .read(playerStatisticsProvider.notifier)
+          .state = await playerStatisticsService.getPlayerStatisticsFromMatch(
+        match,
+        ref,
+      );
+    } catch (e) {
+      // Handle errors appropriately - you might want to show a snackbar or error dialog
+      debugPrint('Error fetching match data: $e');
+      // Optionally, you could set an error state in a provider here
+    }
   }
 
   @override
