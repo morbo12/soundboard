@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_0_player_progress_bar.dart';
+
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_1_stop_goal_row.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_section.dart';
