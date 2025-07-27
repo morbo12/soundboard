@@ -71,7 +71,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
           fixedSize: const Size.fromHeight(100),
         ),
         noLines: 1,
-        isSelected: true,
+
         onTap: () async {
           pickFile(
             allowedExtensions: Platform.isWindows
@@ -109,7 +109,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
           fixedSize: const Size.fromHeight(100),
         ),
         noLines: 1,
-        isSelected: true,
+
         onTap: () {},
         secondaryText: "Loading...",
         primaryText: widget.directoryName,
@@ -121,7 +121,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
           fixedSize: const Size.fromHeight(100),
         ),
         noLines: 1,
-        isSelected: true,
+
         onTap: () {},
         secondaryText: "Error",
         primaryText: widget.directoryName,

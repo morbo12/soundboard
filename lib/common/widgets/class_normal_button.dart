@@ -32,7 +32,8 @@ class NormalButtonState extends State<NormalButton> {
         ElevatedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
           backgroundColor: colorScheme.surfaceContainerLow,
-          minimumSize: const Size(0, 100),
+          minimumSize: const Size(double.infinity, 100),
+          maximumSize: const Size(double.infinity, double.infinity),
           textStyle: theme.textTheme.titleLarge,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ).copyWith(
@@ -79,7 +80,9 @@ class NormalButtonState extends State<NormalButton> {
           return FittedBox(
             fit: BoxFit.scaleDown,
             child: Container(
-              width: constraints.maxWidth,
+              width: constraints.maxWidth.isFinite
+                  ? constraints.maxWidth
+                  : null,
               child: parts.length > 1
                   ? Column(
                       mainAxisSize: MainAxisSize.min,

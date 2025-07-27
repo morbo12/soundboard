@@ -45,17 +45,19 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     return LargeButton(
       style: ElevatedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
         backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
         fixedSize: const Size.fromHeight(100),
+
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // Less round corners
         ),
       ),
       noLines: 1,
-      isSelected: true,
+
       onTap: () async {
         pickFile(
           allowedExtensions: ['zip'],

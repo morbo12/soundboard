@@ -1,14 +1,18 @@
 // import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
+import 'package:soundboard/features/screen_home/presentation/board/widgets/mini_progress_bar.dart';
 
-class LargeButton extends StatefulWidget {
+class LargeButton extends ConsumerStatefulWidget {
   final String primaryText;
   final String secondaryText;
   final Function()? onTap;
   final ButtonStyle? style;
-  final bool? isDisabled;
-  final bool? isSelected;
+  // final bool? isDisabled;
+  // final bool? isSelected;
   final int? noLines;
+  final AudioFile? audioFile; // Add AudioFile parameter for progress tracking
 
   const LargeButton({
     super.key,
@@ -16,113 +20,89 @@ class LargeButton extends StatefulWidget {
     required this.onTap,
     required this.secondaryText,
     this.style,
-    this.isDisabled,
-    this.isSelected,
+    // this.isDisabled,
+    // this.isSelected,
     this.noLines,
+    this.audioFile,
   });
 
   @override
-  LargeButtonState createState() => LargeButtonState();
+  ConsumerState<LargeButton> createState() => LargeButtonState();
 }
 
-class LargeButtonState extends State<LargeButton> {
+class LargeButtonState extends ConsumerState<LargeButton> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     // Base style using Material 3 tokens
-    ButtonStyle baseStyle =
-        TextButton.styleFrom(
-          foregroundColor: colorScheme.onSurface,
-          backgroundColor: colorScheme.surfaceContainerLow,
-          minimumSize: const Size(0, 100),
-          textStyle: theme.textTheme.titleLarge,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ).copyWith(
-          // Add state layer colors
-          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-            if (states.contains(WidgetState.hovered)) {
-              return colorScheme.onSurface.withAlpha(20);
-            }
-            if (states.contains(WidgetState.pressed)) {
-              return colorScheme.onSurface.withAlpha(31);
-            }
-            return null;
-          }),
-        );
-
-    // Selected state style
-    ButtonStyle selectedStyle = baseStyle.copyWith(
-      backgroundColor: WidgetStateProperty.all(colorScheme.primaryContainer),
-      foregroundColor: WidgetStateProperty.all(colorScheme.onPrimaryContainer),
-    );
-
-    // Goal button style (MÅL)
-    ButtonStyle goalStyle = baseStyle.copyWith(
-      backgroundColor: WidgetStateProperty.all(const Color(0xFF9CD67D)),
-      foregroundColor: WidgetStateProperty.all(const Color(0xFF20281B)),
-      textStyle: WidgetStateProperty.all(theme.textTheme.headlineLarge),
-    );
-
-    // Stop button style
-    ButtonStyle stopStyle = baseStyle.copyWith(
-      backgroundColor: WidgetStateProperty.all(colorScheme.errorContainer),
-      foregroundColor: WidgetStateProperty.all(colorScheme.onErrorContainer),
-      textStyle: WidgetStateProperty.all(theme.textTheme.headlineMedium),
-    );
-
-    // Disabled style
-    ButtonStyle disabledStyle = baseStyle.copyWith(
-      backgroundColor: WidgetStateProperty.all(
-        colorScheme.onSurface.withAlpha(31),
-      ),
-      foregroundColor: WidgetStateProperty.all(
-        colorScheme.onSurface.withAlpha(97),
-      ),
+    ButtonStyle baseStyle = TextButton.styleFrom(
+      foregroundColor: colorScheme.onPrimaryContainer,
+      backgroundColor: colorScheme.primaryContainer,
+      minimumSize: const Size(0, 100),
+      textStyle: theme.textTheme.titleLarge,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
     );
 
     // Determine which style to use
-    ButtonStyle? buttonStyle = widget.style;
-    if (buttonStyle == null) {
-      if (widget.isDisabled == true) {
-        buttonStyle = disabledStyle;
-      } else if (widget.primaryText == "MÅL") {
-        buttonStyle = goalStyle;
-      } else if (widget.primaryText == "STOP") {
-        buttonStyle = stopStyle;
-      } else if (widget.isSelected == true) {
-        buttonStyle = selectedStyle;
-      } else {
-        buttonStyle = baseStyle;
-      }
+    ButtonStyle? buttonStyle = baseStyle;
+    if (widget.style != null) {
+      buttonStyle = widget.style!.merge(baseStyle);
     }
 
     return Expanded(
-      child: ElevatedButton(
-        onPressed: widget.isDisabled == true ? null : widget.onTap,
-        style: buttonStyle,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                widget.primaryText,
-                maxLines: widget.noLines ?? 2,
-                textAlign: TextAlign.center,
-              ),
-              if (widget.secondaryText != "N/A") ...[
-                const SizedBox(height: 4),
-                Text(
-                  widget.secondaryText,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
+      child: Stack(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 100, // Ensure minimum height
+            child: ElevatedButton(
+              onPressed: widget.onTap,
+              style: buttonStyle,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.primaryText,
+                      maxLines: widget.noLines ?? 2,
+                      textAlign: TextAlign.center,
+                    ),
+                    if (widget.secondaryText != "N/A") ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.secondaryText,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ],
+              ),
+            ),
           ),
-        ),
+          // Progress bar overlay
+          if (widget.audioFile != null)
+            Positioned(
+              bottom: 8,
+              left: 12,
+              right: 12,
+              child: Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: MiniProgressBar(audioFile: widget.audioFile, height: 6),
+              ),
+            ),
+        ],
       ),
     );
   }

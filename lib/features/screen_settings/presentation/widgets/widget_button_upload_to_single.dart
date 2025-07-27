@@ -50,7 +50,7 @@ class UploadButtonToSingleState extends ConsumerState<UploadButtonToSingle> {
         ),
       ),
       noLines: 1,
-      isSelected: true,
+
       onTap: () async {
         pickFile(
           allowedExtensions: Platform.isWindows

@@ -24,7 +24,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
             fixedSize: const Size.fromHeight(100),
           ),
           noLines: 1,
-          isSelected: true,
+
           onTap: _isLoading ? null : () => _handleCacheDeletion(),
           secondaryText: 'N/A',
           primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",

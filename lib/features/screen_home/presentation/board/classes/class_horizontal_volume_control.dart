@@ -158,18 +158,18 @@ class _HorizontalVolumeControlState
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              // Horizontal VU meter
-              SizedBox(
-                height: 20,
-                child: HorizontalVUMeterVisualizer(
-                  channel1: jingleManager.audioManager.channel1,
-                  channel2: jingleManager.audioManager.channel2,
-                  isVisible: true,
-                  width: double.infinity,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+              // const SizedBox(height: 8),
+              // // Horizontal VU meter
+              // SizedBox(
+              //   height: 20,
+              //   child: HorizontalVUMeterVisualizer(
+              //     channel1: jingleManager.audioManager.channel1,
+              //     channel2: jingleManager.audioManager.channel2,
+              //     isVisible: true,
+              //     width: double.infinity,
+              //     color: Theme.of(context).colorScheme.primary,
+              //   ),
+              // ),
             ],
           ),
           loading: () => const SizedBox(height: 148), // 120 + 8 + 20

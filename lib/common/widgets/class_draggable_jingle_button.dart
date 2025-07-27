@@ -7,6 +7,7 @@ import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
 import 'package:soundboard/common/widgets/class_normal_button.dart';
+import 'package:soundboard/common/widgets/button_with_progress.dart';
 
 class DraggableJingleButton extends ConsumerWidget {
   final int index;
@@ -151,18 +152,13 @@ class DraggableJingleButton extends ConsumerWidget {
       builder: (context, candidateData, rejectedData) {
         return Draggable<int>(
           data: index,
-          feedback: SizedBox(
-            // Ensure size constraints
-            width: 120, // Use appropriate dimensions
-            height: 100,
-            child: NormalButton(
-              primaryText: buttonText,
-              onTap: () {}, // Feedback doesn't need tap functionality
-              style: buttonStyle,
-              // If NormalButton relies on Material (e.g., for InkWell),
-              // this might affect its appearance, but should fix the error.
-              // We might need to wrap it in a specific Material type later if needed.
-            ),
+          feedback: NormalButton(
+            primaryText: buttonText,
+            onTap: () {}, // Feedback doesn't need tap functionality
+            style: buttonStyle,
+            // If NormalButton relies on Material (e.g., for InkWell),
+            // this might affect its appearance, but should fix the error.
+            // We might need to wrap it in a specific Material type later if needed.
           ),
           childWhenDragging: NormalButton(
             primaryText: '',
@@ -171,12 +167,15 @@ class DraggableJingleButton extends ConsumerWidget {
           ),
           child: GestureDetector(
             onLongPress: () => _handleLongPress(context, ref),
-            child: NormalButton(
-              primaryText: buttonText,
-              onTap: () => _handleTap(context, ref),
-              style: buttonStyle,
-              isDisabled: false,
-              isSelected: candidateData.isNotEmpty,
+            child: ButtonWithProgress(
+              audioFile: audioFile,
+              child: NormalButton(
+                primaryText: buttonText,
+                onTap: () => _handleTap(context, ref),
+                style: buttonStyle,
+                isDisabled: false,
+                isSelected: candidateData.isNotEmpty,
+              ),
             ),
           ),
         );

@@ -16,6 +16,7 @@ import 'package:soundboard/features/screen_home/application/audioplayer/player_f
 import 'package:flutter/foundation.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/features/screen_home/presentation/board/providers/audio_progress_provider.dart';
 
 /// Enum representing the available audio channels
 enum AudioChannel { channel1, channel2 }
@@ -66,6 +67,11 @@ class AudioManager {
     try {
       await _fadeAndStop(ref, AudioChannel.channel1);
       await _fadeAndStop(ref, AudioChannel.channel2);
+
+      // Clear progress tracking when stopping all audio
+      ref.read(currentPlayingJingleProvider.notifier).state = null;
+      ref.read(currentJingleChannelProvider.notifier).state = null;
+      ref.read(lastPressedButtonProvider.notifier).state = null;
     } catch (e) {
       logger.e("Error stopping all audio", e.toString());
     }
@@ -148,6 +154,7 @@ class AudioManager {
     String filePath, {
     required int fadeDuration,
     bool isBackgroundMusic = false,
+    AudioFile? audioFile, // Track which jingle is playing
   }) async {
     try {
       final otherChannel = channel == AudioChannel.channel1
@@ -160,6 +167,21 @@ class AudioManager {
       logger.d("After _fadeAndStop");
 
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
+
+      // Update providers to track currently playing jingle
+      if (audioFile != null && !isBackgroundMusic) {
+        ref.read(currentPlayingJingleProvider.notifier).state = audioFile;
+        ref.read(currentJingleChannelProvider.notifier).state =
+            channel == AudioChannel.channel1 ? 1 : 2;
+
+        // Clear tracking when playback completes
+        player.onPlayerComplete.listen((_) {
+          ref.read(currentPlayingJingleProvider.notifier).state = null;
+          ref.read(currentJingleChannelProvider.notifier).state = null;
+          ref.read(lastPressedButtonProvider.notifier).state = null;
+        });
+      }
+
       await player.play(DeviceFileSource(filePath));
 
       if (isBackgroundMusic) {
@@ -249,12 +271,22 @@ class AudioManager {
       logger.d(
         "[playAudio] Playing ${audioFile.filePath} on channel ${channel.name}",
       );
+
+      // Update progress providers for jingle tracking
+      ref.read(currentPlayingJingleProvider.notifier).state = audioFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+      logger.d(
+        "[playAudio] Updated progress providers for: ${audioFile.displayName}",
+      );
+
       await _playAudioFile(
         ref,
         channel,
         audioFile.filePath,
         fadeDuration: fadeDuration,
         isBackgroundMusic: isBackgroundMusic,
+        audioFile: audioFile,
       );
     } catch (e) {
       logger.e("Error playing audio: $e");
@@ -270,6 +302,9 @@ class AudioManager {
     try {
       // If this is a category-only audio file, play a random audio from the category
       if (audiofile.isCategoryOnly) {
+        // Track which button was pressed for category-only buttons
+        ref.read(lastPressedButtonProvider.notifier).state = audiofile;
+
         await playAudio(
           audiofile.audioCategory,
           ref,
@@ -291,6 +326,7 @@ class AudioManager {
         channel,
         audiofile.filePath,
         fadeDuration: fadeDuration,
+        audioFile: audiofile,
       );
     } catch (e) {
       logger.e("Error playing audio: $e");
@@ -384,9 +420,8 @@ class AudioManager {
 
       if (categoryInstances.isEmpty) return;
 
-      logger.d(
-        "[playHorn] Loading ${categoryInstances[0].filePath} into channel 2",
-      );
+      final hornAudioFile = categoryInstances[0];
+      logger.d("[playHorn] Loading ${hornAudioFile.filePath} into channel 2");
 
       if (channel2.state == PlayerState.playing) {
         logger.d("[playHorn] Stopping Channel 2");
@@ -398,11 +433,23 @@ class AudioManager {
         await channel1.stop(); // Stop the currently playing instance
         logger.d("[playHorn] Channel 1 Stopped");
       }
+
+      // Update progress providers for tracking
+      ref.read(currentPlayingJingleProvider.notifier).state = hornAudioFile;
+      ref.read(currentJingleChannelProvider.notifier).state = 2;
+
+      // Set up completion listener to clear tracking
+      channel2.onPlayerComplete.listen((_) {
+        ref.read(currentPlayingJingleProvider.notifier).state = null;
+        ref.read(currentJingleChannelProvider.notifier).state = null;
+        ref.read(lastPressedButtonProvider.notifier).state = null;
+      });
+
       logger.d("[playHorn] Channel 2 setVolume 1.0");
       await channel2.setVolume(1.0);
       ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
       logger.d("[playHorn] Playing horn");
-      await channel2.play(DeviceFileSource(categoryInstances[0].filePath));
+      await channel2.play(DeviceFileSource(hornAudioFile.filePath));
     } catch (e) {
       logger.e("[playHorn] Error playing horn: $e");
     }
