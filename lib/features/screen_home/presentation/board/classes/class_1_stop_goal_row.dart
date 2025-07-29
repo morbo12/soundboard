@@ -5,7 +5,6 @@ import 'package:soundboard/common/widgets/class_goal_button.dart';
 import 'package:soundboard/common/widgets/class_stop_button.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/logger.dart';
-import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 
 class StopGoalRow extends ConsumerWidget {
   const StopGoalRow({super.key});
@@ -18,11 +17,6 @@ class StopGoalRow extends ConsumerWidget {
 
     return jingleManagerAsync.when(
       data: (jingleManager) {
-        // Get the goal horn AudioFile for progress tracking
-        final goalHorn = jingleManager.audioManager.audioInstances
-            .where((audio) => audio.audioCategory == AudioCategory.hornJingle)
-            .firstOrNull;
-
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [

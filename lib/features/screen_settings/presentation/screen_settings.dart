@@ -5,13 +5,14 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
-import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_deej_mappings.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/volume_system_config_widget.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_serial_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_spotify.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_music_upload_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -48,12 +49,12 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(2),
               const SerialPortSettingsButton(),
               const Gap(10),
-              settingsHeaderText("Deej Mixer Slider mappings"),
+              settingsHeaderText("Volume Control & Deej Mappings"),
               settingsHeader2Text(
-                "Configure the mappings of sliders to processes for your Deej hardware mixer",
+                "Configure volume control behavior and Deej hardware mappings",
               ),
               const Gap(2),
-              const DeejMappingsButton(),
+              const VolumeSystemConfigButton(),
               const Gap(10),
               settingsHeaderText("Text to Speech Settings"),
               settingsHeader2Text(
@@ -69,6 +70,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const Gap(2),
               const SettingsSpotify(),
+              const Gap(10),
+
+              settingsHeaderText("Music Player"),
+              settingsHeader2Text(
+                "Upload and manage music files for the built-in music player",
+              ),
+              const Gap(2),
+              const MusicUploadButton(),
               const Gap(10),
 
               settingsHeaderText("Grid Layout"),

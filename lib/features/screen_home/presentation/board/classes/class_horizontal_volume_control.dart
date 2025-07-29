@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/providers/audioplayers_providers.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
-import 'package:soundboard/core/services/volume_control_service.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_horizontal_vu_meter.dart';
+import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -20,14 +19,9 @@ class HorizontalVolumeControl extends ConsumerStatefulWidget {
 
 class _HorizontalVolumeControlState
     extends ConsumerState<HorizontalVolumeControl> {
-  late final VolumeControlService _volumeControlService;
-
   @override
   void initState() {
     super.initState();
-
-    // Initialize volume control service
-    _volumeControlService = ref.read(volumeControlServiceProvider);
 
     // Listen to system volume change
     Future.delayed(Duration.zero, () async {
@@ -50,15 +44,18 @@ class _HorizontalVolumeControlState
 
   @override
   Widget build(BuildContext context) {
+    // Initialize volume control service with ref
+    final volumeControlService = VolumeControlServiceV2(ref);
+
     final c1VolumeValue = ref.watch(c1VolumeProvider);
     final c2VolumeValue = ref.watch(c2VolumeProvider);
     final c1PlayerState = ref.watch(c1StateProvider);
     final c2PlayerState = ref.watch(c2StateProvider);
 
     final mainVolumeValue = ref.watch(mainVolumeProvider);
-    final p1VolumeValue = ref.watch(p1VolumeProvider);
-    final p2VolumeValue = ref.watch(p2VolumeProvider);
-    final p3VolumeValue = ref.watch(p3VolumeProvider);
+    final p1VolumeValue = ref.watch(
+      p1VolumeProvider,
+    ); // Used for External slider
 
     return Consumer(
       builder: (context, ref, child) {
@@ -73,83 +70,57 @@ class _HorizontalVolumeControlState
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // C1 Volume
+                    // C1 Volume (AudioPlayer Channel 1)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
                         'C1',
                         c1PlayerState,
                         c1VolumeValue.vol,
                         (value) {
-                          ref
-                              .read(c1VolumeProvider.notifier)
-                              .updateVolume(value / 100);
+                          volumeControlService.updateVolumeFromUI(
+                            4, // C1 = index 4
+                            value / 100,
+                          );
                         },
                       ),
                     ),
-                    // C2 Volume
+                    // C2 Volume (AudioPlayer Channel 2)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
                         'C2',
                         c2PlayerState,
                         c2VolumeValue.vol,
                         (value) {
-                          ref
-                              .read(c2VolumeProvider.notifier)
-                              .updateVolume(value / 100);
+                          volumeControlService.updateVolumeFromUI(
+                            5, // C2 = index 5
+                            value / 100,
+                          );
                         },
                       ),
                     ),
-                    // Master Volume
+                    // Master Volume (Windows Master)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
                         'Master',
                         PlayerState.stopped,
                         mainVolumeValue.vol,
                         (value) {
-                          _volumeControlService.updateVolumeFromUI(
-                            0,
+                          volumeControlService.updateVolumeFromUI(
+                            0, // Master = index 0
                             value / 100,
                           );
                         },
                       ),
                     ),
-                    // P1 Volume
+                    // External Process Volume (configurable via Deej when connected)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
-                        'P1',
+                        'External',
                         PlayerState.stopped,
-                        p1VolumeValue.vol,
+                        p1VolumeValue.vol, // Use P1 provider for external
                         (value) {
-                          _volumeControlService.updateVolumeFromUI(
-                            1,
-                            value / 100,
-                          );
-                        },
-                      ),
-                    ),
-                    // P2 Volume
-                    Expanded(
-                      child: _buildVerticalVolumeColumn(
-                        'P2',
-                        PlayerState.stopped,
-                        p2VolumeValue.vol,
-                        (value) {
-                          _volumeControlService.updateVolumeFromUI(
-                            2,
-                            value / 100,
-                          );
-                        },
-                      ),
-                    ),
-                    // P3 Volume
-                    Expanded(
-                      child: _buildVerticalVolumeColumn(
-                        'P3',
-                        PlayerState.stopped,
-                        p3VolumeValue.vol,
-                        (value) {
-                          _volumeControlService.updateVolumeFromUI(
-                            3,
+                          volumeControlService.updateVolumeFromUI(
+                            1, // External = index 1 (P1)
                             value / 100,
                           );
                         },

@@ -11,6 +11,9 @@ class SerialPortManagerWin32 {
   SerialProcessor? _serialProcessor;
   final Ref ref;
 
+  // Static reference to current instance for hot reload cleanup
+  static SerialPortManagerWin32? _currentInstance;
+
   // Serial port state
   List<PortInfo> portList = [];
   SerialPort? _serialPort;
@@ -20,7 +23,12 @@ class SerialPortManagerWin32 {
   // Timers
   Timer? _serialReconnectTimer;
   static const int _serialReconnectIntervalSeconds = 5;
+
   SerialPortManagerWin32({required this.ref}) {
+    // Dispose any previous instance during hot reload
+    _currentInstance?.dispose();
+    _currentInstance = this;
+
     if (PlatformUtils.isWindows) {
       // Initialize asynchronously - initialization will happen when needed
       _initSerialPort();
@@ -205,6 +213,11 @@ class SerialPortManagerWin32 {
     if (!PlatformUtils.isWindows) return;
     _serialReconnectTimer?.cancel();
     closeSerialPort();
+
+    // Clear static reference if this is the current instance
+    if (_currentInstance == this) {
+      _currentInstance = null;
+    }
   }
 
   // Public methods for connection control

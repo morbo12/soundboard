@@ -8,14 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:soundboard/core/constants/globals.dart';
+import 'package:soundboard/core/models/volume_system_config.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/player_fade.dart';
-import 'package:flutter/foundation.dart';
 import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/providers/deej_providers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:soundboard/features/screen_home/presentation/board/providers/audio_progress_provider.dart';
 
 /// Enum representing the available audio channels
@@ -48,19 +51,163 @@ class AudioManager {
   static const int _shortFadeDuration = 10;
   static const int _longFadeDuration = 300;
 
-  /// Constructor initializes audio channels with default volumes
+  /// Flag to track if volumes have been initialized
+  bool _volumesInitialized = false;
+
+  /// Constructor - channels initialized with default volume of 0.0
   AudioManager() {
+    // Volumes will be set by initializeVolumes() method when WidgetRef is available
+  }
+
+  /// Initializes audio channel volumes, respecting Deej mappings
+  Future<void> initializeVolumes(WidgetRef ref) async {
+    if (_volumesInitialized) return; // Already initialized
+
     try {
-      channel1.setVolume(SettingsBox().c1InitialVolume);
-      channel2.setVolume(SettingsBox().c2InitialVolume);
+      // Set C1 volume if not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel1)) {
+        await channel1.setVolume(SettingsBox().c1InitialVolume);
+        logger.d("Initialized C1 volume to ${SettingsBox().c1InitialVolume}");
+      } else {
+        logger.d("C1 mapped to Deej - skipping initial volume setting");
+      }
+
+      // Set C2 volume if not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        await channel2.setVolume(SettingsBox().c2InitialVolume);
+        logger.d("Initialized C2 volume to ${SettingsBox().c2InitialVolume}");
+      } else {
+        logger.d("C2 mapped to Deej - skipping initial volume setting");
+      }
+
+      _volumesInitialized = true;
     } catch (e) {
-      logger.e("Error initializing audio channels: $e");
+      logger.e("Error initializing audio channel volumes: $e");
+    }
+  }
+
+  /// Checks if an AudioPlayer channel is mapped to Deej and should skip automatic volume setting
+  bool _isChannelMappedToDeej(WidgetRef ref, AudioChannel channel) {
+    try {
+      // Check if Deej is connected
+      final isDeejConnected = ref.read(deejConnectionStatusProvider);
+      if (!isDeejConnected) {
+        return false; // If Deej is not connected, allow volume control
+      }
+
+      // Determine which DeejTarget corresponds to this channel
+      final DeejTarget targetForChannel = channel == AudioChannel.channel1
+          ? DeejTarget.audioPlayerC1
+          : DeejTarget.audioPlayerC2;
+
+      // Check if this AudioPlayer channel is mapped to any Deej slider
+      final config = SettingsBox().volumeSystemConfig;
+      final isChannelMapped = config.deejMappings.any(
+        (sliderConfig) => sliderConfig.target == targetForChannel,
+      );
+
+      if (isChannelMapped) {
+        logger.d(
+          'Channel ${channel.name} is mapped to Deej - skipping automatic volume setting',
+        );
+      }
+
+      return isChannelMapped;
+    } catch (e) {
+      logger.e('Error checking if channel is mapped to Deej: $e');
+      return false; // Default to allowing volume control if error
+    }
+  }
+
+  /// Ensures volumes are initialized before first use
+  Future<void> _ensureInitialized(WidgetRef ref) async {
+    if (!_volumesInitialized) {
+      await initializeVolumes(ref);
+    }
+  }
+
+  /// Gets the current target volume for a channel based on the new volume system
+  double _getCurrentTargetVolume(WidgetRef ref, AudioChannel channel) {
+    try {
+      final channelNumber = channel == AudioChannel.channel1 ? 1 : 2;
+
+      // Use the VolumeControlServiceV2 to get the target volume
+      final volumeService = VolumeControlServiceV2(ref);
+      final targetVolume = volumeService.getAudioPlayerTargetVolume(
+        channelNumber,
+      );
+
+      logger.d(
+        'Channel ${channel.name} target volume from VolumeControlServiceV2: $targetVolume',
+      );
+
+      // Safety check: if target volume is 0, use a reasonable default
+      if (targetVolume <= 0.0) {
+        logger.w(
+          'Channel ${channel.name} target volume is 0 - using fallback volume 0.7',
+        );
+        return 0.7; // Use 70% as a reasonable fallback
+      }
+
+      return targetVolume;
+    } catch (e) {
+      logger.e('Error getting target volume for channel: $e');
+      return 1.0; // Default to maximum volume if error
     }
   }
 
   /// Adds an audio file to the available instances
   void addInstance(AudioFile audioInstance) =>
       audioInstances.add(audioInstance);
+
+  /// Updates the volume for a specific AudioPlayer channel
+  /// This is called by external volume control services (e.g., Deej)
+  Future<void> updateChannelVolume(
+    Ref ref,
+    int channelNumber,
+    double volume,
+  ) async {
+    try {
+      final player = channelNumber == 1 ? channel1 : channel2;
+
+      logger.d(
+        'updateChannelVolume called: C$channelNumber -> ${(volume * 100).toStringAsFixed(0)}%',
+      );
+      logger.d('Player state: ${player.state}');
+
+      // Directly set the volume on the AudioPlayer
+      await player.setVolume(volume);
+
+      // Update the provider for UI feedback (always update when called externally)
+      final provider = channelNumber == 1 ? c1VolumeProvider : c2VolumeProvider;
+      ref.read(provider.notifier).updateVolume(volume);
+
+      // Force log the current volume to verify it was set
+      logger.d(
+        'AudioPlayer C$channelNumber volume set. Player state after setVolume: ${player.state}',
+      );
+
+      logger.d(
+        'Successfully updated AudioPlayer C$channelNumber volume from external source: ${(volume * 100).toStringAsFixed(0)}%',
+      );
+    } catch (e) {
+      logger.e('Error updating AudioPlayer channel $channelNumber volume: $e');
+    }
+  }
+
+  /// Test method to manually set volume (for debugging)
+  Future<void> testSetVolume(int channelNumber, double volume) async {
+    try {
+      final player = channelNumber == 1 ? channel1 : channel2;
+      logger.d(
+        'TEST: Setting C$channelNumber volume to ${(volume * 100).toStringAsFixed(0)}%',
+      );
+      await player.setVolume(volume);
+      logger.d('TEST: Volume set successfully');
+    } catch (e) {
+      logger.e('TEST: Error setting volume: $e');
+    }
+  }
 
   /// Stops all audio playback with fade effect
   Future<void> stopAll(WidgetRef ref) async {
@@ -161,7 +308,19 @@ class AudioManager {
           ? AudioChannel.channel2
           : AudioChannel.channel1;
 
-      await _setChannelVolume(ref, channel, 0.0);
+      // For Deej-mapped channels, set to current target volume instead of 0
+      // For non-Deej channels, start at 0 for smooth fade-in
+      if (_isChannelMappedToDeej(ref, channel)) {
+        final targetVolume = _getCurrentTargetVolume(ref, channel);
+        logger.d(
+          "Channel ${channel.name} is Deej-mapped, setting to target volume: $targetVolume",
+        );
+        // Use _setChannelVolume to ensure proper synchronization
+        await _setChannelVolume(ref, channel, targetVolume);
+      } else {
+        await _setChannelVolume(ref, channel, 0.0);
+      }
+
       logger.d("Fading and stopping channel ${otherChannel.name}");
       _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
       logger.d("After _fadeAndStop");
@@ -198,8 +357,19 @@ class AudioManager {
           await _setChannelVolume(ref, channel, 0.0);
         });
       } else {
-        // Fade in to full volume
-        await _fadeChannel(ref, channel, 1.0, fadeDuration);
+        // For Deej-mapped channels, volume is already set correctly
+        // For non-Deej channels, fade in to target volume
+        if (!_isChannelMappedToDeej(ref, channel)) {
+          final targetVolume = _getCurrentTargetVolume(ref, channel);
+          await _fadeChannel(ref, channel, targetVolume, fadeDuration);
+          logger.d(
+            "Fading to target volume: $targetVolume for ${channel.name}",
+          );
+        } else {
+          logger.d(
+            "Channel ${channel.name} is Deej-mapped - volume already set, no fade needed",
+          );
+        }
       }
     } catch (e) {
       logger.e("Error playing audio file: $e");
@@ -224,13 +394,22 @@ class AudioManager {
   ) async {
     try {
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
-      logger.d("Setting volume to $volume for channel ${channel.name}");
-      await player.setVolume(volume);
-
       final provider = channel == AudioChannel.channel1
           ? c1VolumeProvider
           : c2VolumeProvider;
-      ref.read(provider.notifier).updateVolume(volume);
+
+      logger.d("Setting volume to $volume for channel ${channel.name}");
+
+      // Always set the AudioPlayer volume, but only update provider if not Deej-mapped
+      await player.setVolume(volume);
+
+      if (!_isChannelMappedToDeej(ref, channel)) {
+        ref.read(provider.notifier).updateVolume(volume);
+      } else {
+        logger.d(
+          "AudioPlayer volume set but provider not updated - ${channel.name} is mapped to Deej",
+        );
+      }
     } catch (e) {
       logger.e("Error setting channel volume: $e");
     }
@@ -245,6 +424,8 @@ class AudioManager {
     bool shortFade = true,
     bool isBackgroundMusic = false,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       final categoryInstances = audioInstances
           .where((instance) => instance.audioCategory == category)
@@ -299,6 +480,8 @@ class AudioManager {
     WidgetRef ref, {
     bool shortFade = true,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       // If this is a category-only audio file, play a random audio from the category
       if (audiofile.isCategoryOnly) {
@@ -412,6 +595,8 @@ class AudioManager {
 
   /// Plays a horn jingle immediately
   Future<void> playHorn(WidgetRef ref) async {
+    await _ensureInitialized(ref);
+
     try {
       const category = AudioCategory.hornJingle;
       final categoryInstances = audioInstances
@@ -445,9 +630,20 @@ class AudioManager {
         ref.read(lastPressedButtonProvider.notifier).state = null;
       });
 
-      logger.d("[playHorn] Channel 2 setVolume 1.0");
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+      logger.d("[playHorn] Channel 2 setVolume to target");
+      // Only set volume if channel is not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        final targetVolume = _getCurrentTargetVolume(
+          ref,
+          AudioChannel.channel2,
+        );
+        await channel2.setVolume(targetVolume);
+        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
+      } else {
+        logger.d(
+          "[playHorn] Skipping volume setting - Channel 2 is mapped to Deej",
+        );
+      }
       logger.d("[playHorn] Playing horn");
       await channel2.play(DeviceFileSource(hornAudioFile.filePath));
     } catch (e) {
@@ -460,6 +656,8 @@ class AudioManager {
     required Uint8List audio,
     required WidgetRef ref,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       logger.d("Length is ${audio.length}");
 
@@ -467,8 +665,19 @@ class AudioManager {
         await channel2.stop(); // Stop the currently playing instance
       }
 
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+      // Only set volume if channel is not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        final targetVolume = _getCurrentTargetVolume(
+          ref,
+          AudioChannel.channel2,
+        );
+        await channel2.setVolume(targetVolume);
+        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
+      } else {
+        logger.d(
+          "[playBytes] Skipping volume setting - Channel 2 is mapped to Deej",
+        );
+      }
 
       await channel2.play(BytesSource(audio));
     } catch (e) {
@@ -481,6 +690,8 @@ class AudioManager {
     required Uint8List audio,
     required WidgetRef ref,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       logger.d("[playBytesAndWait] Length is ${audio.length}");
 
@@ -488,10 +699,21 @@ class AudioManager {
         await channel2.stop(); // Stop the currently playing instance
       }
 
-      logger.d("[playBytesAndWait] Setting volume to 1.0");
+      logger.d("[playBytesAndWait] Setting volume to target");
 
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+      // Only set volume if channel is not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        final targetVolume = _getCurrentTargetVolume(
+          ref,
+          AudioChannel.channel2,
+        );
+        await channel2.setVolume(targetVolume);
+        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
+      } else {
+        logger.d(
+          "[playBytesAndWait] Skipping volume setting - Channel 2 is mapped to Deej",
+        );
+      }
 
       // Create a completer to handle the completion
       final completer = Completer<void>();

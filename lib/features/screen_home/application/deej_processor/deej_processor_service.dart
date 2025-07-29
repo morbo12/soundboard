@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/utils/platform_utils.dart';
-import 'package:soundboard/core/services/volume_control_service.dart';
+import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/data/deej_config.dart';
 import 'package:soundboard/features/screen_home/application/mixer_manager/mixer_manager.dart';
 import 'package:win32audio/win32audio.dart';
@@ -9,7 +9,7 @@ import 'package:win32audio/win32audio.dart';
 /// Service that handles deej processing with proper separation of concerns
 class DeejProcessorService {
   final Logger logger = const Logger('DeejProcessorService');
-  final VolumeControlService _volumeControlService;
+  final VolumeControlServiceV2 _volumeControlService;
   final DeejConfig _config;
   final MixerManager _mixerManager = MixerManager();
 
@@ -25,7 +25,7 @@ class DeejProcessorService {
   );
 
   DeejProcessorService({
-    required VolumeControlService volumeControlService,
+    required VolumeControlServiceV2 volumeControlService,
     required DeejConfig config,
   }) : _volumeControlService = volumeControlService,
        _config = config;
@@ -148,7 +148,8 @@ class DeejProcessorService {
 final deejProcessorServiceProvider = FutureProvider<DeejProcessorService>((
   ref,
 ) async {
-  final volumeControlService = ref.watch(volumeControlServiceProvider);
+  // Create VolumeControlServiceV2 instance
+  final volumeControlService = VolumeControlServiceV2(ref);
   final config = ref.watch(deejConfigProvider);
 
   final service = DeejProcessorService(

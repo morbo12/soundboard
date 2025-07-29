@@ -23,6 +23,7 @@ class EventsSection extends StatelessWidget {
             width: 20.0,
             color: Theme.of(context).colorScheme.onSurface,
           ),
+
           // Provide proper constraints for LiveEvents
           Expanded(child: LiveEvents(scrollController: scrollController)),
         ],

@@ -30,20 +30,20 @@ class MiniProgressBar extends ConsumerWidget {
     final currentChannel = ref.watch(currentJingleChannelProvider);
 
     // Debug logging with logger instead of print
-    if (audioFile != null) {
-      logger.d('MiniProgressBar Debug:');
-      logger.d(
-        '  AudioFile: ${audioFile!.displayName} (${audioFile!.filePath})',
-      );
-      logger.d('  IsCategoryOnly: ${audioFile!.isCategoryOnly}');
-      logger.d('  AudioCategory: ${audioFile!.audioCategory}');
-      logger.d('  IsPlaying: $isPlaying');
-      logger.d(
-        '  CurrentJingle: ${currentJingle?.displayName} (${currentJingle?.filePath})',
-      );
-      logger.d('  CurrentJingleCategory: ${currentJingle?.audioCategory}');
-      logger.d('  CurrentChannel: $currentChannel');
-    }
+    // if (audioFile != null) {
+    //   logger.d('MiniProgressBar Debug:');
+    //   logger.d(
+    //     '  AudioFile: ${audioFile!.displayName} (${audioFile!.filePath})',
+    //   );
+    //   logger.d('  IsCategoryOnly: ${audioFile!.isCategoryOnly}');
+    //   logger.d('  AudioCategory: ${audioFile!.audioCategory}');
+    //   logger.d('  IsPlaying: $isPlaying');
+    //   logger.d(
+    //     '  CurrentJingle: ${currentJingle?.displayName} (${currentJingle?.filePath})',
+    //   );
+    //   logger.d('  CurrentJingleCategory: ${currentJingle?.audioCategory}');
+    //   logger.d('  CurrentChannel: $currentChannel');
+    // }
 
     if (!isPlaying || audioFile == null || currentChannel == null) {
       return const SizedBox.shrink();

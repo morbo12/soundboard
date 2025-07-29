@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:easy_hive/easy_hive.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
+import 'package:soundboard/core/models/volume_system_config.dart';
 
 enum Settings {
   key, // Use as box key. You can use a String constant instead.
@@ -34,6 +35,7 @@ enum Settings {
   p3Volume,
   gridColumns,
   gridRows,
+  volumeSystemConfig,
 }
 
 class SettingsBox extends EasyBox {
@@ -225,4 +227,37 @@ extension GeneralSettingsExtension on SettingsBox {
 
   set gridRows(int value) => put(Settings.gridRows, value);
   int get gridRows => get(Settings.gridRows, defaultValue: 4);
+
+  // Volume system configuration
+  VolumeSystemConfig get volumeSystemConfig {
+    final json = get(
+      Settings.volumeSystemConfig,
+      defaultValue: <String, dynamic>{},
+    );
+    if (json.isEmpty) {
+      return VolumeSystemConfig.defaultConfig();
+    }
+
+    // Ensure we have a proper Map<String, dynamic> before parsing
+    Map<String, dynamic> typedJson;
+    if (json is Map<String, dynamic>) {
+      typedJson = json;
+    } else if (json is Map) {
+      typedJson = Map<String, dynamic>.from(json);
+    } else {
+      // Fallback to default if we get unexpected data type
+      return VolumeSystemConfig.defaultConfig();
+    }
+
+    try {
+      return VolumeSystemConfig.fromJson(typedJson);
+    } catch (e) {
+      // If parsing fails, return default config
+      return VolumeSystemConfig.defaultConfig();
+    }
+  }
+
+  set volumeSystemConfig(VolumeSystemConfig config) {
+    put(Settings.volumeSystemConfig, config.toJson());
+  }
 }
