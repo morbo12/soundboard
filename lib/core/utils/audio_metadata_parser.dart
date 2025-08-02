@@ -58,9 +58,8 @@ class AudioMetadataParser {
       // Common patterns for accessing metadata properties
       try {
         // Try accessing as properties (most likely)
-        artist =
-            (metadata as dynamic).artist ?? (metadata as dynamic).albumArtist;
-        title = (metadata as dynamic).title ?? (metadata as dynamic).trackName;
+        artist = (metadata as dynamic).artist ?? (metadata as dynamic).title;
+        title = (metadata as dynamic).title ?? (metadata as dynamic).album;
       } catch (e) {
         _logger.d('Could not access metadata properties directly: $e');
       }
