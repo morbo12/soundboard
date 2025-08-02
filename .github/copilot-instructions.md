@@ -10,6 +10,7 @@ applyTo: "**"
 - Keep it simple. Avoid complex solution structures unless necessary. Use the simplest solution that meets the requirements.
 - User material design components and patterns where applicable, as they are well-tested and provide a consistent user experience.
 - dont use depreated features or APIs, like withOpacity, use withValues instead.
+- use theme colors and styles instead of hardcoded colors and styles.
 
 ## 1. Code Organization and Structure
 
