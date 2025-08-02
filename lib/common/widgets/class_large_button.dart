@@ -51,59 +51,59 @@ class LargeButtonState extends ConsumerState<LargeButton> {
       buttonStyle = widget.style!.merge(baseStyle);
     }
 
-    return Expanded(
-      child: Stack(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 100, // Ensure minimum height
-            child: ElevatedButton(
-              onPressed: widget.onTap,
-              style: buttonStyle,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+    return Stack(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 100, // Ensure minimum height
+          child: ElevatedButton(
+            onPressed: widget.onTap,
+            style: buttonStyle,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.primaryText,
+                    maxLines: widget.noLines ?? 2,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (widget.secondaryText != "N/A") ...[
+                    const SizedBox(height: 4),
                     Text(
-                      widget.primaryText,
-                      maxLines: widget.noLines ?? 2,
+                      widget.secondaryText,
+                      maxLines: 1,
                       textAlign: TextAlign.center,
                     ),
-                    if (widget.secondaryText != "N/A") ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.secondaryText,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),
-          // Progress bar overlay
-          if (widget.audioFile != null)
-            Positioned(
-              bottom: 8,
-              left: 12,
-              right: 12,
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: MiniProgressBar(audioFile: widget.audioFile, height: 6),
+        ),
+        // Progress bar overlay
+        if (widget.audioFile != null)
+          Positioned(
+            bottom: 8,
+            left: 12,
+            right: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
+              child: MiniProgressBar(audioFile: widget.audioFile, height: 6),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
+
+// Contains AI-generated edits.

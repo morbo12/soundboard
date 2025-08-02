@@ -18,19 +18,19 @@ class JingleSettings extends StatelessWidget {
       children: [
         const Row(
           children: [
-            UploadButtonToDir(directoryName: "GenericJingles"),
+            Expanded(child: UploadButtonToDir(directoryName: "GenericJingles")),
             Gap(5),
-            UploadButtonToDir(directoryName: "GoalJingles"),
+            Expanded(child: UploadButtonToDir(directoryName: "GoalJingles")),
             Gap(5),
-            UploadButtonToDir(directoryName: "ClapJingles"),
+            Expanded(child: UploadButtonToDir(directoryName: "ClapJingles")),
           ],
         ),
         const Gap(5),
         const Row(
           children: [
-            UploadButtonToDir(directoryName: "SpecialJingles"),
+            Expanded(child: UploadButtonToDir(directoryName: "SpecialJingles")),
             Gap(5),
-            UploadButtonToDir(directoryName: "GoalHorn"),
+            Expanded(child: UploadButtonToDir(directoryName: "GoalHorn")),
           ],
         ),
         const Gap(10),
@@ -45,7 +45,7 @@ class JingleAllSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(children: [UploadButtonAll()]);
+    return const Row(children: [Expanded(child: UploadButtonAll())]);
   }
 }
 

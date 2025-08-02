@@ -17,17 +17,19 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        LargeButton(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            fixedSize: const Size.fromHeight(100),
-          ),
-          noLines: 1,
+        Expanded(
+          child: LargeButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              fixedSize: const Size.fromHeight(100),
+            ),
+            noLines: 1,
 
-          onTap: _isLoading ? null : () => _handleCacheDeletion(),
-          secondaryText: 'N/A',
-          primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",
+            onTap: _isLoading ? null : () => _handleCacheDeletion(),
+            secondaryText: 'N/A',
+            primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",
+          ),
         ),
       ],
     );
@@ -168,3 +170,5 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     );
   }
 }
+
+// Contains AI-generated edits.
