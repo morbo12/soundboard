@@ -26,6 +26,12 @@ enum AudioChannel { channel1, channel2 }
 
 /// Manages audio playback with dual-channel support, fading effects,
 /// and various playback strategies.
+///
+/// CHANNEL ASSIGNMENT STRATEGY (Static):
+/// - Channel 1 (C1): Background music and regular jingles
+/// - Channel 2 (C2): Horn, TTS/byte audio, and special effects
+///
+/// This replaces the previous dynamic channel selection which was unreliable.
 class AudioManager {
   final Logger logger = const Logger('AudioManager');
 
@@ -443,9 +449,10 @@ class AudioManager {
         audioFile = categoryInstances[0];
       }
 
-      final channel = isBackgroundMusic
-          ? AudioChannel.channel1
-          : _getAvailableChannel();
+      final channel = _getChannelForAudioType(
+        category: category,
+        isBackgroundMusic: isBackgroundMusic,
+      );
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
       logger.d("[playAudio] fadeDuration is $fadeDuration");
@@ -497,7 +504,9 @@ class AudioManager {
         return;
       }
 
-      final channel = _getAvailableChannel();
+      final channel = _getChannelForAudioType(
+        category: audiofile.audioCategory,
+      );
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
       logger.d("[playAudio] fadeDuration is $fadeDuration");
@@ -586,11 +595,42 @@ class AudioManager {
     _recentlyPlayed.remove(category);
   }
 
-  /// Returns the channel that is currently available for playback
-  AudioChannel _getAvailableChannel() {
-    return channel1.state == PlayerState.playing
-        ? AudioChannel.channel2
-        : AudioChannel.channel1;
+  /// Returns the appropriate channel for the given audio type
+  ///
+  /// Static channel assignment strategy:
+  /// - C1: Background music and regular jingles (goal, clap, generic, etc.)
+  /// - C2: Horn, byte audio (TTS), and special effects (penalty, timeout, powerup)
+  ///
+  /// This replaces the old _getAvailableChannel() which was unreliable and
+  /// caused audio conflicts. Static assignment ensures predictable behavior.
+  AudioChannel _getChannelForAudioType({
+    bool isHorn = false,
+    bool isBackgroundMusic = false,
+    bool isByteAudio = false,
+    AudioCategory? category,
+  }) {
+    // Background music always on C1 (existing behavior)
+    if (isBackgroundMusic) {
+      return AudioChannel.channel1;
+    }
+
+    // C2 for horn, byte audio, and special effects
+    if (isHorn || isByteAudio) {
+      return AudioChannel.channel2;
+    }
+
+    // C2 for special effect categories
+    if (category != null) {
+      switch (category) {
+        case AudioCategory.specialJingle:
+          return AudioChannel.channel2;
+        default:
+          return AudioChannel.channel1;
+      }
+    }
+
+    // C1 for everything else (regular jingles)
+    return AudioChannel.channel1;
   }
 
   /// Plays a horn jingle immediately
@@ -598,54 +638,27 @@ class AudioManager {
     await _ensureInitialized(ref);
 
     try {
-      const category = AudioCategory.hornJingle;
-      final categoryInstances = audioInstances
-          .where((instance) => instance.audioCategory == category)
-          .toList();
+      logger.d("[playHorn] Playing goalHorn category");
 
-      if (categoryInstances.isEmpty) return;
-
-      final hornAudioFile = categoryInstances[0];
-      logger.d("[playHorn] Loading ${hornAudioFile.filePath} into channel 2");
-
+      // Stop both channels first for immediate horn playback
       if (channel2.state == PlayerState.playing) {
         logger.d("[playHorn] Stopping Channel 2");
-        await channel2.stop(); // Stop the currently playing instance
+        await channel2.stop();
         logger.d("[playHorn] Channel 2 Stopped");
       }
       if (channel1.state == PlayerState.playing) {
         logger.d("[playHorn] Stopping Channel 1");
-        await channel1.stop(); // Stop the currently playing instance
+        await channel1.stop();
         logger.d("[playHorn] Channel 1 Stopped");
       }
 
-      // Update progress providers for tracking
-      ref.read(currentPlayingJingleProvider.notifier).state = hornAudioFile;
-      ref.read(currentJingleChannelProvider.notifier).state = 2;
-
-      // Set up completion listener to clear tracking
-      channel2.onPlayerComplete.listen((_) {
-        ref.read(currentPlayingJingleProvider.notifier).state = null;
-        ref.read(currentJingleChannelProvider.notifier).state = null;
-        ref.read(lastPressedButtonProvider.notifier).state = null;
-      });
-
-      logger.d("[playHorn] Channel 2 setVolume to target");
-      // Only set volume if channel is not mapped to Deej
-      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        final targetVolume = _getCurrentTargetVolume(
-          ref,
-          AudioChannel.channel2,
-        );
-        await channel2.setVolume(targetVolume);
-        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
-      } else {
-        logger.d(
-          "[playHorn] Skipping volume setting - Channel 2 is mapped to Deej",
-        );
-      }
-      logger.d("[playHorn] Playing horn");
-      await channel2.play(DeviceFileSource(hornAudioFile.filePath));
+      // Use the existing playAudio method with goalHorn category
+      // This ensures consistent behavior with the rest of the audio system
+      await playAudio(
+        AudioCategory.goalHorn,
+        ref,
+        shortFade: true, // Quick fade for immediate horn response
+      );
     } catch (e) {
       logger.e("[playHorn] Error playing horn: $e");
     }

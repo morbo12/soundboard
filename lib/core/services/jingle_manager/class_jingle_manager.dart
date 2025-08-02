@@ -6,24 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:soundboard/core/constants/globals.dart';
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/jingle_manager/class_filesystem_helper.dart';
-import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/utils/audio_metadata_parser.dart';
 
 class JingleDirectories {
   static const String generic = "GenericJingles";
   static const String goal = "GoalJingles";
   static const String clap = "ClapJingles";
-  static const String lineup = "LineupJingles";
+  static const String special = "SpecialJingles";
+  static const String goalHorn = "GoalHorn";
 }
 
 class JingleManager {
   late Directory genericJinglesDir;
   late Directory goalJinglesDir;
   late Directory clapJinglesDir;
-  late Directory lineupJinglesDir;
+  late Directory specialJinglesDir;
+  late Directory goalHornDir;
   List<AudioFile> audioFiles = [];
   final Logger logger = const Logger('JingleManager');
 
@@ -50,8 +52,8 @@ class JingleManager {
       logger.d("Migration checked");
       await _initializeDirectories();
       logger.d("Directories initialized");
-      await _loadAudioConfigurations();
-      logger.d("Audio configurations loaded");
+      // await _loadSpecialJingles();
+      // logger.d("Special jingles loaded");
       await initializeJingleFilesDirs();
 
       // Successfully initialized, show a success toast message.
@@ -109,32 +111,20 @@ class JingleManager {
     }
   }
 
-  Future<void> _loadAudioConfigurations() async {
-    try {
-      List<Map<String, dynamic>> audioFileConfigurations =
-          await AudioConfigurations.getAudioFileConfigurations();
-      for (var config in audioFileConfigurations) {
-        AudioFile audioFile = AudioFile(
-          filePath: config['filePath'],
-          displayName: config['displayName'],
-          audioCategory: config['audioCategory'],
-        );
-        audioFiles.add(audioFile);
-      }
-      // Initialize the files after directories are set up.
-      for (var audioFile in audioFiles) {
-        // You can process each AudioFile as needed here
-        // For instance, add them to your AudioManager
-        audioManager.addInstance(audioFile);
-      }
-    } catch (e) {
-      logger.e("Error loading audio configurations: $e");
-      showMessageCallback(
-        type: MessageType.error,
-        message: "Error: Failed to load audio files",
-      );
-    }
-  }
+  // Future<void> _loadSpecialJingles() async {
+  //   try {
+  //     final specialJingles = await AudioConfigurations.getSpecialJingles();
+  //     for (var audioFile in specialJingles) {
+  //       audioManager.addInstance(audioFile);
+  //     }
+  //   } catch (e) {
+  //     logger.e("Error loading special jingles: $e");
+  //     showMessageCallback(
+  //       type: MessageType.error,
+  //       message: "Error: Failed to load special jingles",
+  //     );
+  //   }
+  // }
 
   Future<void> _initializeDirectories() async {
     try {
@@ -143,9 +133,10 @@ class JingleManager {
       );
       goalJinglesDir = await fileSystemHelper.createDirectory("GoalJingles");
       clapJinglesDir = await fileSystemHelper.createDirectory("ClapJingles");
-      lineupJinglesDir = await fileSystemHelper.createDirectory(
-        "LineupJingles",
+      specialJinglesDir = await fileSystemHelper.createDirectory(
+        "SpecialJingles",
       );
+      goalHornDir = await fileSystemHelper.createDirectory("GoalHorn");
     } catch (e) {
       logger.e("Error initializing directories: $e");
       showMessageCallback(
@@ -166,26 +157,62 @@ class JingleManager {
         {'directory': goalJinglesDir, 'category': AudioCategory.goalJingle},
         {'directory': clapJinglesDir, 'category': AudioCategory.clapJingle},
         {
-          'directory': lineupJinglesDir,
-          'category': AudioCategory.lineupBackgroundJingle,
+          'directory': specialJinglesDir,
+          'category': AudioCategory.specialJingle,
         },
+        {'directory': goalHornDir, 'category': AudioCategory.goalHorn},
       ];
       // Iterate over each association and initialize files accordingly
       for (var association in dirCategoryAssociations) {
         await fileSystemHelper.processFilesInDirectory(
           association['directory'],
-          (File file) => audioManager.addInstance(
-            AudioFile(
-              filePath: file.path,
-              displayName: file.uri.pathSegments.last.split('.').first,
-              audioCategory: association['category'],
-            ),
-          ),
+          (File file) {
+            // Use a simple approach to avoid async callback issues
+            // We'll process metadata parsing in a separate step if needed
+            final basicName = file.uri.pathSegments.last.split('.').first;
+            audioManager.addInstance(
+              AudioFile(
+                filePath: file.path,
+                displayName: basicName,
+                audioCategory: association['category'],
+              ),
+            );
+          },
         );
       }
+
+      // Now post-process to get better display names
+      await _enhanceDisplayNames();
     } catch (e) {
       logger.d("Error initializing Jingle files: $e");
       // Consider handling or reporting the error as appropriate.
+    }
+  }
+
+  /// Enhance display names using metadata parser after initial loading
+  Future<void> _enhanceDisplayNames() async {
+    try {
+      for (int i = 0; i < audioManager.audioInstances.length; i++) {
+        final audioFile = audioManager.audioInstances[i];
+        // Skip special jingles (they have predefined display names)
+        if (audioFile.audioCategory == AudioCategory.goalHorn) continue;
+
+        // Get enhanced display name
+        final enhancedName = await AudioMetadataParser.getDisplayName(
+          audioFile.filePath,
+        );
+
+        // Update the audio file with the enhanced name
+        audioManager.audioInstances[i] = AudioFile(
+          filePath: audioFile.filePath,
+          displayName: enhancedName,
+          audioCategory: audioFile.audioCategory,
+          isCategoryOnly: audioFile.isCategoryOnly,
+        );
+      }
+    } catch (e) {
+      logger.w("Error enhancing display names: $e");
+      // This is not critical, so we don't throw
     }
   }
 

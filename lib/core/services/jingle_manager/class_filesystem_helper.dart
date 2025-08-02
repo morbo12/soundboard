@@ -139,13 +139,17 @@ class FileSystemHelper {
   // A new method to process files in a directory with a given action
   Future<void> processFilesInDirectory(
     Directory directory,
-    Function(File) fileAction,
+    dynamic Function(File) fileAction,
   ) async {
     if (await directoryExists(directory)) {
       final List<FileSystemEntity> files = directory.listSync();
       for (final file in files) {
         if (file is File) {
-          fileAction(file);
+          final result = fileAction(file);
+          // If the result is a Future, await it
+          if (result is Future) {
+            await result;
+          }
         }
       }
     }
