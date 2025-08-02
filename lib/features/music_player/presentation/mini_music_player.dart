@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/music_player/data/music_player_provider.dart';
@@ -34,7 +32,7 @@ class MiniMusicPlayer extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -44,11 +42,11 @@ class MiniMusicPlayer extends ConsumerWidget {
             colorScheme.surfaceContainer,
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 6,
+            color: colorScheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 3,
             offset: const Offset(0, 1),
           ),
         ],
@@ -57,50 +55,56 @@ class MiniMusicPlayer extends ConsumerWidget {
           width: 0.5,
         ),
       ),
-      child: Column(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Compact track info and controls row
-          Row(
-            children: [
-              // Smaller album art
-              _buildCompactAlbumArt(context, state),
-              const SizedBox(width: 10),
+          // Smaller album art
+          _buildCompactAlbumArt(context, state),
+          const SizedBox(width: 8),
 
-              // Track info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      state.currentTrack?.displayName ?? 'No track selected',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      '${state.currentTrackIndex + 1}/${state.playlist.length}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
+          // Track info and progress - vertical layout but very compact
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Track name - single line only
+                Text(
+                  state.currentTrack?.displayName ?? 'No track',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-
-              // Compact control buttons
-              _buildCompactControls(context, state, notifier),
-            ],
+                const SizedBox(height: 2),
+                // Compact progress bar
+                _buildUltraCompactProgressBar(context, state, notifier),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(width: 6),
 
-          // Compact progress section
-          _buildCompactProgressSection(context, state, notifier),
+          // Control buttons - shuffle and play/pause
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Shuffle button
+              _buildMiniControlButton(
+                context,
+                icon: Icons.shuffle_rounded,
+                onPressed: () => notifier.toggleShuffle(),
+                size: 16,
+                isActive: state.isShuffleEnabled,
+              ),
+              const SizedBox(width: 4),
+              // Play/pause button
+              _buildSinglePlayButton(context, state, notifier),
+            ],
+          ),
         ],
       ),
     );
@@ -111,8 +115,8 @@ class MiniMusicPlayer extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      width: 36,
-      height: 36,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -122,11 +126,11 @@ class MiniMusicPlayer extends ConsumerWidget {
             colorScheme.primary.withValues(alpha: 0.7),
           ],
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
             color: colorScheme.primary.withValues(alpha: 0.2),
-            blurRadius: 4,
+            blurRadius: 3,
             offset: const Offset(0, 1),
           ),
         ],
@@ -135,12 +139,12 @@ class MiniMusicPlayer extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           if (state.isPlaying) ...[
-            _buildCompactWaveform(context),
+            _buildUltraCompactWaveform(context),
           ] else ...[
             Icon(
               Icons.music_note_rounded,
               color: colorScheme.onPrimaryContainer,
-              size: 18,
+              size: 14,
             ),
           ],
         ],
@@ -148,8 +152,8 @@ class MiniMusicPlayer extends ConsumerWidget {
     );
   }
 
-  /// Builds compact waveform animation
-  Widget _buildCompactWaveform(BuildContext context) {
+  /// Builds ultra compact waveform animation
+  Widget _buildUltraCompactWaveform(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
@@ -159,8 +163,8 @@ class MiniMusicPlayer extends ConsumerWidget {
           duration: Duration(milliseconds: 400 + (index * 150)),
           curve: Curves.easeInOut,
           margin: const EdgeInsets.symmetric(horizontal: 0.5),
-          width: 2,
-          height: 10 + (index * 2),
+          width: 1.5,
+          height: 6 + (index * 1.5),
           decoration: BoxDecoration(
             color: colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(1),
@@ -170,109 +174,110 @@ class MiniMusicPlayer extends ConsumerWidget {
     );
   }
 
-  /// Builds compact control buttons with shuffle
-  Widget _buildCompactControls(
+  /// Builds ultra compact progress bar
+  Widget _buildUltraCompactProgressBar(
     BuildContext context,
     MusicPlaybackState state,
     MusicPlayerNotifier notifier,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Shuffle button
-        _buildCompactControlButton(
-          context,
-          icon: Icons.shuffle_rounded,
-          onPressed: () => notifier.toggleShuffle(),
-          size: 16,
-          isActive: state.isShuffleEnabled,
-        ),
-        const SizedBox(width: 4),
-
-        // Previous button
-        _buildCompactControlButton(
-          context,
-          icon: Icons.skip_previous_rounded,
-          onPressed: state.hasPrevious ? () => notifier.previous() : null,
-          size: 16,
-        ),
-        const SizedBox(width: 4),
-
-        // Play/Pause button (slightly larger)
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.primary,
-                colorScheme.primary.withValues(alpha: 0.8),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.3),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
+    return SizedBox(
+      height: 4,
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          trackHeight: 2,
+          thumbShape: const RoundSliderThumbShape(
+            enabledThumbRadius: 3,
+            elevation: 0,
           ),
-          child: IconButton(
-            onPressed: () => notifier.togglePlayPause(),
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 150),
-              child: Icon(
-                state.isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                key: ValueKey(state.isPlaying),
-                size: 16,
-              ),
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: colorScheme.onPrimary,
-              minimumSize: const Size(28, 28),
-              padding: EdgeInsets.zero,
-            ),
-          ),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 6),
+          activeTrackColor: colorScheme.primary,
+          inactiveTrackColor: colorScheme.outline.withValues(alpha: 0.15),
+          thumbColor: colorScheme.primary,
+          overlayColor: colorScheme.primary.withValues(alpha: 0.1),
         ),
-        const SizedBox(width: 4),
-
-        // Next button
-        _buildCompactControlButton(
-          context,
-          icon: Icons.skip_next_rounded,
-          onPressed: state.hasNext ? () => notifier.next() : null,
-          size: 16,
+        child: Slider(
+          value: state.progress.clamp(0.0, 1.0),
+          onChanged: (value) {
+            final position = Duration(
+              milliseconds: (value * state.totalDuration.inMilliseconds)
+                  .round(),
+            );
+            notifier.seek(position);
+          },
         ),
-      ],
+      ),
     );
   }
 
-  /// Builds individual compact control button
-  Widget _buildCompactControlButton(
+  /// Builds single play/pause button
+  Widget _buildSinglePlayButton(
+    BuildContext context,
+    MusicPlaybackState state,
+    MusicPlayerNotifier notifier,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: IconButton(
+        onPressed: () => notifier.togglePlayPause(),
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 150),
+          child: Icon(
+            state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            key: ValueKey(state.isPlaying),
+            size: 14,
+          ),
+        ),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: colorScheme.onPrimary,
+          minimumSize: const Size(28, 28),
+          padding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+
+  /// Builds mini control button for shuffle, etc.
+  Widget _buildMiniControlButton(
     BuildContext context, {
     required IconData icon,
-    required VoidCallback? onPressed,
+    required VoidCallback onPressed,
     required double size,
     bool isActive = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      width: 24,
-      height: 24,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         color: isActive
             ? colorScheme.primary.withValues(alpha: 0.2)
             : colorScheme.surfaceContainerHigh.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: isActive
             ? Border.all(
                 color: colorScheme.primary.withValues(alpha: 0.5),
@@ -285,90 +290,11 @@ class MiniMusicPlayer extends ConsumerWidget {
         icon: Icon(icon, size: size),
         style: IconButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: onPressed != null
-              ? (isActive ? colorScheme.primary : colorScheme.onSurface)
-              : colorScheme.onSurface.withValues(alpha: 0.4),
-          minimumSize: const Size(24, 24),
+          foregroundColor: isActive ? colorScheme.primary : 
+            colorScheme.onSurface.withValues(alpha: 0.6),
+          minimumSize: const Size(20, 20),
           padding: EdgeInsets.zero,
         ),
-      ),
-    );
-  }
-
-  /// Builds compact progress section
-  Widget _buildCompactProgressSection(
-    BuildContext context,
-    MusicPlaybackState state,
-    MusicPlayerNotifier notifier,
-  ) {
-    return Column(
-      children: [
-        // Progress bar
-        _buildCompactProgressBar(context, state, notifier),
-        const SizedBox(height: 4),
-
-        // Time info (more compact)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildCompactTimeLabel(
-              context,
-              _formatDuration(state.currentPosition),
-            ),
-            _buildCompactTimeLabel(
-              context,
-              _formatDuration(state.totalDuration),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  /// Builds compact time label
-  Widget _buildCompactTimeLabel(BuildContext context, String time) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Text(
-      time,
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: colorScheme.onSurface.withValues(alpha: 0.7),
-        fontSize: 10,
-        fontWeight: FontWeight.w400,
-        fontFeatures: [const FontFeature.tabularFigures()],
-      ),
-    );
-  }
-
-  Widget _buildCompactProgressBar(
-    BuildContext context,
-    MusicPlaybackState state,
-    MusicPlayerNotifier notifier,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        trackHeight: 2,
-        thumbShape: const RoundSliderThumbShape(
-          enabledThumbRadius: 5,
-          elevation: 1,
-        ),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
-        activeTrackColor: colorScheme.primary,
-        inactiveTrackColor: colorScheme.outline.withValues(alpha: 0.15),
-        thumbColor: colorScheme.primary,
-        overlayColor: colorScheme.primary.withValues(alpha: 0.1),
-      ),
-      child: Slider(
-        value: state.progress.clamp(0.0, 1.0),
-        onChanged: (value) {
-          final position = Duration(
-            milliseconds: (value * state.totalDuration.inMilliseconds).round(),
-          );
-          notifier.seek(position);
-        },
       ),
     );
   }
@@ -570,13 +496,6 @@ class MiniMusicPlayer extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes);
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
   }
 }
 

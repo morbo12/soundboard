@@ -5,10 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_0_player_progress_bar.dart';
 
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_1_stop_goal_row.dart';
-import 'package:soundboard/features/screen_home/presentation/board/classes/class_2_RowPlayerPresentation.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_section.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_horizontal_volume_control.dart';
-import 'package:soundboard/features/music_player/presentation/mini_music_player.dart';
 
 class BoardSection extends ConsumerWidget {
   final double width;
@@ -26,8 +24,6 @@ class BoardSection extends ConsumerWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                MiniMusicPlayer(),
-                Gap(10),
                 HorizontalVolumeControl(),
                 Gap(10),
                 PlayerProgressBar(),

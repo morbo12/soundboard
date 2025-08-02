@@ -14,6 +14,7 @@ import 'package:soundboard/features/screen_match/presentation/widgets/match_setu
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/presentation/home_screen.dart';
 import 'package:soundboard/features/screen_settings/presentation/screen_settings.dart';
+import 'package:soundboard/features/music_player/presentation/mini_music_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -176,6 +177,50 @@ class _PlayerState extends ConsumerState<Player> {
     }
   }
 
+  Widget _buildNavDestination(
+    BuildContext context, {
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required int index,
+    required int selectedIndex,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = selectedIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? selectedIcon : icon,
+              size: 20,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMainContent(int currentIndex) {
     return Stack(
       children: [
@@ -257,51 +302,97 @@ class _PlayerState extends ConsumerState<Player> {
           ),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        labelTextStyle: WidgetStateProperty.all(const TextStyle(fontSize: 10)),
-        height: 65,
-        elevation: 0,
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (index) {
-          if (index == 3) {
-            launchSpotify();
-          } else {
-            ref.read(selectedIndexProvider.notifier).state = index;
-          }
-        },
-
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(FluentIcons.home_12_regular),
-            selectedIcon: Icon(FluentIcons.home_12_filled), // M3 selected state
-
-            label: "Home",
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
+              width: 0.5,
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(FluentIcons.settings_28_regular),
-            selectedIcon: Icon(
-              FluentIcons.settings_28_filled,
-            ), // M3 selected state
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Row(
+              children: [
+                // Mini Music Player - minimal space
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    child: const MiniMusicPlayer(),
+                  ),
+                ),
 
-            label: "Match",
-          ),
-          NavigationDestination(
-            icon: Icon(FluentIcons.settings_16_regular),
-            selectedIcon: Icon(
-              FluentIcons.settings_16_filled,
-            ), // M3 selected state
+                // Vertical divider
+                Container(
+                  height: 40,
+                  width: 1,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                ),
 
-            label: "Settings",
+                // Navigation Controls - most of the space
+                Expanded(
+                  flex: 4,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildNavDestination(
+                        context,
+                        icon: FluentIcons.home_12_regular,
+                        selectedIcon: FluentIcons.home_12_filled,
+                        label: "Home",
+                        index: 0,
+                        selectedIndex: selectedIndex,
+                        onTap: () =>
+                            ref.read(selectedIndexProvider.notifier).state = 0,
+                      ),
+                      _buildNavDestination(
+                        context,
+                        icon: FluentIcons.settings_28_regular,
+                        selectedIcon: FluentIcons.settings_28_filled,
+                        label: "Match",
+                        index: 1,
+                        selectedIndex: selectedIndex,
+                        onTap: () =>
+                            ref.read(selectedIndexProvider.notifier).state = 1,
+                      ),
+                      _buildNavDestination(
+                        context,
+                        icon: FluentIcons.settings_16_regular,
+                        selectedIcon: FluentIcons.settings_16_filled,
+                        label: "Settings",
+                        index: 2,
+                        selectedIndex: selectedIndex,
+                        onTap: () =>
+                            ref.read(selectedIndexProvider.notifier).state = 2,
+                      ),
+                      _buildNavDestination(
+                        context,
+                        icon: FluentIcons.music_note_2_16_regular,
+                        selectedIcon: FluentIcons.music_note_2_16_filled,
+                        label: "Spotify",
+                        index: 3,
+                        selectedIndex: selectedIndex,
+                        onTap: launchSpotify,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(FluentIcons.music_note_2_16_regular),
-            selectedIcon: Icon(
-              FluentIcons.music_note_2_16_filled,
-            ), // M3 selected state
-
-            label: "Spotify",
-          ),
-        ],
+        ),
       ),
     );
   }
