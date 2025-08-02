@@ -290,8 +290,9 @@ class MiniMusicPlayer extends ConsumerWidget {
         icon: Icon(icon, size: size),
         style: IconButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: isActive ? colorScheme.primary : 
-            colorScheme.onSurface.withValues(alpha: 0.6),
+          foregroundColor: isActive
+              ? colorScheme.primary
+              : colorScheme.onSurface.withValues(alpha: 0.6),
           minimumSize: const Size(20, 20),
           padding: EdgeInsets.zero,
         ),
