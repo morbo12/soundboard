@@ -88,8 +88,6 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
     return _addRandomPauses(
       announcement.trim().replaceAll(RegExp(r'\s+'), ' '),
     );
-
-    ;
   }
 
   String _formatTime() {
