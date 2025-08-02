@@ -58,8 +58,8 @@ dependencies:
   flutter_toastr: ^1.0.3
   package_info_plus: ^8.0.0
   syncfusion_flutter_core: ^30.1.42
-  riverpod_annotation: ^3.0.0-dev.17
-  flutter_riverpod: ^3.0.0-dev.17
+  riverpod_annotation: ^2.6.1	
+  flutter_riverpod: ^2.6.1	
   file_picker: ^10.1.2
   animated_introduction: ^1.0.4
   shared_preferences: ^2.5.2
@@ -84,7 +84,7 @@ dev_dependencies:
   mockito: ^5.4.5
   mocktail: ^1.0.0
   build_runner: ^2.4.15
-  riverpod_generator: ^3.0.0-dev.17
+  riverpod_generator: ^2.6.1	
   # analyzer: ^7.4.0
   # analyzer_plugin: ^0.13.0
 
