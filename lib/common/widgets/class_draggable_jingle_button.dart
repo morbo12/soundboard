@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
-import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
@@ -64,23 +63,8 @@ class DraggableJingleButton extends ConsumerWidget {
 
     // Category-specific styles
     switch (category) {
-      case AudioCategory.ratataJingle:
-      case AudioCategory.penaltyJingle:
-      case AudioCategory.lineupJingle:
-      case AudioCategory.hornJingle:
-      case AudioCategory.oneminJingle:
-      case AudioCategory.threeminJingle:
-      case AudioCategory.timeoutJingle:
-      case AudioCategory.powerupJingle:
-      case AudioCategory.awayTeamJingle:
-      case AudioCategory.homeTeamJingle:
-        return baseStyle.copyWith(
-          backgroundColor: WidgetStatePropertyAll(colorScheme.primaryContainer),
-          foregroundColor: WidgetStatePropertyAll(
-            colorScheme.onPrimaryContainer,
-          ),
-        );
       case AudioCategory.specialJingle:
+      case AudioCategory.goalHorn:
         return baseStyle.copyWith(
           backgroundColor: WidgetStatePropertyAll(
             Color.alphaBlend(
@@ -124,8 +108,6 @@ class DraggableJingleButton extends ConsumerWidget {
             colorScheme.onTertiaryContainer,
           ),
         );
-      default:
-        return baseStyle;
     }
   }
 
@@ -184,7 +166,13 @@ class DraggableJingleButton extends ConsumerWidget {
   }
 
   Future<void> _handleTap(BuildContext context, WidgetRef ref) async {
-    if (audioFile != null) {
+    // Check if this is an empty button (has display name but no real audio file)
+    final isEmptyButton =
+        audioFile != null &&
+        audioFile!.filePath.isEmpty &&
+        !audioFile!.isCategoryOnly;
+
+    if (audioFile != null && !isEmptyButton) {
       // Use the provider to get jingleManager
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       await jingleManagerAsync.when(
@@ -202,6 +190,7 @@ class DraggableJingleButton extends ConsumerWidget {
         },
       );
     } else {
+      // Show jingle selection for null audioFile OR empty buttons
       _showJingleSelectionDialog(context, ref);
     }
   }
@@ -229,8 +218,10 @@ class DraggableJingleButton extends ConsumerWidget {
               title: const Text('Jingle Info'),
               onTap: () => Navigator.of(context).pop('show_info'),
             ),
-            if (audioFile !=
-                null) // Only show delete option if a jingle is assigned
+            if (audioFile != null &&
+                !(audioFile!.filePath.isEmpty &&
+                    !audioFile!
+                        .isCategoryOnly)) // Only show delete option if a real jingle is assigned (not empty buttons)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text('Delete Assignment'),
@@ -302,6 +293,7 @@ class DraggableJingleButton extends ConsumerWidget {
         displayName: newName,
         filePath: audioFile!.filePath,
         audioCategory: audioFile!.audioCategory,
+        isCategoryOnly: audioFile!.isCategoryOnly,
       );
       ref
           .read(jingleGridConfigProvider.notifier)
@@ -359,9 +351,8 @@ class DraggableJingleButton extends ConsumerWidget {
       AudioCategory.genericJingle,
       AudioCategory.goalJingle,
       AudioCategory.clapJingle,
-      AudioCategory.lineupJingle,
-      AudioCategory.lineupBackgroundJingle,
       AudioCategory.specialJingle,
+      AudioCategory.goalHorn,
     ];
 
     final selectedCategory = await showDialog<AudioCategory>(
@@ -437,32 +428,28 @@ class DraggableJingleButton extends ConsumerWidget {
       }
       List<AudioFile> jingles = [];
 
-      if (selectedCategory == AudioCategory.specialJingle) {
-        jingles = await AudioConfigurations.getSpecialJingles();
-      } else {
-        // Use the provider to get jingleManager
-        final jingleManagerAsync = ref.read(jingleManagerProvider);
-        await jingleManagerAsync.when(
-          data: (jingleManager) async {
-            jingles = jingleManager.audioManager.audioInstances
-                .where((j) => j.audioCategory == selectedCategory)
-                .toList();
-          },
-          loading: () async {
-            // Handle loading state
-            jingles = [];
-          },
-          error: (error, stack) async {
-            // Handle error state
-            jingles = [];
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error loading jingles: $error')),
-              );
-            }
-          },
-        );
-      }
+      // Use the provider to get jingleManager for all categories including special jingles
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      await jingleManagerAsync.when(
+        data: (jingleManager) async {
+          jingles = jingleManager.audioManager.audioInstances
+              .where((j) => j.audioCategory == selectedCategory)
+              .toList();
+        },
+        loading: () async {
+          // Handle loading state
+          jingles = [];
+        },
+        error: (error, stack) async {
+          // Handle error state
+          jingles = [];
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading jingles: $error')),
+            );
+          }
+        },
+      );
 
       if (jingles.isEmpty) {
         if (context.mounted) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import '../../../../../common/widgets/class_draggable_jingle_button.dart';
 import 'class_jingle_grid_config_notifier.dart';
 
@@ -12,15 +12,17 @@ class JingleGridSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gridConfig = ref.watch(jingleGridConfigProvider);
     final (columns, rows) = ref.watch(gridSettingsProvider);
+    final jingleManagerAsync = ref.watch(jingleManagerProvider);
 
-    return FutureBuilder<List<AudioFile>>(
-      future: AudioConfigurations.getSpecialJingles(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return jingleManagerAsync.when(
+      data: (jingleManager) {
+        // Get special jingles from the jingle manager
+        final specialJingles = jingleManager.audioManager.audioInstances
+            .where(
+              (audio) => audio.audioCategory == AudioCategory.specialJingle,
+            )
+            .toList();
 
-        final specialJingles = snapshot.data!;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -41,6 +43,9 @@ class JingleGridSection extends ConsumerWidget {
           },
         );
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) =>
+          Center(child: Text('Error loading jingle manager: $error')),
     );
   }
 }

@@ -59,7 +59,11 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
         ? AudioCategory.goalJingle
         : widget.directoryName == "ClapJingles"
         ? AudioCategory.clapJingle
-        : AudioCategory.awayTeamJingle;
+        : widget.directoryName == "SpecialJingles"
+        ? AudioCategory.specialJingle
+        : widget.directoryName == "GoalHorn"
+        ? AudioCategory.goalHorn
+        : AudioCategory.specialJingle;
 
     final jingleManagerAsync = ref.watch(jingleManagerProvider);
 

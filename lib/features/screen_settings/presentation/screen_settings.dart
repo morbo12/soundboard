@@ -81,9 +81,11 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(10),
 
               settingsHeaderText("Grid Layout"),
-              settingsHeader2Text("Configure the layout of the jingle grid"),
+              settingsHeader2Text(
+                "Configure the layout and reset jingle assignments",
+              ),
               const Gap(2),
-              const GridSettingsButton(),
+              const GridSettingsSection(),
               const Gap(5),
 
               settingsHeaderText("Jinglar"),
@@ -91,14 +93,6 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(2),
               JingleSettings(),
               const Gap(5),
-
-              settingsHeaderText("Enskilda jinglar"),
-              settingsHeader2Text(
-                "Ladda upp en flac eller mp3-fil som kopplas till funktionen",
-              ),
-              const Gap(2),
-              JingleSingleSettings(),
-              const Gap(10),
 
               settingsHeaderText("Rensa cache"),
               settingsHeader2Text("Raderar alla uppladdade jinglar från cache"),

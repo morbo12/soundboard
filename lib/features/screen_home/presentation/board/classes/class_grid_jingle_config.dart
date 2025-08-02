@@ -39,8 +39,22 @@ class GridJingleConfig {
     );
   }
 
-  AudioFile? toAudioFile() {
-    if (category == null || displayName == null) return null;
+  Future<AudioFile?> toAudioFile() async {
+    // Handle empty buttons with display names but no category
+    if (category == null) {
+      if (displayName != null) {
+        // Return a special AudioFile for empty buttons so they display but don't play
+        return AudioFile(
+          displayName: displayName!,
+          filePath: '', // Empty file path indicates this is an empty button
+          audioCategory: AudioCategory.genericJingle, // Placeholder category
+          isCategoryOnly: false, // This will help us identify it as empty
+        );
+      }
+      return null;
+    }
+
+    if (displayName == null) return null;
 
     if (isCategoryOnly) {
       // For category-only mode, we don't need a specific file path

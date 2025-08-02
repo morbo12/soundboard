@@ -283,12 +283,23 @@ class _LineupState extends ConsumerState<Lineup> {
 
       logger.d("[_handlePlayLineup] Starting background music");
 
-      await jingleManager.audioManager.playAudio(
-        AudioCategory.awayTeamJingle,
-        ref,
-        shortFade: true,
-        isBackgroundMusic: true,
-      );
+      // Find specific AwayJingle by name for background music
+      final awayJingle = jingleManager.audioManager.audioInstances
+          .where(
+            (instance) =>
+                instance.audioCategory == AudioCategory.specialJingle &&
+                instance.displayName == 'AwayJingle',
+          )
+          .firstOrNull;
+
+      if (awayJingle != null) {
+        await jingleManager.audioManager.playAudio(
+          AudioCategory.specialJingle,
+          ref,
+          shortFade: true,
+          isBackgroundMusic: true,
+        );
+      }
 
       // wait for 10 seconds
 
@@ -338,12 +349,23 @@ class _LineupState extends ConsumerState<Lineup> {
 
       logger.d("[_handlePlayLineup] Playing Home team background music");
 
-      await jingleManager.audioManager.playAudio(
-        AudioCategory.homeTeamJingle,
-        ref,
-        shortFade: true,
-        isBackgroundMusic: true,
-      );
+      // Find specific HomeJingle by name for background music
+      final homeJingle = jingleManager.audioManager.audioInstances
+          .where(
+            (instance) =>
+                instance.audioCategory == AudioCategory.specialJingle &&
+                instance.displayName == 'HomeJingle',
+          )
+          .firstOrNull;
+
+      if (homeJingle != null) {
+        await jingleManager.audioManager.playAudio(
+          AudioCategory.specialJingle,
+          ref,
+          shortFade: true,
+          isBackgroundMusic: true,
+        );
+      }
 
       // wait for 10 seconds
       logger.d("[_handlePlayLineup] Waiting 10 seconds");

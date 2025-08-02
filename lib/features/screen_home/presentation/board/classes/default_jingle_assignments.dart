@@ -1,120 +1,73 @@
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
-import 'package:soundboard/core/services/jingle_manager/class_static_audiofiles.dart';
 import 'class_grid_jingle_config.dart';
 
-/// Defines the default jingle assignments for specific positions on the board
+/// Simple default jingle assignments for the soundboard grid
 class DefaultJingleAssignments {
-  /// Returns a map of grid positions to their assigned categories
-  static Map<String, AudioCategory> get defaultCategoryAssignments => {
-    // Row 1
-    '0_0': AudioCategory.ratataJingle,
-    '0_2': AudioCategory.genericJingle,
-
-    // Row 2
-    '1_0': AudioCategory.clapJingle,
-    '1_1': AudioCategory.powerupJingle,
-    '1_2': AudioCategory.penaltyJingle,
-
-    // Row 3
-    '2_0': AudioCategory.oneminJingle,
-    '2_1': AudioCategory.timeoutJingle,
-    '2_2': AudioCategory.threeminJingle,
-  };
-
-  /// Defines which categories should be treated as category-only
-  /// When true, the button will play a random sound from the category
-  /// instead of a specific file
-  static Map<String, bool> get categoryOnlySettings => {
-    // Example: Set specific positions to be category-only
-    '0_2': true,
-    '1_0': true,
-  };
-
-  /// instead of a specific file
-  static Map<String, String> get overrideDisplayName => {
-    // Example: Set specific positions to be category-only
-    '0_0': "RATATA",
-    '0_2': "JINGLE",
-    '1_0': "KLAPPA HÄNDERNA",
-    '1_1': "Fulltalig",
-    '1_2': "Utvisning",
-    '2_0': "1 min - kvar på period",
-    '2_2': "3 min - kvar på match",
-    // Add more as needed
-  };
-
-  /// Returns a map of grid positions to jingle configurations
-  /// The key is formatted as 'row_column' (e.g., '0_0' for top-left position)
+  /// Default grid assignments for 3x4 grid (3 columns, 4 rows)
+  /// Format: 'row_column': GridJingleConfig with what you want
   static Future<Map<String, GridJingleConfig>> getDefaultAssignments() async {
-    final Map<String, GridJingleConfig> assignments = {};
+    final assignments = <String, GridJingleConfig>{};
 
-    for (final entry in defaultCategoryAssignments.entries) {
-      // Check if this position should be category-only
-      final isCategoryOnly = categoryOnlySettings[entry.key] ?? false;
+    assignments['0_0'] = _createEmptyButton('AWAY TEAM');
+    assignments['0_1'] = _createEmptyButton('HOME TEAM');
 
-      if (isCategoryOnly) {
-        // For category-only buttons, we don't need a specific file
-        // We'll create a GridJingleConfig that represents the entire category
-        assignments[entry.key] = GridJingleConfig(
-          id: 'default_${entry.key}',
-          displayName:
-              overrideDisplayName[entry.key] ??
-              getCategoryDisplayName(entry.value),
-          // No specific filePath for category-only buttons
-          filePath: null,
-          category: entry.value,
-          isCategoryOnly: true,
-        );
-      } else {
-        // For specific jingle buttons, get a specific audio file
-        final audioFile = await AudioConfigurations.getAudioFileForCategory(
-          entry.value,
-        );
+    // Provide some example category assignments
+    assignments['1_0'] = _createEmptyButton('RATATA');
+    assignments['1_1'] = _createRandomCategory(
+      AudioCategory.clapJingle,
+      'KLAPPA\nHÄNDERNA',
+    );
+    assignments['1_2'] = _createRandomCategory(
+      AudioCategory.genericJingle,
+      'RANDOM\nJINGLE',
+    );
+    // Create empty buttons with meaningful names for common jingles
+    // Users can upload their own files and assign them to these buttons
 
-        if (audioFile != null) {
-          assignments[entry.key] = GridJingleConfig(
-            id: 'default_${entry.key}',
-            displayName:
-                overrideDisplayName[entry.key] ?? audioFile.displayName,
-            filePath: audioFile.filePath,
-            category: audioFile.audioCategory,
-            isCategoryOnly: false,
-          );
-        }
-      }
-    }
+    assignments['2_1'] = _createEmptyButton('TIMEOUT');
+    assignments['2_2'] = _createEmptyButton('PENALTY');
+    // Button 3_3 left empty for user customization
+    assignments['3_0'] = _createEmptyButton('POWERUP');
+    assignments['3_1'] = _createEmptyButton('ONE MIN');
+    assignments['3_2'] = _createEmptyButton('THREE MIN');
+    // Button 4_3 left empty for user customization
 
     return assignments;
   }
 
-  /// Helper method to generate position key
-  static String getPositionKey(int row, int column) {
-    return '${row}_$column';
+  /// Create a random category assignment (plays random from category)
+  static GridJingleConfig _createRandomCategory(
+    AudioCategory category,
+    String displayName,
+  ) {
+    return GridJingleConfig(
+      id: 'default_${category.toString().split('.').last}',
+      displayName: displayName,
+      filePath: null,
+      category: category,
+      isCategoryOnly: true,
+    );
   }
 
-  /// Helper method to get row and column from position key
+  /// Create an empty button with a display name
+  /// Users can assign their own jingles to these buttons
+  static GridJingleConfig _createEmptyButton(String displayName) {
+    return GridJingleConfig(
+      id: 'empty_${displayName.toLowerCase().replaceAll(' ', '_')}',
+      displayName: displayName,
+      filePath: null,
+      category: null,
+      isCategoryOnly: false,
+    );
+  }
+
+  /// Helper methods for position management
+  static String getPositionKey(int row, int column) => '${row}_$column';
+
   static (int row, int column) getPositionFromKey(String key) {
     final parts = key.split('_');
     return (int.parse(parts[0]), int.parse(parts[1]));
   }
-
-  /// Helper method to check if a position should be category-only
-  static bool isCategoryOnly(String positionKey) {
-    return categoryOnlySettings[positionKey] ?? false;
-  }
-
-  /// Helper method to check if a position should be category-only
-  static bool isCategoryOnlyByRowColumn(int row, int column) {
-    final key = getPositionKey(row, column);
-    return isCategoryOnly(key);
-  }
-
-  /// Helper method to get a display name for a category
-  static String getCategoryDisplayName(AudioCategory category) {
-    // You can customize the display names for categories here
-    switch (category) {
-      default:
-        return '${category.toString().split('.').last.replaceAll('Jingle', '')} - random';
-    }
-  }
 }
+
+// Contains AI-generated edits.

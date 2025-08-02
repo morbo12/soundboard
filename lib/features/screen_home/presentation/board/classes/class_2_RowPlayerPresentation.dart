@@ -16,15 +16,15 @@ class RowPlayerPresentation extends ConsumerWidget {
   static final _awayTeamAudioFile = AudioFile(
     filePath: '',
     displayName: 'Away Team Background',
-    audioCategory: AudioCategory.awayTeamJingle,
-    isCategoryOnly: true,
+    audioCategory: AudioCategory.specialJingle,
+    isCategoryOnly: false, // Changed to false since we want specific jingle
   );
 
   static final _homeTeamAudioFile = AudioFile(
     filePath: '',
     displayName: 'Home Team Background',
-    audioCategory: AudioCategory.homeTeamJingle,
-    isCategoryOnly: true,
+    audioCategory: AudioCategory.specialJingle,
+    isCategoryOnly: false, // Changed to false since we want specific jingle
   );
 
   @override
@@ -43,12 +43,23 @@ class RowPlayerPresentation extends ConsumerWidget {
                     _awayTeamAudioFile;
 
                 jingleManagerAsync.whenData((jingleManager) {
-                  jingleManager.audioManager.playAudio(
-                    AudioCategory.awayTeamJingle,
-                    ref,
-                    shortFade: true,
-                    isBackgroundMusic: true,
-                  );
+                  // Find specific AwayJingle by name
+                  final awayJingle = jingleManager.audioManager.audioInstances
+                      .where(
+                        (instance) =>
+                            instance.audioCategory ==
+                                AudioCategory.specialJingle &&
+                            instance.displayName == 'AwayJingle',
+                      )
+                      .firstOrNull;
+
+                  if (awayJingle != null) {
+                    jingleManager.audioManager.playAudioFile(
+                      awayJingle,
+                      ref,
+                      shortFade: true,
+                    );
+                  }
                 });
               },
               primaryText: 'Bakgrund\nBortalag',
@@ -68,12 +79,23 @@ class RowPlayerPresentation extends ConsumerWidget {
                     _homeTeamAudioFile;
 
                 jingleManagerAsync.whenData((jingleManager) {
-                  jingleManager.audioManager.playAudio(
-                    AudioCategory.homeTeamJingle,
-                    ref,
-                    shortFade: true,
-                    isBackgroundMusic: true,
-                  );
+                  // Find specific HomeJingle by name
+                  final homeJingle = jingleManager.audioManager.audioInstances
+                      .where(
+                        (instance) =>
+                            instance.audioCategory ==
+                                AudioCategory.specialJingle &&
+                            instance.displayName == 'HomeJingle',
+                      )
+                      .firstOrNull;
+
+                  if (homeJingle != null) {
+                    jingleManager.audioManager.playAudioFile(
+                      homeJingle,
+                      ref,
+                      shortFade: true,
+                    );
+                  }
                 });
               },
               primaryText: 'Bakgrund\nHemmalag',

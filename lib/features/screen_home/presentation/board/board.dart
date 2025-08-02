@@ -19,24 +19,24 @@ class BoardSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: width,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
+      child: const Padding(
+        padding: EdgeInsets.all(5.0),
         child: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const MiniMusicPlayer(),
-                const Gap(10),
-                const HorizontalVolumeControl(),
-                const Gap(10),
-                const PlayerProgressBar(),
-                const Gap(10),
-                const StopGoalRow(),
-                const Gap(10),
-                RowPlayerPresentation(),
-                const Gap(10),
-                const JingleGridSection(),
+                MiniMusicPlayer(),
+                Gap(10),
+                HorizontalVolumeControl(),
+                Gap(10),
+                PlayerProgressBar(),
+                Gap(10),
+                StopGoalRow(),
+                Gap(10),
+                // RowPlayerPresentation(),
+                // const Gap(10),
+                JingleGridSection(),
               ],
             ),
           ),
