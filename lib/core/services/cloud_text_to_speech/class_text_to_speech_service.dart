@@ -1,10 +1,6 @@
-import 'dart:io';
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_voice.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
@@ -57,28 +53,17 @@ class TextToSpeechService {
       pitch: 'default',
     );
 
-    final ttsResponse = await TtsMicrosoft.convertTts(params);
+    await TtsMicrosoft.convertTts(params);
     logger.d("Lineup audio is complete");
 
-    final jingleManagerAsync = ref.read(jingleManagerProvider);
-    final jingleManager = jingleManagerAsync.maybeWhen(
-      data: (manager) => manager,
-      orElse: () => throw Exception("JingleManager not available"),
-    );
+    // TODO: Lineup functionality has been removed in refactoring
+    // This method needs to be redesigned based on new requirements
 
-    List<AudioFile> lineupFilePath = jingleManager.audioManager.audioInstances
-        .where(
-          (instance) => instance.audioCategory == AudioCategory.lineupJingle,
-        )
-        .toList();
+    logger.d("TTS audio processing complete");
 
-    File(
-      lineupFilePath[0].filePath,
-    ).writeAsBytes(ttsResponse.audio, flush: true);
-
-    logger.d("Lineup audio FILE is complete");
-
-    return lineupFilePath[0].filePath;
+    // TODO: This method needs to be redesigned after lineup functionality removal
+    // For now, returning an empty string to prevent errors
+    return "";
   }
 
   Future<AudioSuccessMicrosoft> getTtsNoFile({
