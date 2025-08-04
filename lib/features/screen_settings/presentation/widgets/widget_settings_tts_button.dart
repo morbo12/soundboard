@@ -5,8 +5,14 @@ import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_voice.
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_voice.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_api_tts_voice.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_region.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_servicekey.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_api_key.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_api_test.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_tts_service_mode_switch.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_device_info.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_device_id_display.dart';
 
 class TtsSettingsButton extends ConsumerStatefulWidget {
   const TtsSettingsButton({super.key});
@@ -95,15 +101,29 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const TtsServiceModeSwitch(),
+                    const Gap(16),
+
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        "Voice Selection",
+                        "Voice Selection (Legacy Azure)",
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SettingsTtsVoice(),
+                    const Gap(16),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Voice Selection (Soundboard API)",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SettingsApiTtsVoice(),
                     const Gap(16),
 
                     Padding(
@@ -126,6 +146,50 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
                       ),
                     ),
                     const SettingsTtsServiceKey(),
+                    const Gap(16),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Soundboard API Key",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SettingsApiProductKey(),
+                    const Gap(16),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Device Information",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const DeviceIdDisplayWidget(),
+                    const Gap(16),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "API Test & Status",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const ApiTestWidget(),
+                    const Gap(16),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Device Information",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const DeviceInfoWidget(),
                     const Gap(16),
                   ],
                 ),

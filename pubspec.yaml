@@ -67,6 +67,7 @@ dependencies:
   flutter_libserialport: ^0.6.0
   serial_port_win32: ^2.1.12
   audio_metadata_reader: ^1.4.2
+  crypto: ^3.0.6
 
 # dependency_overrides:
   # because of https://github.com/jpnurmi/flutter_libserialport/issues/128

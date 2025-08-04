@@ -36,6 +36,14 @@ enum Settings {
   gridColumns,
   gridRows,
   volumeSystemConfig,
+
+  // API settings for Soundboard API
+  apiProductKey,
+  apiDeviceId,
+  apiBaseUrl,
+  apiToken,
+  apiTokenExpiry,
+  azVoiceName,
 }
 
 class SettingsBox extends EasyBox {
@@ -260,4 +268,28 @@ extension GeneralSettingsExtension on SettingsBox {
   set volumeSystemConfig(VolumeSystemConfig config) {
     put(Settings.volumeSystemConfig, config.toJson());
   }
+
+  // API settings for Soundboard API
+  set apiProductKey(String value) => put(Settings.apiProductKey, value);
+  String get apiProductKey => get(Settings.apiProductKey, defaultValue: "");
+
+  set apiDeviceId(String value) => put(Settings.apiDeviceId, value);
+  String get apiDeviceId => get(Settings.apiDeviceId, defaultValue: "");
+
+  set apiBaseUrl(String value) => put(Settings.apiBaseUrl, value);
+  String get apiBaseUrl => get(
+    Settings.apiBaseUrl,
+    defaultValue: "https://soundboard-api.fbtoolseu.workers.dev",
+  );
+
+  set apiToken(String value) => put(Settings.apiToken, value);
+  String get apiToken => get(Settings.apiToken, defaultValue: "");
+
+  set apiTokenExpiry(DateTime value) => put(Settings.apiTokenExpiry, value);
+  DateTime get apiTokenExpiry =>
+      get(Settings.apiTokenExpiry, defaultValue: DateTime.utc(2024, 1, 1));
+
+  set azVoiceName(String value) => put(Settings.azVoiceName, value);
+  String get azVoiceName =>
+      get(Settings.azVoiceName, defaultValue: "en-US-AriaNeural");
 }
