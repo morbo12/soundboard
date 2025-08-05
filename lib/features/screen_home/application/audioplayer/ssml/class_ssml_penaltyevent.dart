@@ -51,7 +51,7 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
     : super(loggerName: 'SsmlPenaltyEvent');
 
   @override
-  String formatAnnouncement() {
+  String formatContent() {
     _validateEventData();
     return _formatPenaltyAnnouncement();
   }

@@ -49,7 +49,7 @@ class SsmlGoalEvent extends BaseSsmlEvent {
     : super(loggerName: 'SsmlGoalEvent');
 
   @override
-  String formatAnnouncement() {
+  String formatContent() {
     return _addProsodyVariation(_formatGoalAnnouncement());
   }
 

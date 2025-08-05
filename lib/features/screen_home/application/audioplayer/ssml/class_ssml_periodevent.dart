@@ -15,7 +15,7 @@ class SsmlPeriodEvent extends BaseSsmlEvent {
   }
 
   @override
-  String formatAnnouncement() {
+  String formatContent() {
     final intermediateOrFinal = period == 3
         ? "Matchen slutar"
         : "Ställningen i matchen är";

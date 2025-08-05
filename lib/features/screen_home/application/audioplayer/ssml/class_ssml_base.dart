@@ -8,6 +8,7 @@ import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'class_ssml_header.dart';
 
 abstract class BaseSsmlEvent {
   final WidgetRef ref;
@@ -37,6 +38,16 @@ abstract class BaseSsmlEvent {
       "<say-as interpret-as='time' format='hms'>"
       "${formatter.format(minutes)}:${formatter.format(seconds)}"
       "</say-as>";
+
+  /// Wraps content with complete SSML speak tags
+  String wrapWithSpeakTags(String content, {String language = 'sv-SE'}) =>
+      SSMLHeader.wrapWithSpeakTags(content, language: language);
+
+  /// Wraps content with SSML voice tags using the user's selected voice
+  String wrapWithVoice(String content) {
+    final selectedVoice = SettingsBox().azVoiceName;
+    return "<voice name='$selectedVoice'>$content</voice>";
+  }
 
   /// Shows a toast message
   Future<void> showToast(
@@ -88,6 +99,14 @@ abstract class BaseSsmlEvent {
   }
 
   /// Abstract methods that must be implemented by subclasses
-  String formatAnnouncement();
+  String formatContent();
+
+  /// Returns the complete SSML announcement with voice and speak tags
+  String formatAnnouncement() {
+    final content = formatContent();
+    final voiceWrapped = wrapWithVoice(content);
+    return wrapWithSpeakTags(voiceWrapped);
+  }
+
   Future<bool> getSay(BuildContext context);
 }
