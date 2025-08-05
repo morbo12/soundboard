@@ -89,8 +89,8 @@ class DeejProcessorService {
         continue;
       }
 
-      // Convert to percentage (0-1)
-      double percent = number / 1023.0;
+      // Convert to percentage (0-1) from 0-100 range
+      double percent = number / 100.0;
       if (percent < 0) percent = 0;
       if (percent > 1) percent = 1;
 
