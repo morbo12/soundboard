@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: "**/*.dart"
 ---
 
 - Adhere to the official Flutter style guide. This forms the foundation for maintainable and consistent code.
