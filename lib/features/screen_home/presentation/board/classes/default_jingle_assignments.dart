@@ -12,10 +12,10 @@ class DefaultJingleAssignments {
     assignments['0_1'] = _createEmptyButton('HOME TEAM');
 
     // Provide some example category assignments
-    assignments['1_0'] = _createEmptyButton('RATATA');
-    assignments['1_1'] = _createRandomCategory(
-      AudioCategory.clapJingle,
-      'KLAPPA\nHÄNDERNA',
+    assignments['1_0'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'RATATA',
+      'eu.fbtools - Ratata.flac',
     );
     assignments['1_2'] = _createRandomCategory(
       AudioCategory.genericJingle,
@@ -24,12 +24,33 @@ class DefaultJingleAssignments {
     // Create empty buttons with meaningful names for common jingles
     // Users can upload their own files and assign them to these buttons
 
-    assignments['2_1'] = _createEmptyButton('TIMEOUT');
-    assignments['2_2'] = _createEmptyButton('PENALTY');
+    // Map special effect buttons to specific files so shipped assets work OOTB
+    assignments['2_1'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'TIMEOUT',
+      'treeMinFile.flac', // Example specific file
+    );
+    assignments['2_2'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'PENALTY',
+      'penaltyFile.mp3', // Example specific file
+    );
     // Button 3_3 left empty for user customization
-    assignments['3_0'] = _createEmptyButton('POWERUP');
-    assignments['3_1'] = _createEmptyButton('ONE MIN');
-    assignments['3_2'] = _createEmptyButton('THREE MIN');
+    assignments['3_0'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'POWERUP',
+      'powerUpFile.mp3', // Example specific file
+    );
+    assignments['3_1'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'ONE MIN',
+      'eu.fbtools - oneMinFile.flac', // Example specific file
+    );
+    assignments['3_2'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'THREE MIN',
+      'eu.fbtools - threeMinFile.flac', // Example specific file
+    );
     // Button 4_3 left empty for user customization
 
     return assignments;
@@ -46,6 +67,25 @@ class DefaultJingleAssignments {
       filePath: null,
       category: category,
       isCategoryOnly: true,
+    );
+  }
+
+  /// Create a specific file assignment from category
+  /// This creates a category-only assignment that will be resolved to the specific file
+  /// during runtime when the file matching occurs
+  static GridJingleConfig _createSpecificFile(
+    AudioCategory category,
+    String displayName,
+    String fileName,
+  ) {
+    // For now, we'll create a category-only assignment with a special ID pattern
+    // The AudioManager can detect this pattern and match the specific file
+    return GridJingleConfig(
+      id: 'specific_${category.toString().split('.').last}_$fileName',
+      displayName: displayName,
+      filePath: fileName, // Store the target filename
+      category: category,
+      isCategoryOnly: false, // This is a specific file assignment
     );
   }
 

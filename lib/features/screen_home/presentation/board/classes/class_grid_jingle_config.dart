@@ -68,9 +68,12 @@ class GridJingleConfig {
       return null; // For specific jingle mode, we need a file path
     }
 
+    // For specific file mode, the filePath should contain either:
+    // 1. A full file path (if already resolved)
+    // 2. Just a filename (which needs to be resolved by the AudioManager)
     return AudioFile(
       displayName: displayName!,
-      filePath: filePath!,
+      filePath: filePath!, // AudioManager will handle filename resolution
       audioCategory: category!,
       isCategoryOnly: false,
     );

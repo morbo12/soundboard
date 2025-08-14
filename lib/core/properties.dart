@@ -44,6 +44,7 @@ enum Settings {
   apiToken,
   apiTokenExpiry,
   azVoiceName,
+  apiRefreshToken,
 }
 
 class SettingsBox extends EasyBox {
@@ -279,7 +280,9 @@ extension GeneralSettingsExtension on SettingsBox {
   set apiBaseUrl(String value) => put(Settings.apiBaseUrl, value);
   String get apiBaseUrl => get(
     Settings.apiBaseUrl,
-    defaultValue: "https://soundboard-api.fbtoolseu.workers.dev",
+    defaultValue: kDebugMode
+        ? "https://soundboard-api-dev.fbtoolseu.workers.dev"
+        : "https://soundboard-api.fbtoolseu.workers.dev",
   );
 
   set apiToken(String value) => put(Settings.apiToken, value);
@@ -289,7 +292,13 @@ extension GeneralSettingsExtension on SettingsBox {
   DateTime get apiTokenExpiry =>
       get(Settings.apiTokenExpiry, defaultValue: DateTime.utc(2024, 1, 1));
 
+  // Refresh token used to obtain new access tokens
+  set apiRefreshToken(String value) => put(Settings.apiRefreshToken, value);
+  String get apiRefreshToken => get(Settings.apiRefreshToken, defaultValue: "");
+
   set azVoiceName(String value) => put(Settings.azVoiceName, value);
   String get azVoiceName =>
       get(Settings.azVoiceName, defaultValue: "en-US-AriaNeural");
 }
+
+// Contains AI-generated edits.

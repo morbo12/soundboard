@@ -11,6 +11,10 @@ import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/utils/audio_metadata_parser.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'dart:convert';
+import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class JingleDirectories {
   static const String generic = "GenericJingles";
@@ -52,6 +56,10 @@ class JingleManager {
       logger.d("Migration checked");
       await _initializeDirectories();
       logger.d("Directories initialized");
+      // Copy any bundled jingles from assets into the cache directories
+      // so they are available alongside user-uploaded files
+      await _copyBundledJinglesToCache();
+      logger.d("Bundled jingles copied (if any)");
       // await _loadSpecialJingles();
       // logger.d("Special jingles loaded");
       await initializeJingleFilesDirs();
@@ -146,6 +154,145 @@ class JingleManager {
     }
   }
 
+  /// Copies bundled jingles from assets/jingles/* into the corresponding
+  /// cache directories on first run. Existing files are not overwritten.
+  Future<void> _copyBundledJinglesToCache() async {
+    try {
+      // Load the asset manifest to list available assets
+      final manifestContent = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifest = json.decode(manifestContent);
+
+      logger.d("AssetManifest contains ${manifest.keys.length} entries");
+
+      // Filter assets under assets/jingles/
+      final assetPaths = manifest.keys
+          .where((k) => k.startsWith('assets/jingles/'))
+          .toList();
+
+      if (assetPaths.isEmpty) {
+        logger.d(
+          "No bundled jingles found in assets/jingles/ via AssetManifest",
+        );
+        // In debug builds, fall back to scanning the local filesystem so
+        // developers can iterate without a full rebuild.
+        if (kDebugMode) {
+          final devRoot = Directory('assets/jingles');
+          if (await devRoot.exists()) {
+            logger.d("Debug fallback: scanning local assets/jingles directory");
+            await for (final entity in devRoot.list(recursive: true)) {
+              if (entity is! File) continue;
+              final rel = p.relative(entity.path, from: devRoot.path);
+              final parts = rel.split(p.separator);
+              if (parts.length < 2) continue;
+
+              final subdir = parts.first.toLowerCase();
+              final fileName = parts.sublist(1).join('/');
+
+              Directory targetDir;
+              switch (subdir) {
+                case 'generic':
+                  targetDir = genericJinglesDir;
+                  break;
+                case 'goal':
+                  targetDir = goalJinglesDir;
+                  break;
+                case 'clap':
+                  targetDir = clapJinglesDir;
+                  break;
+                case 'goalhorn':
+                  targetDir = goalHornDir;
+                  break;
+                case 'penalty':
+                case 'timeout':
+                case 'powerup':
+                case '1min':
+                case 'threemin':
+                case 'special':
+                  targetDir = specialJinglesDir;
+                  break;
+                default:
+                  targetDir = genericJinglesDir;
+                  break;
+              }
+
+              final destPath = p.join(targetDir.path, p.basename(fileName));
+              final destFile = File(destPath);
+              if (await destFile.exists()) continue;
+
+              await destFile.create(recursive: true);
+              await entity.copy(destFile.path);
+            }
+            logger.d("Debug fallback: copied local assets if missing");
+          } else {
+            logger.d("Debug fallback root not found: ${devRoot.path}");
+          }
+        }
+        return;
+      }
+
+      for (final assetPath in assetPaths) {
+        // Determine the subdirectory (category indicator)
+        // e.g., assets/jingles/generic/foo.mp3 -> generic
+        final relative = assetPath.substring('assets/jingles/'.length);
+        final parts = relative.split('/');
+        if (parts.length < 2) continue; // Expect subdir + filename
+        final subdir = parts.first.toLowerCase();
+        final fileName = parts.sublist(1).join('/'); // support nested
+
+        // Map subdir to target directory
+        Directory? targetDir;
+        switch (subdir) {
+          case 'generic':
+            targetDir = genericJinglesDir;
+            break;
+          case 'goal':
+            targetDir = goalJinglesDir;
+            break;
+          case 'clap':
+            targetDir = clapJinglesDir;
+            break;
+          case 'goalhorn':
+            targetDir = goalHornDir;
+            break;
+          // Special effects go into SpecialJingles
+          case 'penalty':
+          case 'timeout':
+          case 'powerup':
+          case '1min':
+          case 'threemin':
+          case 'special':
+            targetDir = specialJinglesDir;
+            break;
+          default:
+            // Unknown subdir: place in Generic to avoid loss
+            targetDir = genericJinglesDir;
+            break;
+        }
+
+        final destPath = p.join(targetDir.path, p.basename(fileName));
+        final destFile = File(destPath);
+
+        if (await destFile.exists()) {
+          // Don't overwrite user-updated files
+          continue;
+        }
+
+        // Copy bytes from asset to file system
+        final byteData = await rootBundle.load(assetPath);
+        final bytes = byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        );
+        await destFile.writeAsBytes(bytes, flush: true);
+      }
+
+      logger.d("Copied ${assetPaths.length} bundled jingles where missing");
+    } catch (e) {
+      // Non-fatal: if anything goes wrong, skip copying
+      logger.w("Failed to copy bundled jingles: $e");
+    }
+  }
+
   Future<void> initializeJingleFilesDirs() async {
     try {
       // Create a list of maps to associate each directory with its AudioCategory
@@ -232,3 +379,5 @@ class JingleManager {
   //       textStyle: const TextStyle(color: Colors.white));
   // }
 }
+
+// Contains AI-generated edits.

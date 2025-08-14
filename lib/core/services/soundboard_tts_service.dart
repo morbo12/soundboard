@@ -47,7 +47,11 @@ class SoundboardTtsService {
       _logger.d('Making TTS request to: $uri');
 
       // Make HTTP request
-      final response = await http.post(uri, headers: headers, body: body);
+      http.Response response = await http.post(
+        uri,
+        headers: headers,
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         // Check content type to ensure we got audio
@@ -62,7 +66,26 @@ class SoundboardTtsService {
           return null;
         }
       } else if (response.statusCode == 401) {
-        _logger.w('Authentication failed, clearing token');
+        _logger.w('Authentication failed (401). Attempting token refresh...');
+        final refreshed = await _authService.refreshAccessToken();
+        if (refreshed) {
+          final newToken = await _authService.getValidToken();
+          if (newToken != null) {
+            final retryHeaders = {
+              ...headers,
+              'Authorization': 'Bearer $newToken',
+            };
+            response = await http.post(uri, headers: retryHeaders, body: body);
+            if (response.statusCode == 200 &&
+                (response.headers['content-type'] ?? '').startsWith('audio/')) {
+              _logger.i(
+                'Successfully generated speech audio after token refresh (${response.bodyBytes.length} bytes)',
+              );
+              return response.bodyBytes;
+            }
+          }
+        }
+        _logger.w('Token refresh failed or retry unsuccessful. Clearing auth.');
         _authService.clearAuth();
         return null;
       } else {
@@ -80,21 +103,13 @@ class SoundboardTtsService {
   /// Get available voices from the API
   Future<List<String>?> getAvailableVoices() async {
     try {
-      final token = await _authService.getValidToken();
-      if (token == null) {
-        _logger.e('No valid authentication token available');
-        return null;
-      }
-
       final uri = Uri.parse('${_settings.apiBaseUrl}/api/tts/voices');
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      };
+      // Voices endpoint may be public; try without auth first
+      Map<String, String> headers = {'Content-Type': 'application/json'};
 
       _logger.d('Fetching available voices from: $uri');
 
-      final response = await http.get(uri, headers: headers);
+      http.Response response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -110,8 +125,48 @@ class SoundboardTtsService {
           return null;
         }
       } else if (response.statusCode == 401) {
-        _logger.w('Authentication failed, clearing token');
-        _authService.clearAuth();
+        // Some deployments might require auth for voices; try with token and refresh if needed
+        _logger.w('Voices endpoint requires auth. Trying with token...');
+        final token = await _authService.getValidToken();
+        if (token != null) {
+          headers = {...headers, 'Authorization': 'Bearer $token'};
+          response = await http.get(uri, headers: headers);
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            if (data is Map && data.containsKey('voices')) {
+              final voicesData = data['voices'] as List;
+              final voices = voicesData
+                  .map((voice) => voice['name'] as String)
+                  .toList();
+              _logger.i('Retrieved ${voices.length} available voices (auth)');
+              return voices;
+            }
+          } else if (response.statusCode == 401) {
+            _logger.w('Auth for voices failed. Attempting token refresh...');
+            final refreshed = await _authService.refreshAccessToken();
+            if (refreshed) {
+              final newToken = await _authService.getValidToken();
+              if (newToken != null) {
+                headers['Authorization'] = 'Bearer $newToken';
+                response = await http.get(uri, headers: headers);
+                if (response.statusCode == 200) {
+                  final data = jsonDecode(response.body);
+                  if (data is Map && data.containsKey('voices')) {
+                    final voicesData = data['voices'] as List;
+                    final voices = voicesData
+                        .map((voice) => voice['name'] as String)
+                        .toList();
+                    _logger.i(
+                      'Retrieved ${voices.length} available voices (after refresh)',
+                    );
+                    return voices;
+                  }
+                }
+              }
+            }
+          }
+        }
+        _logger.w('Unable to fetch voices due to authentication issues.');
         return null;
       } else {
         _logger.e(
@@ -147,3 +202,5 @@ class SoundboardTtsService {
     }
   }
 }
+
+// Contains AI-generated edits.

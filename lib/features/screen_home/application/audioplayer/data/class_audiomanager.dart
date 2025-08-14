@@ -495,10 +495,35 @@ class AudioManager {
         // Track which button was pressed for category-only buttons
         ref.read(lastPressedButtonProvider.notifier).state = audiofile;
 
+        // Debug logging
+        logger.d(
+          "[playAudioFile] Category-only button pressed: ${audiofile.displayName}",
+        );
+
+        logger.d(
+          "[playAudioFile] Playing random from category: ${audiofile.audioCategory}",
+        );
         await playAudio(
           audiofile.audioCategory,
           ref,
           random: true,
+          shortFade: shortFade,
+        );
+        return;
+      }
+
+      // For specific file assignments, check if we need to resolve the filename
+      if (!audiofile.filePath.contains('/') &&
+          !audiofile.filePath.contains('\\') &&
+          audiofile.filePath.isNotEmpty) {
+        // This looks like just a filename, not a full path - use playSpecificFile to find it
+        logger.d(
+          "[playAudioFile] Resolving filename ${audiofile.filePath} in category ${audiofile.audioCategory}",
+        );
+        await playSpecificFile(
+          audiofile.audioCategory,
+          audiofile.filePath,
+          ref,
           shortFade: shortFade,
         );
         return;
@@ -593,6 +618,88 @@ class AudioManager {
   /// Clears the play history for a specific category
   void clearPlayHistoryForCategory(AudioCategory category) {
     _recentlyPlayed.remove(category);
+  }
+
+  /// Plays a specific file from a category by matching the filename
+  Future<void> playSpecificFile(
+    AudioCategory category,
+    String specificFileName,
+    WidgetRef ref, {
+    bool shortFade = true,
+  }) async {
+    await _ensureInitialized(ref);
+
+    try {
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
+
+      if (categoryInstances.isEmpty) {
+        logger.w(
+          "[playSpecificFile] No audio files found for category $category",
+        );
+        return;
+      }
+
+      // Try to find exact match first
+      AudioFile? targetFile;
+      try {
+        targetFile = categoryInstances.firstWhere(
+          (instance) => instance.filePath.contains(specificFileName),
+        );
+      } catch (e) {
+        // No exact match found, try partial matching
+        final partialMatch = categoryInstances
+            .where(
+              (instance) =>
+                  instance.filePath.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ) ||
+                  instance.displayName.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ),
+            )
+            .toList();
+
+        if (partialMatch.isNotEmpty) {
+          targetFile = partialMatch.first;
+        }
+      }
+
+      // If no match found at all, don't play anything
+      if (targetFile == null) {
+        logger.w(
+          "[playSpecificFile] No match found for filename '$specificFileName' in category $category",
+        );
+        return;
+      }
+
+      final channel = _getChannelForAudioType(category: category);
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d(
+        "[playSpecificFile] Playing ${targetFile.filePath} (requested: $specificFileName) on channel ${channel.name}",
+      );
+
+      // Update progress providers for jingle tracking
+      ref.read(currentPlayingJingleProvider.notifier).state = targetFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+
+      logger.d(
+        "[playSpecificFile] Updated progress providers for: ${targetFile.displayName}",
+      );
+
+      await _playAudioFile(
+        ref,
+        channel,
+        targetFile.filePath,
+        fadeDuration: fadeDuration,
+        audioFile: targetFile,
+      );
+    } catch (e) {
+      logger.d("Error playing specific file: $e");
+    }
   }
 
   /// Returns the appropriate channel for the given audio type

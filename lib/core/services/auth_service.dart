@@ -22,6 +22,16 @@ class AuthService {
     return settings.apiBaseUrl;
   }
 
+  // Determine API base URL from the product key format.
+  // Convention: Keys starting with "SOUND-DEV-" use the DEV API, otherwise PROD.
+  String _resolveBaseUrlFromKey(String productKey) {
+    final key = productKey.trim().toUpperCase();
+    const prodUrl = 'https://soundboard-api.fbtoolseu.workers.dev';
+    const devUrl = 'https://soundboard-api-dev.fbtoolseu.workers.dev';
+    if (key.startsWith('SOUND-DEV-')) return devUrl;
+    return prodUrl;
+  }
+
   Future<bool> authenticate() async {
     try {
       final settings = SettingsBox();
@@ -37,8 +47,10 @@ class AuthService {
 
       logger.i('Authenticating with device ID: ${deviceId.substring(0, 8)}...');
 
+      final effectiveBaseUrl = _resolveBaseUrlFromKey(productKey);
+
       final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/login'),
+        Uri.parse('$effectiveBaseUrl/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'productKey': productKey, 'deviceId': deviceId}),
       );
@@ -46,11 +58,15 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          final accessToken = data['tokens']['accessToken'];
+          final accessToken = data['tokens']['accessToken'] as String?;
+          final refreshToken = data['tokens']['refreshToken'] as String?;
           final expiresIn = data['tokens']['expiresIn'] as int;
 
           // Store token and expiry
-          settings.apiToken = accessToken;
+          if (accessToken != null) settings.apiToken = accessToken;
+          if (refreshToken != null) settings.apiRefreshToken = refreshToken;
+          // Persist the effective base URL so other services use the correct API
+          settings.apiBaseUrl = effectiveBaseUrl;
           settings.apiTokenExpiry = DateTime.now().add(
             Duration(
               seconds: expiresIn - 300,
@@ -83,15 +99,78 @@ class AuthService {
       return storedToken;
     }
 
-    // Token is expired or missing, authenticate again
+    // Try refresh flow first if we have a refresh token
+    final refreshed = await refreshAccessToken();
+    if (refreshed) {
+      return settings.apiToken;
+    }
+
+    // Fallback: Token is expired or missing, authenticate again
     final success = await authenticate();
     return success ? settings.apiToken : null;
   }
 
+  /// Refresh an expired access token using refreshToken
+  Future<bool> refreshAccessToken() async {
+    try {
+      final settings = SettingsBox();
+      final refreshToken = settings.apiRefreshToken;
+      if (refreshToken.isEmpty) {
+        logger.w('No refresh token available');
+        return false;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final newAccessToken =
+              data['accessToken'] as String? ??
+              data['tokens']?['accessToken'] as String?;
+          final newRefreshToken =
+              data['refreshToken'] as String? ??
+              data['tokens']?['refreshToken'] as String?;
+          final expiresIn =
+              (data['expiresIn'] as int?) ??
+              (data['tokens']?['expiresIn'] as int?) ??
+              900;
+
+          if (newAccessToken != null) settings.apiToken = newAccessToken;
+          if (newRefreshToken != null)
+            settings.apiRefreshToken = newRefreshToken;
+          settings.apiTokenExpiry = DateTime.now().add(
+            Duration(seconds: expiresIn - 300),
+          );
+
+          logger.d('Access token refreshed successfully');
+          return true;
+        }
+      } else if (response.statusCode == 401) {
+        logger.w('Refresh token invalid, clearing auth');
+        clearAuth();
+        return false;
+      }
+
+      logger.e(
+        'Token refresh failed: ${response.statusCode} - ${response.body}',
+      );
+      return false;
+    } catch (e, stackTrace) {
+      logger.e('Token refresh error', e, stackTrace);
+      return false;
+    }
+  }
+
   Future<bool> validateProductKey(String productKey) async {
     try {
+      final effectiveBaseUrl = _resolveBaseUrlFromKey(productKey);
       final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/validate-key'),
+        Uri.parse('$effectiveBaseUrl/api/auth/validate-key'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'productKey': productKey}),
       );
@@ -112,6 +191,7 @@ class AuthService {
     final settings = SettingsBox();
     settings.apiToken = "";
     settings.apiTokenExpiry = DateTime.utc(2024, 1, 1);
+    settings.apiRefreshToken = "";
   }
 }
 
