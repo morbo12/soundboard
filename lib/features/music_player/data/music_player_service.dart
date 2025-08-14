@@ -229,6 +229,68 @@ class MusicPlayerService {
     await _selectTrack(nextIndex);
   }
 
+  /// Play the next track with fade-out/fade-in transition
+  Future<void> nextWithFade({
+    Duration fadeOut = const Duration(milliseconds: 200),
+    Duration fadeIn = const Duration(milliseconds: 200),
+  }) async {
+    try {
+      final wasPlaying = _currentState.isPlaying;
+      // Determine if we can advance to another track
+      final bool canAdvance = _currentState.isShuffleEnabled
+          ? _currentState.playlist.length > 1
+          : (_currentState.hasNext || _currentState.isRepeatEnabled);
+
+      if (!canAdvance) {
+        // Nothing to advance to; do nothing (avoid unnecessary fade blip)
+        return;
+      }
+
+      if (wasPlaying) {
+        final double originalVolume = _currentState.volume;
+        if (originalVolume > 0) {
+          await _fadeVolume(to: 0.0, duration: fadeOut);
+        }
+
+        // Move to next track (respects shuffle/repeat logic via next())
+        await next();
+
+        // next() will keep playing because state isPlaying remains true
+        await _fadeVolume(to: originalVolume, duration: fadeIn);
+      } else {
+        // If not playing, just switch track without fade and keep paused state
+        await next();
+      }
+    } catch (e) {
+      logger.e("Error during nextWithFade: $e");
+      // Best-effort fallback
+      await next();
+    }
+  }
+
+  Future<void> _fadeVolume({
+    required double to,
+    required Duration duration,
+  }) async {
+    final double from = _currentState.volume;
+    final double target = to.clamp(0.0, 1.0);
+    if (duration.inMilliseconds <= 0 || (from - target).abs() < 0.001) {
+      await setVolume(target);
+      return;
+    }
+
+    const int steps = 10; // small, quick fade
+    final int stepMs = (duration.inMilliseconds / steps).round();
+    for (int i = 1; i <= steps; i++) {
+      final double t = i / steps;
+      final double v = from + (target - from) * t;
+      await setVolume(v);
+      await Future.delayed(Duration(milliseconds: stepMs));
+    }
+    // Ensure exact target
+    await setVolume(target);
+  }
+
   /// Play the previous track
   Future<void> previous() async {
     if (!_currentState.hasPrevious && !_currentState.isRepeatEnabled) {

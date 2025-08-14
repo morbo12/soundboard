@@ -101,6 +101,14 @@ class MiniMusicPlayer extends ConsumerWidget {
                 isActive: state.isShuffleEnabled,
               ),
               const SizedBox(width: 4),
+              // Next button
+              _buildMiniControlButton(
+                context,
+                icon: Icons.skip_next_rounded,
+                onPressed: () => notifier.nextWithFade(),
+                size: 18,
+              ),
+              const SizedBox(width: 4),
               // Play/pause button
               _buildSinglePlayButton(context, state, notifier),
             ],
