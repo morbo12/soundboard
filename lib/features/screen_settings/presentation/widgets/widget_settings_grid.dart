@@ -8,12 +8,8 @@ class GridSettingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      children: [
-        const GridSettingsButton(),
-        const Gap(8),
-        const GridResetButton(),
-      ],
+    return const Column(
+      children: [GridSettingsButton(), Gap(8), GridResetButton()],
     );
   }
 }
@@ -25,7 +21,7 @@ class GridResetButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        // First row: Reset Everything button (full width)
+        // Reset Everything button (full width)
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -53,74 +49,6 @@ class GridResetButton extends ConsumerWidget {
               ],
             ),
           ),
-        ),
-        const Gap(8),
-        // Second row: Individual reset options
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
-                ),
-                onPressed: () => _showResetAssignmentsDialog(context, ref),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.restore,
-                      color: Theme.of(context).colorScheme.onErrorContainer,
-                    ),
-                    const Gap(8),
-                    Text(
-                      'Reset Assignments',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const Gap(8),
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-                onPressed: () => _showClearDialog(context, ref),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.clear_all,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    const Gap(8),
-                    Text(
-                      'Clear All',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -171,98 +99,6 @@ class GridResetButton extends ConsumerWidget {
               }
             },
             child: const Text('Reset Everything'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showResetAssignmentsDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset Jingle Assignments Only'),
-        content: const Text(
-          '🎵 WHAT THIS DOES:\n'
-          'Restores all jingle assignments to defaults:\n'
-          '• Category buttons (clap, random jingle)\n'
-          '• Named empty buttons (HORN, RATATA, etc.)\n'
-          '• Ready for your custom jingle uploads\n\n'
-          '🔧 WHAT THIS KEEPS:\n'
-          '• Your current grid size (rows × columns)\n'
-          '• All other settings unchanged\n\n'
-          '⚠️ Your custom jingle assignments will be lost.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              await ref
-                  .read(jingleGridConfigProvider.notifier)
-                  .resetToDefaults();
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Jingle assignments reset to defaults'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            child: const Text('Reset Assignments'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showClearDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear All Jingle Assignments'),
-        content: const Text(
-          '🗑️ WHAT THIS DOES:\n'
-          'Removes ALL jingle assignments from the grid.\n'
-          'Every button will become empty/unassigned.\n\n'
-          '🔧 WHAT THIS KEEPS:\n'
-          '• Your current grid size (rows × columns)\n'
-          '• All other settings unchanged\n'
-          '• All your jingle files (they stay in the system)\n\n'
-          '💡 WHEN TO USE THIS:\n'
-          '• You want to start fresh with manual assignments\n'
-          '• You want a completely custom layout\n'
-          '• You prefer to assign each button yourself\n\n'
-          'You can assign jingles by right-clicking empty buttons,\n'
-          'or use "Reset Assignments" to get defaults back.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              await ref
-                  .read(jingleGridConfigProvider.notifier)
-                  .clearAllAssignments();
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'All jingle assignments cleared - grid is now empty',
-                    ),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-              }
-            },
-            child: const Text('Clear All Assignments'),
           ),
         ],
       ),
