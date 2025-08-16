@@ -7,6 +7,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta5] - 2025-08-16
+
+### Added
+
+- Full music player and a mini music player (moved to bottom bar)
+- Default jingles and jingle assets shipped with the app (includes AI-generated jingles)
+- Soundboard Backend API for TTS and AI-powered sentence generation (new AiSentenceService)
+- Audio metadata parser to read and surface track metadata
+- Support for multi-language models and several experimental TTS voices
+
+### Changed
+
+- Moved/refactored the music player and jingle manager into a cleaner service/UI structure
+- Jingle manager and button refactors for improved assignment and playback behavior
+- Various UI layout adjustments (volume controller, event card placement, gridsize, colors)
+- UI cleanup on settings page and buttons
+- Version bump to final release
+
+### Fixed
+
+- Fixed multiple layout and rendering issues (ParentDataWidget misuse, hidden progress bars)
+- Fixed audio metadata parsing and related edge-cases
+- Updated Deej board output handling and lineup/SSML initialization fixes
+
+### Other
+
+- Added license and music disclaimer related to bundled jingles
+- Chore: project cleanup, pub upgrades and test additions
+
+_This release summary is based on commits on branch `feature/0.4.0`._
+
+### Added
+
+- Full music player and a mini music player (moved to bottom bar)
+- Default jingles and jingle assets shipped with the app (includes AI-generated jingles)
+- Soundboard Backend API for TTS and AI-powered sentence generation (new AiSentenceService)
+- Audio metadata parser to read and surface track metadata
+- Support for multi-language models and several experimental TTS voices
+
+### Changed
+
+- Moved/refactored the music player and jingle manager into a cleaner service/UI structure
+- Jingle manager and button refactors for improved assignment and playback behavior
+- Various UI layout adjustments (volume controller, event card placement, gridsize, colors)
+
+### Fixed
+
+- Fixed multiple layout and rendering issues (ParentDataWidget misuse, hidden progress bars)
+- Fixed audio metadata parsing and related edge-cases
+- Updated Deej board output handling and lineup/SSML initialization fixes
+
+### Other
+
+- Added license and music disclaimer related to bundled jingles
+- Chore: project cleanup, pub upgrades and test additions
+
+_This release summary is based on commits on branch `feature/0.4.0`._
+
+## [0.4.0-beta4] - 2025-08-02
+
+### Added
+
+- Soundboard Backend API for TTS and AI Generation
+- Requires: Soundboard Backend API
+  - AI-powered sports announcement sentence generation using Azure OpenAI (new `AiSentenceService`)
+  - Refactored TTS dialog to support AI-generated suggestions and improved player/penalty selection logic
+  - Integration of AI-generated suggestions in TTS dialog for event announcements
+
+## [0.4.0-beta3] - 2025-08-02
+
+### Added
+
+- Improved documentation for Deej/volume control system (see updated docs/)
+- More unit tests for audio metadata and music player features
+
+### Changed
+
+- Updated volume control documentation and diagrams for clarity and accuracy
+- Minor code cleanups and adherence to Flutter style guide
+
+### Fixed
+
+- Improved error handling in AI sentence service and TTS dialog
+- Fixed edge cases in music player and audio metadata parsing tests
+
+### Removed
+
+- Deprecated or unused code paths in TTS and volume control logic
+
+_Contains AI-generated edits._
+
 ## [0.4.0-beta2] - 2025-04-12
 
 ### Added
