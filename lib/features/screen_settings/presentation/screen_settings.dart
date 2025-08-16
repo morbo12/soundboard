@@ -72,14 +72,6 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SettingsSpotify(),
               const Gap(10),
 
-              settingsHeaderText("Music Player"),
-              settingsHeader2Text(
-                "Upload and manage music files for the built-in music player",
-              ),
-              const Gap(2),
-              const MusicUploadButton(),
-              const Gap(10),
-
               settingsHeaderText("Grid Layout"),
               settingsHeader2Text(
                 "Configure the layout and reset jingle assignments",
@@ -88,10 +80,17 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const GridSettingsSection(),
               const Gap(5),
 
+              settingsHeaderText("Music Player"),
+              settingsHeader2Text(
+                "Upload and manage music files for the built-in music player",
+              ),
+              const Gap(2),
+              const MusicUploadButton(),
+              const Gap(10),
               settingsHeaderText("Jinglar"),
               settingsHeader2Text("Hantera jinglar och ljudfiler"),
               const Gap(2),
-              JingleSettings(),
+              const JingleSettings(),
               const Gap(5),
 
               settingsHeaderText("Rensa cache"),

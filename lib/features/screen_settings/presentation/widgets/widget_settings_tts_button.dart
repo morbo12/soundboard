@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_region.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/class_hybrid_text_to_speech_service.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_voice.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_api_tts_voice.dart';
@@ -79,125 +80,114 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
   }
 
   void _showSettingsBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      builder: (context) => const TtsSettingsDialog(),
+    );
+  }
+}
+
+class TtsSettingsDialog extends ConsumerStatefulWidget {
+  const TtsSettingsDialog({super.key});
+
+  @override
+  ConsumerState<TtsSettingsDialog> createState() => _TtsSettingsDialogState();
+}
+
+class _TtsSettingsDialogState extends ConsumerState<TtsSettingsDialog> {
+  @override
+  Widget build(BuildContext context) {
+    final currentMode = ref.watch(ttsServiceModeProvider);
+
+    return AlertDialog(
+      title: const Text("Text to Speech Settings"),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Service Provider Selection (always shown)
+              _buildSectionHeader(context, "Service Provider"),
+              const Gap(8),
+              const TtsServiceModeSwitch(),
+              const Gap(24),
+
+              // Voice Configuration (context-sensitive)
+              _buildSectionHeader(context, "Voice Configuration"),
+              const Gap(8),
+              if (currentMode == TtsServiceMode.azureDirect) ...[
+                const SettingsTtsVoice(),
+                const Gap(16),
+                _buildSubHeader(context, "Region"),
+                const Gap(8),
+                const SettingsTtsRegion(),
+              ] else ...[
+                const SettingsApiTtsVoice(),
+              ],
+              const Gap(24),
+
+              // API Configuration (context-sensitive)
+              if (currentMode == TtsServiceMode.azureDirect) ...[
+                _buildSectionHeader(context, "Azure Service Key"),
+                const Gap(8),
+                const SettingsTtsServiceKey(),
+                const Gap(24),
+              ] else ...[
+                _buildSectionHeader(context, "Soundboard API Key"),
+                const Gap(8),
+                const SettingsApiProductKey(),
+                const Gap(24),
+
+                // Device Registration (only for Soundboard API)
+                _buildSectionHeader(context, "Device Registration"),
+                const Gap(8),
+                const DeviceIdDisplayWidget(),
+                const Gap(24),
+              ],
+
+              // Testing & Status (always shown)
+              _buildSectionHeader(context, "Testing & Status"),
+              const Gap(8),
+              const ApiTestWidget(),
+
+              // Device Information (always shown, but only general info for Azure)
+              if (currentMode == TtsServiceMode.azureDirect) ...[
+                const Gap(24),
+                _buildSectionHeader(context, "System Information"),
+                const Gap(8),
+                const DeviceInfoWidget(),
+              ],
+            ],
+          ),
+        ),
       ),
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                "Text to Speech Settings",
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const TtsServiceModeSwitch(),
-                    const Gap(16),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
 
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Voice Selection (Legacy Azure)",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SettingsTtsVoice(),
-                    const Gap(16),
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
 
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Voice Selection (Soundboard API)",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SettingsApiTtsVoice(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Region Selection",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SettingsTtsRegion(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Azure Service Key",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SettingsTtsServiceKey(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Soundboard API Key",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SettingsApiProductKey(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Device Information",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const DeviceIdDisplayWidget(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "API Test & Status",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const ApiTestWidget(),
-                    const Gap(16),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Device Information",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const DeviceInfoWidget(),
-                    const Gap(16),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _buildSubHeader(BuildContext context, String title) {
+    return Text(
+      title,
+      style: Theme.of(
+        context,
+      ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
     );
   }
 }

@@ -5,6 +5,24 @@ import 'package:soundboard/core/properties.dart';
 /// Configuration providers that manage application settings.
 /// These providers follow Riverpod best practices for state management.
 
+/// API configuration state notifier for reactive updates
+class ApiConfigNotifier extends StateNotifier<String> {
+  ApiConfigNotifier() : super(SettingsBox().apiProductKey);
+
+  void updateApiKey(String newKey) {
+    final settings = SettingsBox();
+    settings.apiProductKey = newKey;
+    state = newKey;
+  }
+}
+
+/// Provider for reactive API product key
+final apiProductKeyProvider = StateNotifierProvider<ApiConfigNotifier, String>((
+  ref,
+) {
+  return ApiConfigNotifier();
+});
+
 /// Spotify configuration provider
 final spotifyConfigProvider = Provider<SpotifyConfig>((ref) {
   final settings = SettingsBox();

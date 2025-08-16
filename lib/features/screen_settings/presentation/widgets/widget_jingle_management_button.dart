@@ -5,24 +5,35 @@ import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/common/widgets/class_large_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/core/utils/logger.dart';
-import 'package:soundboard/features/music_player/data/music_player_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 
-class MusicUploadButton extends ConsumerStatefulWidget {
-  const MusicUploadButton({super.key});
+class JingleManagementButton extends ConsumerStatefulWidget {
+  final String directoryName;
+  final AudioCategory audioCategory;
+
+  const JingleManagementButton({
+    super.key,
+    required this.directoryName,
+    required this.audioCategory,
+  });
 
   @override
-  ConsumerState<MusicUploadButton> createState() => _MusicUploadButtonState();
+  ConsumerState<JingleManagementButton> createState() =>
+      _JingleManagementButtonState();
 }
 
-class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
-  final ValueNotifier<String?> selectedPath = ValueNotifier(null);
-  final Logger logger = const Logger('MusicUploadButton');
+class _JingleManagementButtonState
+    extends ConsumerState<JingleManagementButton> {
+  final Logger logger = const Logger('JingleManagementButton');
 
   Future<void> _copyFileToDestination(List<File>? files) async {
     if (files == null) return;
 
     final Directory appSupportDir = await getApplicationCacheDirectory();
-    final Directory targetDir = Directory('${appSupportDir.path}/Music');
+    final Directory targetDir = Directory(
+      '${appSupportDir.path}/${widget.directoryName}',
+    );
 
     if (!await targetDir.exists()) {
       await targetDir.create(recursive: true);
@@ -38,20 +49,20 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
 
       try {
         await sourceFile.copy(targetPath);
-        logger.d("Music file copied to $targetPath");
+        logger.d("Jingle file copied to $targetPath");
         hasSuccessfulUploads = true;
 
         // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Music file "$fileName" uploaded successfully!'),
+              content: Text('Jingle file "$fileName" uploaded successfully!'),
               backgroundColor: Colors.green,
             ),
           );
         }
       } catch (e) {
-        logger.e("Failed to copy music file: $e");
+        logger.e("Failed to copy jingle file: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -63,11 +74,10 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
       }
     }
 
-    // Trigger playlist refresh if any files were successfully uploaded
+    // Trigger jingle manager refresh if any files were successfully uploaded
     if (hasSuccessfulUploads) {
-      final refreshNotifier = ref.read(playlistRefreshProvider.notifier);
-      refreshNotifier.state = refreshNotifier.state + 1;
-      logger.d("Triggered playlist refresh after successful uploads");
+      ref.read(jingleManagerProvider.notifier).reinitialize();
+      logger.d("Triggered jingle manager refresh after successful uploads");
     }
   }
 
@@ -93,11 +103,11 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
           }
         },
         onCancelled: () {
-          logger.d("Music file upload cancelled");
+          logger.d("Jingle file upload cancelled");
         },
       );
     } catch (e) {
-      logger.e("Error during music file upload: $e");
+      logger.e("Error during jingle file upload: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -109,17 +119,19 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
     }
   }
 
-  Future<void> _showMusicManager() async {
+  Future<void> _showJingleManager() async {
     try {
       final Directory appSupportDir = await getApplicationCacheDirectory();
-      final Directory musicDir = Directory('${appSupportDir.path}/Music');
+      final Directory jingleDir = Directory(
+        '${appSupportDir.path}/${widget.directoryName}',
+      );
 
       // Create directory if it doesn't exist
-      if (!await musicDir.exists()) {
-        await musicDir.create(recursive: true);
+      if (!await jingleDir.exists()) {
+        await jingleDir.create(recursive: true);
       }
 
-      final files = musicDir
+      final files = jingleDir
           .listSync()
           .where(
             (file) =>
@@ -137,7 +149,7 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Music Manager'),
+            title: Text('${widget.directoryName} Manager'),
             content: SizedBox(
               width: double.maxFinite,
               height: 400,
@@ -150,10 +162,10 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                       onPressed: () async {
                         Navigator.of(context).pop(); // Close dialog
                         await _handleUpload();
-                        _showMusicManager(); // Reopen to show new files
+                        _showJingleManager(); // Reopen to show new files
                       },
                       icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Music Files'),
+                      label: const Text('Upload Files'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(
                           context,
@@ -174,13 +186,13 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.library_music,
+                                  Icons.folder_open,
                                   size: 64,
                                   color: Theme.of(context).colorScheme.outline,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No music files found',
+                                  'No jingle files found',
                                   style: TextStyle(
                                     color: Theme.of(
                                       context,
@@ -190,7 +202,7 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Tap "Upload Music Files" to add some',
+                                  'Tap "Upload Files" to add some',
                                   style: TextStyle(
                                     color: Theme.of(
                                       context,
@@ -220,7 +232,7 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
-                                      Icons.library_music,
+                                      Icons.music_note,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.onSecondaryContainer,
@@ -247,9 +259,7 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                                       final shouldDelete = await showDialog<bool>(
                                         context: context,
                                         builder: (context) => AlertDialog(
-                                          title: const Text(
-                                            'Delete Music File',
-                                          ),
+                                          title: const Text('Delete File'),
                                           content: Text(
                                             'Are you sure you want to delete "$fileName"?',
                                           ),
@@ -277,13 +287,13 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
 
                                       if (shouldDelete == true) {
                                         await file.delete();
-                                        final refreshNotifier = ref.read(
-                                          playlistRefreshProvider.notifier,
-                                        );
-                                        refreshNotifier.state =
-                                            refreshNotifier.state + 1;
+                                        ref
+                                            .read(
+                                              jingleManagerProvider.notifier,
+                                            )
+                                            .reinitialize();
                                         Navigator.of(context).pop();
-                                        _showMusicManager(); // Refresh the dialog
+                                        _showJingleManager(); // Refresh the dialog
                                       }
                                     },
                                   ),
@@ -305,11 +315,11 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
         );
       }
     } catch (e) {
-      logger.e("Error showing music manager: $e");
+      logger.e("Error showing jingle manager: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading music manager: $e'),
+            content: Text('Error loading jingle manager: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -317,46 +327,20 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
     }
   }
 
-  Future<int> _getMusicFileCount() async {
-    try {
-      final Directory appSupportDir = await getApplicationCacheDirectory();
-      final Directory musicDir = Directory('${appSupportDir.path}/Music');
-
-      if (!await musicDir.exists()) {
-        return 0;
-      }
-
-      final files = musicDir
-          .listSync()
-          .where(
-            (file) =>
-                file is File &&
-                (file.path.toLowerCase().endsWith('.mp3') ||
-                    file.path.toLowerCase().endsWith('.flac') ||
-                    file.path.toLowerCase().endsWith('.ogg') ||
-                    file.path.toLowerCase().endsWith('.wav') ||
-                    file.path.toLowerCase().endsWith('.m4a')),
-          )
-          .length;
-
-      return files;
-    } catch (e) {
-      logger.e("Error counting music files: $e");
-      return 0;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<int>(
-      future: _getMusicFileCount(),
-      builder: (context, snapshot) {
-        final fileCount = snapshot.data ?? 0;
+    final jingleManagerAsync = ref.watch(jingleManagerProvider);
+
+    return jingleManagerAsync.when(
+      data: (jingleManager) {
+        final jingleCount = jingleManager.audioManager.audioInstances
+            .where((element) => element.audioCategory == widget.audioCategory)
+            .length;
 
         return LargeButton(
-          primaryText: "Music Player",
-          secondaryText: "($fileCount files)",
-          onTap: _showMusicManager,
+          primaryText: widget.directoryName,
+          secondaryText: "($jingleCount files)",
+          onTap: _showJingleManager,
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -364,8 +348,26 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
           ),
         );
       },
+      loading: () => LargeButton(
+        primaryText: widget.directoryName,
+        secondaryText: "Loading...",
+        onTap: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+          fixedSize: const Size.fromHeight(100),
+        ),
+      ),
+      error: (error, stack) => LargeButton(
+        primaryText: widget.directoryName,
+        secondaryText: "Error",
+        onTap: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+          fixedSize: const Size.fromHeight(100),
+        ),
+      ),
     );
   }
 }
-
-// Contains AI-generated edits.

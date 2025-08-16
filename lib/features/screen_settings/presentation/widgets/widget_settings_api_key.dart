@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/providers/config_providers.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsApiProductKey extends ConsumerStatefulWidget {
@@ -114,6 +115,8 @@ class _SettingsApiProductKeyState extends ConsumerState<SettingsApiProductKey> {
                   if (_debounce?.isActive ?? false) _debounce?.cancel();
                   _debounce = Timer(const Duration(milliseconds: 1000), () {
                     _settingsBox.apiProductKey = text;
+                    // Update the reactive provider
+                    ref.read(apiProductKeyProvider.notifier).updateApiKey(text);
                     _showRestartMessage(context);
                     setState(() {});
                   });
@@ -144,6 +147,10 @@ class _SettingsApiProductKeyState extends ConsumerState<SettingsApiProductKey> {
           ElevatedButton(
             onPressed: () {
               _settingsBox.apiProductKey = _ctrlProductKey.text;
+              // Update the reactive provider
+              ref
+                  .read(apiProductKeyProvider.notifier)
+                  .updateApiKey(_ctrlProductKey.text);
               Navigator.of(context).pop();
               _showRestartMessage(context);
               setState(() {});

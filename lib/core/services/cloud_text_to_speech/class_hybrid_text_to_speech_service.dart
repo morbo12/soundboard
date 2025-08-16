@@ -45,6 +45,11 @@ class HybridTextToSpeechService {
     String? voice,
   }) async {
     final mode = ref.read(ttsServiceModeProvider);
+    final settings = SettingsBox();
+
+    logger.i(
+      "TTS Mode: $mode, API Product Key: ${settings.apiProductKey.isEmpty ? 'NOT SET' : 'CONFIGURED'}",
+    );
 
     switch (mode) {
       case TtsServiceMode.soundboardApi:
@@ -78,15 +83,27 @@ class HybridTextToSpeechService {
         );
         return audioSuccessMicrosoft;
       } else {
-        logger.e("Failed to generate speech using Soundboard API");
-        throw Exception("Failed to generate speech using Soundboard API");
+        logger.e(
+          "Failed to generate speech using Soundboard API - null response",
+        );
+        throw Exception(
+          "Failed to generate speech using Soundboard API - null response",
+        );
       }
     } catch (e, stackTrace) {
       logger.e("Error in Soundboard API TTS: $e", e, stackTrace);
 
-      // Fallback to Azure if API fails
-      logger.w("Falling back to Azure TTS");
-      return await _getAzureDirectTts(text: text, voice: voice);
+      // Don't fallback to Azure - instead provide helpful error message
+      final settings = SettingsBox();
+      if (settings.apiProductKey.isEmpty) {
+        throw Exception(
+          "Soundboard API failed and no API product key configured. Please configure API settings or switch to Azure Direct mode.",
+        );
+      } else {
+        throw Exception(
+          "Soundboard API authentication failed: $e. Check API settings and try again.",
+        );
+      }
     }
   }
 
