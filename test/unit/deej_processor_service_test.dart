@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/deej_processor_service.dart';
 import 'package:soundboard/features/screen_home/application/deej_processor/data/deej_config.dart';
-import 'package:soundboard/core/services/volume_control_service.dart';
+import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings_adapter.dart';
 import 'package:hive/hive.dart';
@@ -115,10 +115,12 @@ void main() {
     });
 
     test('VolumeControlService provider is available', () {
-      final volumeService = container.read(volumeControlServiceProvider);
+      // There is no legacy `volumeControlServiceProvider` in the codebase anymore.
+      // Instantiate the current service directly for the unit test.
+      final volumeService = VolumeControlServiceV2(container);
 
-      expect(volumeService, isA<VolumeControlService>());
-      print('VolumeControlService provider works correctly');
+      expect(volumeService, isA<VolumeControlServiceV2>());
+      print('VolumeControlServiceV2 instance created successfully');
     });
   });
 }

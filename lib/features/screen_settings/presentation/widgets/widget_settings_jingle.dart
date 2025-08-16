@@ -9,7 +9,7 @@ class JingleSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         Row(
           children: [
@@ -19,14 +19,14 @@ class JingleSettings extends StatelessWidget {
                 audioCategory: AudioCategory.genericJingle,
               ),
             ),
-            const Gap(5),
+            Gap(5),
             Expanded(
               child: JingleManagementButton(
                 directoryName: "GoalJingles",
                 audioCategory: AudioCategory.goalJingle,
               ),
             ),
-            const Gap(5),
+            Gap(5),
             Expanded(
               child: JingleManagementButton(
                 directoryName: "ClapJingles",
@@ -35,7 +35,7 @@ class JingleSettings extends StatelessWidget {
             ),
           ],
         ),
-        const Gap(5),
+        Gap(5),
         Row(
           children: [
             Expanded(
@@ -44,18 +44,24 @@ class JingleSettings extends StatelessWidget {
                 audioCategory: AudioCategory.specialJingle,
               ),
             ),
-            const Gap(5),
+            Gap(5),
             Expanded(
               child: JingleManagementButton(
                 directoryName: "GoalHorn",
                 audioCategory: AudioCategory.goalHorn,
               ),
             ),
-            const Gap(5),
-            const Expanded(child: SizedBox()), // Empty space for alignment
+            Gap(5),
+            Gap(5),
+            Expanded(
+              child: JingleManagementButton(
+                directoryName: "PenaltyJingles",
+                audioCategory: AudioCategory.penaltyJingle,
+              ),
+            ),
           ],
         ),
-        const Gap(10),
+        Gap(10),
       ],
     );
   }

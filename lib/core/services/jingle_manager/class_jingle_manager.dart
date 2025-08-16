@@ -20,6 +20,7 @@ class JingleDirectories {
   static const String generic = "GenericJingles";
   static const String goal = "GoalJingles";
   static const String clap = "ClapJingles";
+  static const String penalty = "PenaltyJingles";
   static const String special = "SpecialJingles";
   static const String goalHorn = "GoalHorn";
 }
@@ -28,6 +29,7 @@ class JingleManager {
   late Directory genericJinglesDir;
   late Directory goalJinglesDir;
   late Directory clapJinglesDir;
+  late Directory penaltyJinglesDir;
   late Directory specialJinglesDir;
   late Directory goalHornDir;
   List<AudioFile> audioFiles = [];
@@ -140,6 +142,9 @@ class JingleManager {
         "GenericJingles",
       );
       goalJinglesDir = await fileSystemHelper.createDirectory("GoalJingles");
+      penaltyJinglesDir = await fileSystemHelper.createDirectory(
+        "PenaltyJingles",
+      );
       clapJinglesDir = await fileSystemHelper.createDirectory("ClapJingles");
       specialJinglesDir = await fileSystemHelper.createDirectory(
         "SpecialJingles",
@@ -203,6 +208,8 @@ class JingleManager {
                   targetDir = goalHornDir;
                   break;
                 case 'penalty':
+                  targetDir = penaltyJinglesDir;
+                  break;
                 case 'timeout':
                 case 'powerup':
                 case '1min':
@@ -254,8 +261,10 @@ class JingleManager {
           case 'goalhorn':
             targetDir = goalHornDir;
             break;
-          // Special effects go into SpecialJingles
           case 'penalty':
+            targetDir = penaltyJinglesDir;
+            break;
+          // Special effects go into SpecialJingles
           case 'timeout':
           case 'powerup':
           case '1min':
@@ -302,6 +311,10 @@ class JingleManager {
           'category': AudioCategory.genericJingle,
         },
         {'directory': goalJinglesDir, 'category': AudioCategory.goalJingle},
+        {
+          'directory': penaltyJinglesDir,
+          'category': AudioCategory.penaltyJingle,
+        },
         {'directory': clapJinglesDir, 'category': AudioCategory.clapJingle},
         {
           'directory': specialJinglesDir,

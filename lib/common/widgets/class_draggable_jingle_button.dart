@@ -65,6 +65,7 @@ class DraggableJingleButton extends ConsumerWidget {
     switch (category) {
       case AudioCategory.specialJingle:
       case AudioCategory.goalHorn:
+      case AudioCategory.penaltyJingle:
         return baseStyle.copyWith(
           backgroundColor: WidgetStatePropertyAll(
             Color.alphaBlend(

@@ -31,9 +31,9 @@ class DefaultJingleAssignments {
       'treeMinFile.flac', // Example specific file
     );
     assignments['2_2'] = _createSpecificFile(
-      AudioCategory.specialJingle,
-      'PENALTY',
-      'penaltyFile.mp3', // Example specific file
+      AudioCategory.penaltyJingle,
+      'UTVISNING',
+      'eu.fbtools - En stund på kanten.flac', // Example specific file
     );
     // Button 3_3 left empty for user customization
     assignments['3_0'] = _createSpecificFile(
@@ -43,12 +43,12 @@ class DefaultJingleAssignments {
     );
     assignments['3_1'] = _createSpecificFile(
       AudioCategory.specialJingle,
-      'ONE MIN',
+      '1 MIN',
       'eu.fbtools - oneMinFile.flac', // Example specific file
     );
     assignments['3_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
-      'THREE MIN',
+      '3 MIN',
       'eu.fbtools - threeMinFile.flac', // Example specific file
     );
     // Button 4_3 left empty for user customization
