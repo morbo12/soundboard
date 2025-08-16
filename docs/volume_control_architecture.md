@@ -32,6 +32,8 @@ graph TB
         UI_P1[🎚️ P1 Slider<br/>UI Slider 1]
         UI_P2[🎚️ P2 Slider<br/>UI Slider 2]
         UI_P3[🎚️ P3 Slider<br/>UI Slider 3]
+        UI_C1[🎚️ AudioPlayer C1<br/>UI Slider 4]
+        UI_C2[🎚️ AudioPlayer C2<br/>UI Slider 5]
     end
 
     %% State Management
@@ -40,6 +42,8 @@ graph TB
         P1_VOL[📊 P1 Volume Provider]
         P2_VOL[📊 P2 Volume Provider]
         P3_VOL[📊 P3 Volume Provider]
+        C1_VOL[📊 C1 Volume Provider]
+        C2_VOL[📊 C2 Volume Provider]
     end
 
     %% Windows Audio
@@ -49,6 +53,13 @@ graph TB
         WIN_DISCORD[💬 Discord Process]
         WIN_SPOTIFY[🎵 Spotify Process]
         WIN_OTHER[📱 Other Processes]
+    end
+
+    %% AudioPlayer System
+    subgraph "AudioPlayer System"
+        AP_C1[🎵 AudioPlayer Channel 1]
+        AP_C2[🎵 AudioPlayer Channel 2]
+        AUDIO_MGR[⚙️ Audio Manager]
     end
 
     %% Configuration
@@ -67,13 +78,18 @@ graph TB
     UI_P1 --> VOLUME_SVC
     UI_P2 --> VOLUME_SVC
     UI_P3 --> VOLUME_SVC
+    UI_C1 --> VOLUME_SVC
+    UI_C2 --> VOLUME_SVC
 
     %% Connections - Core Logic
     VOLUME_SVC --> MAIN_VOL
     VOLUME_SVC --> P1_VOL
     VOLUME_SVC --> P2_VOL
     VOLUME_SVC --> P3_VOL
+    VOLUME_SVC --> C1_VOL
+    VOLUME_SVC --> C2_VOL
     VOLUME_SVC --> MIXER_MGR
+    VOLUME_SVC --> AUDIO_MGR
     CONN_STATUS --> VOLUME_SVC
     MAPPINGS --> VOLUME_SVC
 
@@ -84,11 +100,19 @@ graph TB
     MIXER_MGR --> WIN_SPOTIFY
     MIXER_MGR --> WIN_OTHER
 
+    %% Connections - AudioPlayer Output
+    AUDIO_MGR --> AP_C1
+    AUDIO_MGR --> AP_C2
+    C1_VOL --> AUDIO_MGR
+    C2_VOL --> AUDIO_MGR
+
     %% Connections - UI Updates
     MAIN_VOL --> UI_MASTER
     P1_VOL --> UI_P1
     P2_VOL --> UI_P2
     P3_VOL --> UI_P3
+    C1_VOL --> UI_C1
+    C2_VOL --> UI_C2
 
     %% Styling
     classDef hardware fill:#ff9999,stroke:#ff0000,stroke-width:2px
@@ -99,10 +123,11 @@ graph TB
     classDef config fill:#ffff99,stroke:#cccc00,stroke-width:2px
 
     class DEEJ,SERIAL hardware
-    class UI_MASTER,UI_P1,UI_P2,UI_P3 ui
-    class VOLUME_SVC,MIXER_MGR,SERIAL_MGR service
-    class MAIN_VOL,P1_VOL,P2_VOL,P3_VOL,CONN_STATUS provider
+    class UI_MASTER,UI_P1,UI_P2,UI_P3,UI_C1,UI_C2 ui
+    class VOLUME_SVC,MIXER_MGR,SERIAL_MGR,AUDIO_MGR service
+    class MAIN_VOL,P1_VOL,P2_VOL,P3_VOL,C1_VOL,C2_VOL,CONN_STATUS provider
     class WIN_MASTER,WIN_CHROME,WIN_DISCORD,WIN_SPOTIFY,WIN_OTHER windows
+    class AP_C1,AP_C2 windows
     class MAPPINGS config
 ```
 
@@ -118,6 +143,10 @@ sequenceDiagram
     participant P as Providers
     participant M as Mixer Manager
     participant W as Windows Audio
+    participant AM as Audio Manager
+    participant AP as AudioPlayer
+
+    Note over D,AP: Scenario 1: Deej controls Windows Process
 
     D->>S: Slider values (0-1023)
     S->>S: Convert to percentage
@@ -126,6 +155,15 @@ sequenceDiagram
     VS->>M: Set process volume
     M->>W: Update audio levels
     P->>UI: Update slider position
+
+    Note over D,AP: Scenario 2: Deej controls AudioPlayer Channel
+
+    D->>S: Slider movement for C1/C2
+    S->>VS: updateVolumeFromDeej(sliderIdx, percent)
+    VS->>P: Update C1/C2 Provider
+    VS->>AM: updateChannelVolume(channel, volume)
+    AM->>AP: setVolume(volume) if playing
+    P->>UI: Update C1/C2 slider position
 ```
 
 ### When Deej is Disconnected
@@ -138,6 +176,10 @@ sequenceDiagram
     participant P as Providers
     participant M as Mixer Manager
     participant W as Windows Audio
+    participant AM as Audio Manager
+    participant AP as AudioPlayer
+
+    Note over UI,AP: Scenario 1: UI controls Windows Process
 
     UI->>VS: updateVolumeFromUI(uiSliderIdx, percent)
     VS->>CS: Check Deej connection
@@ -146,6 +188,15 @@ sequenceDiagram
     VS->>M: Set mapped process volumes
     VS->>M: Set master volume (if slider 0)
     M->>W: Update audio levels
+
+    Note over UI,AP: Scenario 2: AudioPlayer Channels
+
+    UI->>VS: updateVolumeFromUI(4 or 5, percent)
+    VS->>P: Update C1/C2 Provider (visualization only)
+
+    Note over AM,AP: AudioPlayer uses max volume (1.0)<br/>when Deej disconnected
+
+    AM->>AP: setVolume(1.0) when audio plays
 ```
 
 ## Component Details
@@ -165,7 +216,15 @@ UI Slider 0 (Master) → Windows Master Volume + Mapped Processes
 UI Slider 1 (P1)     → Mapped Processes (e.g., Chrome)
 UI Slider 2 (P2)     → Mapped Processes (e.g., Discord)
 UI Slider 3 (P3)     → Mapped Processes (e.g., Spotify)
+UI Slider 4 (C1)     → AudioPlayer Channel 1 (Direct Control)
+UI Slider 5 (C2)     → AudioPlayer Channel 2 (Direct Control)
 ```
+
+Note: AudioPlayer channels (C1, C2) are controlled differently:
+
+- When Deej is connected and mapped: Provider values control AudioPlayer volume
+- When Deej is disconnected: UI sliders are for visualization only, AudioPlayer uses max volume
+- AudioPlayer volumes are applied when audio starts playing, not immediately when sliders move
 
 ### Connection States
 
@@ -180,6 +239,34 @@ UI Slider 3 (P3)     → Mapped Processes (e.g., Spotify)
 - UI sliders become active controls
 - Direct system volume control enabled
 - Hardware sliders have no effect
+- AudioPlayer channels use maximum volume (1.0) when playing
+
+### AudioPlayer Channel Behavior
+
+AudioPlayer channels (C1, C2) have special handling different from Windows processes:
+
+#### When Deej Connected and Mapped ✅
+
+- Deej slider controls provider volume
+- AudioManager reads provider when audio starts
+- Volume is applied to AudioPlayer at playback time
+- UI sliders show current provider values
+
+#### When Deej Disconnected ❌
+
+- AudioPlayer channels use maximum volume (1.0)
+- UI sliders are for visualization only
+- Volume is set when audio starts playing
+- No immediate volume control like Windows processes
+
+#### Key Differences
+
+| Aspect                | Windows Processes               | AudioPlayer Channels            |
+| --------------------- | ------------------------------- | ------------------------------- |
+| **Volume Control**    | Immediate via Windows Audio API | Applied at playback start       |
+| **Deej Disconnected** | UI sliders control directly     | UI sliders visualization only   |
+| **Volume Source**     | Direct slider mapping           | Provider-driven when mapped     |
+| **Timing**            | Real-time updates               | Set during audio initialization |
 
 ## File Structure
 
@@ -188,26 +275,36 @@ lib/
 ├── core/
 │   ├── providers/
 │   │   ├── deej_providers.dart          # Connection status
-│   │   └── volume_providers.dart        # Volume state
-│   └── services/
-│       └── volume_control_service.dart  # Central logic
+│   │   └── volume_providers.dart        # Volume state (all channels)
+│   ├── services/
+│   │   ├── volume_control_service_v2.dart  # New volume control logic
+│   │   └── _deprecated_volume_control_service.dart  # Legacy service
+│   └── models/
+│       └── volume_system_config.dart    # Configuration models
 ├── features/
 │   ├── screen_home/
 │   │   ├── application/
 │   │   │   ├── deej_processor/
 │   │   │   │   └── class_serial_IO.dart # Hardware interface
-│   │   │   └── mixer_manager/
-│   │   │       └── mixer_manager.dart   # Windows Audio API
+│   │   │   ├── mixer_manager/
+│   │   │   │   └── mixer_manager.dart   # Windows Audio API
+│   │   │   └── audioplayer/
+│   │   │       └── data/
+│   │   │           └── class_audiomanager.dart # AudioPlayer control
 │   │   └── presentation/
-│   │       └── volume/
+│   │       ├── volume/
+│   │       │   └── classes/
+│   │       │       └── class_column_volume.dart # UI sliders
+│   │       └── board/
 │   │           └── classes/
-│   │               └── class_column_volume.dart # UI sliders
+│   │               └── class_horizontal_volume_control.dart # C1/C2 sliders
 │   └── screen_settings/
 │       ├── data/
-│       │   └── class_slider_mappings.dart       # Configuration model
+│       │   └── class_slider_mappings.dart       # Legacy configuration model
 │       └── presentation/
 │           └── widgets/
-│               └── widget_settings_deej_mappings.dart # Settings UI
+│               ├── widget_settings_deej_mappings.dart # Legacy settings UI
+│               └── volume_system_config_widget.dart # New configuration UI
 ```
 
 ## Benefits
@@ -285,4 +382,16 @@ flowchart TD
 - ✅ **Eliminates "No running processes found matching master" messages**
 - ✅ **Maintains backward compatibility** for other process mappings
 
-// Contains AI-generated edits.
+## Current Implementation Status
+
+The system now uses **VolumeControlServiceV2** which provides:
+
+1. **Unified AudioPlayer Channel Control**: Both C1 and C2 channels integrated into Deej mapping system
+2. **New Configuration Model**: `VolumeSystemConfig` with `DeejTarget` enum supporting AudioPlayer channels
+3. **Provider-Driven AudioPlayer Volumes**: When Deej is connected and channels are mapped, AudioPlayer reads from providers
+4. **Fallback Behavior**: When Deej is disconnected, AudioPlayer channels use maximum volume
+5. **Proper Separation**: Windows processes and AudioPlayer channels handled through different control paths
+
+The legacy `volume_control_service.dart` and `SliderMapping` classes are deprecated in favor of the new configuration system.
+
+_Contains AI-generated edits._

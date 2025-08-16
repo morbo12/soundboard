@@ -1,6 +1,6 @@
 # Volume Control Decision Logic
 
-## Main Decision Flow
+## Main Decision Flow (Current Implementation)
 
 ```mermaid
 flowchart TD
@@ -9,45 +9,54 @@ flowchart TD
     %% Hardware Path
     SOURCE -->|Hardware Slider| DEEJ[Deej SerialIO Handler]
     DEEJ --> PARSE[Parse Serial Data<br/>Convert to Percentage]
-    PARSE --> GET_MAPPING[Get Deej→UI Mapping<br/>from Settings]
-    GET_MAPPING --> UPDATE_UI[Update UI Provider]
-    UPDATE_UI --> CHECK_PROCESS{Process Mapped?}
-    CHECK_PROCESS -->|Yes| UPDATE_PROCESS[Update Windows<br/>Process Volume]
-    CHECK_PROCESS -->|No| END_HW[End Hardware Flow]
+    PARSE --> GET_MAPPING[Get DeejHardwareMapping<br/>by deejSliderIdx]
+    GET_MAPPING --> CHECK_TARGET{DeejTarget Type?}
+
+    %% Deej Target Handling
+    CHECK_TARGET -->|master| UPDATE_MASTER[Update Windows<br/>Master Volume]
+    CHECK_TARGET -->|externalProcess| UPDATE_PROCESS[Update Windows<br/>Process Volume]
+    CHECK_TARGET -->|audioPlayerC1| UPDATE_C1[Update C1 Provider<br/>+ AudioManager]
+    CHECK_TARGET -->|audioPlayerC2| UPDATE_C2[Update C2 Provider<br/>+ AudioManager]
+
+    UPDATE_MASTER --> END_HW[End Hardware Flow]
     UPDATE_PROCESS --> END_HW
+    UPDATE_C1 --> END_HW
+    UPDATE_C2 --> END_HW
 
     %% UI Path
     SOURCE -->|UI Slider| UI_HANDLER[UI Slider Callback]
     UI_HANDLER --> CHECK_CONNECTION{Is Deej Connected?}
 
-    %% Connected - UI follows hardware
-    CHECK_CONNECTION -->|Yes| UI_CONNECTED[UI Follows Hardware<br/>No Direct Control]
-    UI_CONNECTED --> UPDATE_UI_ONLY[Update UI Provider Only]
-    UPDATE_UI_ONLY --> END_UI_CONNECTED[End - Hardware Controls]
+    %% Connected - UI updates providers only
+    CHECK_CONNECTION -->|Yes| UI_CONNECTED[Update Provider Only<br/>for Visual Feedback]
+    UI_CONNECTED --> END_UI_CONNECTED[End - Hardware Controls]
 
     %% Disconnected - UI controls system
     CHECK_CONNECTION -->|No| UI_DISCONNECTED[UI Controls System]
-    UI_DISCONNECTED --> UPDATE_UI_PROV[Update UI Provider]
-    UPDATE_UI_PROV --> GET_UI_MAPPINGS[Get UI Slider Mappings<br/>from Settings]
-    GET_UI_MAPPINGS --> CHECK_MASTER{Is Master Slider?}
+    UI_DISCONNECTED --> CHECK_UI_TYPE{UI Slider Type?}
 
-    %% Master slider handling
-    CHECK_MASTER -->|Yes - Slider 0| UPDATE_MASTER[Update Windows<br/>Master Volume]
-    UPDATE_MASTER --> CHECK_MASTER_PROCESSES{Master Has<br/>Process Mappings?}
-    CHECK_MASTER_PROCESSES -->|Yes| UPDATE_MASTER_PROC[Update Mapped<br/>Processes Too]
-    CHECK_MASTER_PROCESSES -->|No| END_MASTER[End Master Flow]
-    UPDATE_MASTER_PROC --> END_MASTER
+    CHECK_UI_TYPE -->|Master (0)| UPDATE_MASTER_UI[Update Windows<br/>Master Volume]
+    CHECK_UI_TYPE -->|AudioPlayer (4,5)| UPDATE_AP_VIZ[Update Provider<br/>Visualization Only]
+    CHECK_UI_TYPE -->|Other (1-3)| END_OTHER[No Action<br/>Legacy Sliders]
 
-    %% Regular slider handling
-    CHECK_MASTER -->|No - Slider 1,2,3| CHECK_UI_PROCESSES{UI Slider Has<br/>Process Mappings?}
-    CHECK_UI_PROCESSES -->|Yes| UPDATE_UI_PROC[Update All Mapped<br/>Processes]
-    CHECK_UI_PROCESSES -->|No| END_UI_NO_PROC[End - No Process Control]
-    UPDATE_UI_PROC --> END_UI_PROC[End UI Process Flow]
+    UPDATE_MASTER_UI --> END_UI_MASTER[End Master UI Flow]
+    UPDATE_AP_VIZ --> END_AP_VIZ[AudioPlayer uses<br/>max volume when playing]
+    END_OTHER --> END_UI_OTHER[End Other UI Flow]
 
     %% Styling
     classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef hardware fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef ui fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef audioplayer fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class START,END_HW,END_UI_CONNECTED,END_UI_MASTER,END_AP_VIZ,END_UI_OTHER startEnd
+    class SOURCE,CHECK_CONNECTION,CHECK_TARGET,CHECK_UI_TYPE decision
+    class DEEJ,PARSE,GET_MAPPING hardware
+    class UI_HANDLER,UI_CONNECTED,UI_DISCONNECTED ui
+    class UPDATE_C1,UPDATE_C2,UPDATE_AP_VIZ audioplayer
+```
+
     classDef ui fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
     classDef system fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 
@@ -56,7 +65,8 @@ flowchart TD
     class DEEJ,PARSE,GET_MAPPING hardware
     class UI_HANDLER,UI_CONNECTED,UI_DISCONNECTED,UPDATE_UI_ONLY,UPDATE_UI_PROV,GET_UI_MAPPINGS ui
     class UPDATE_UI,UPDATE_PROCESS,UPDATE_MASTER,UPDATE_MASTER_PROC,UPDATE_UI_PROC system
-```
+
+````
 
 ## State Management Flow
 
@@ -91,7 +101,7 @@ stateDiagram-v2
 
     DeejConnected --> [*] : App shutdown
     DeejDisconnected --> [*] : App shutdown
-```
+````
 
 ## Component Interaction Matrix
 
@@ -190,11 +200,27 @@ void _debounceVolumeUpdate(String sliderId, double value) {
 - UI → System audio flow
 - Mapping configuration persistence
 - Connection loss recovery
+- AudioPlayer volume application timing
 
 ### Manual Testing Scenarios
 
 1. **Connect/Disconnect Hardware**: Verify seamless transition
 2. **Process Mapping**: Test different app combinations
-3. **Error Recovery**: Simulate connection failures
-4. **Performance**: Test rapid slider movements
-5. **Configuration**: Verify settings persistence
+3. **AudioPlayer Control**: Test C1/C2 volume behavior with/without Deej
+4. **Error Recovery**: Simulate connection failures
+5. **Performance**: Test rapid slider movements
+6. **Configuration**: Verify settings persistence with new DeejTarget system
+
+## Current Implementation Summary
+
+The volume control system has evolved to support:
+
+- **Type-Safe Configuration**: `DeejTarget` enum replaces integer-based mappings
+- **AudioPlayer Integration**: C1/C2 channels properly integrated with Deej system
+- **Service Architecture**: `VolumeControlServiceV2` provides cleaner separation
+- **Provider-Driven Volumes**: AudioPlayer respects provider state when Deej connected
+- **Fallback Behavior**: Clear behavior when Deej disconnected (max volume for AudioPlayer)
+
+The legacy system using `SliderMapping` and integer indices is deprecated but still functional for backward compatibility.
+
+_Contains AI-generated edits._
