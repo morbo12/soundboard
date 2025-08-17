@@ -121,9 +121,10 @@ class DraggableJingleButton extends ConsumerWidget {
     );
     final displayText = audioFile?.displayName ?? 'Empty';
 
-    // Add a prefix to indicate category-only mode
+    // Add a suffix to indicate category-only mode
+    // Handle multi-line display names properly
     final buttonText = audioFile?.isCategoryOnly ?? false
-        ? '${displayText} - (Random)'
+        ? '${displayText}\n(Random)'
         : displayText;
 
     return DragTarget<int>(

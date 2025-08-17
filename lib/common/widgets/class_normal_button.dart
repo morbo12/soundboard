@@ -76,7 +76,14 @@ class NormalButtonState extends State<NormalButton> {
       style: buttonStyle,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          List<String> parts = widget.primaryText.split(" - ");
+          // Support both " - " and "\n" for splitting text into dual lines
+          List<String> parts;
+          if (widget.primaryText.contains('\n')) {
+            parts = widget.primaryText.split('\n');
+          } else {
+            parts = widget.primaryText.split(" - ");
+          }
+
           return FittedBox(
             fit: BoxFit.scaleDown,
             child: Container(
@@ -88,6 +95,7 @@ class NormalButtonState extends State<NormalButton> {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // First line (main text)
                         AutoSizeText(
                           parts[0].trim(),
                           textAlign: TextAlign.center,
@@ -99,11 +107,12 @@ class NormalButtonState extends State<NormalButton> {
                           ),
                         ),
                         const SizedBox(height: 4),
+                        // Second line (could be subtitle or "(Random)")
                         AutoSizeText(
                           parts[1].trim(),
                           textAlign: TextAlign.center,
                           minFontSize: 12,
-                          maxFontSize: 22,
+                          maxFontSize: parts[1].trim() == '(Random)' ? 18 : 22,
                           maxLines: 1,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurface.withAlpha(179),
@@ -126,3 +135,5 @@ class NormalButtonState extends State<NormalButton> {
     );
   }
 }
+
+// Contains AI-generated edits.
