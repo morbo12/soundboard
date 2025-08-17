@@ -520,10 +520,12 @@ class AudioManager {
         logger.d(
           "[playAudioFile] Resolving filename ${audiofile.filePath} in category ${audiofile.audioCategory}",
         );
-        await playSpecificFile(
+        await playSpecificFileWithTracking(
           audiofile.audioCategory,
           audiofile.filePath,
           ref,
+          originalAudioFile:
+              audiofile, // Track the original button for progress
           shortFade: shortFade,
         );
         return;
@@ -699,6 +701,91 @@ class AudioManager {
       );
     } catch (e) {
       logger.d("Error playing specific file: $e");
+    }
+  }
+
+  /// Plays a specific file from a category by matching the filename
+  /// while preserving progress tracking for the original button's AudioFile
+  Future<void> playSpecificFileWithTracking(
+    AudioCategory category,
+    String specificFileName,
+    WidgetRef ref, {
+    required AudioFile originalAudioFile,
+    bool shortFade = true,
+  }) async {
+    await _ensureInitialized(ref);
+
+    try {
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
+
+      if (categoryInstances.isEmpty) {
+        logger.w(
+          "[playSpecificFileWithTracking] No audio files found for category $category",
+        );
+        return;
+      }
+
+      // Try to find exact match first
+      AudioFile? targetFile;
+      try {
+        targetFile = categoryInstances.firstWhere(
+          (instance) => instance.filePath.contains(specificFileName),
+        );
+      } catch (e) {
+        // No exact match found, try partial matching
+        final partialMatch = categoryInstances
+            .where(
+              (instance) =>
+                  instance.filePath.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ) ||
+                  instance.displayName.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ),
+            )
+            .toList();
+
+        if (partialMatch.isNotEmpty) {
+          targetFile = partialMatch.first;
+        }
+      }
+
+      // If no match found at all, don't play anything
+      if (targetFile == null) {
+        logger.w(
+          "[playSpecificFileWithTracking] No match found for filename '$specificFileName' in category $category",
+        );
+        return;
+      }
+
+      final channel = _getChannelForAudioType(category: category);
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d(
+        "[playSpecificFileWithTracking] Playing ${targetFile.filePath} (requested: $specificFileName) on channel ${channel.name}",
+      );
+
+      // Update progress providers using the original button's AudioFile for progress tracking
+      // This ensures the progress bar and play indicator show correctly on the button
+      ref.read(currentPlayingJingleProvider.notifier).state = originalAudioFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+
+      logger.d(
+        "[playSpecificFileWithTracking] Updated progress providers for: ${originalAudioFile.displayName}",
+      );
+
+      await _playAudioFile(
+        ref,
+        channel,
+        targetFile.filePath,
+        fadeDuration: fadeDuration,
+        audioFile: originalAudioFile, // Use original for tracking
+      );
+    } catch (e) {
+      logger.d("Error playing specific file with tracking: $e");
     }
   }
 
