@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Manual lineup entry mode, for matches that are not in IBIS
 - Full music player and a mini music player (moved to bottom bar)
 - Default jingles and jingle assets shipped with the app (includes AI-generated jingles)
 - Soundboard Backend API for TTS and AI-powered sentence generation (new AiSentenceService)
