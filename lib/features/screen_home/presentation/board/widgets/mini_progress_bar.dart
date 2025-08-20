@@ -26,7 +26,7 @@ class MiniProgressBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Only show progress if this jingle is currently playing
     final isPlaying = ref.watch(isJinglePlayingProvider(audioFile));
-    final currentJingle = ref.watch(currentPlayingJingleProvider);
+    ref.watch(currentPlayingJingleProvider);
     final currentChannel = ref.watch(currentJingleChannelProvider);
 
     // Debug logging with logger instead of print

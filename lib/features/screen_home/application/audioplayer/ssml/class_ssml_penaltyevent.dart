@@ -105,24 +105,6 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
     return "${penaltyInfo['time']} för ${penaltyInfo['name']}";
   }
 
-  String _addLang(String text, {String lang = 'sv-SE'}) {
-    return wrapWithLang(
-      text,
-      lang: lang,
-    ).replaceAll(RegExp(r'\s+'), ' ').trim();
-  }
-
-  String _addProsodyVariation(String text) {
-    final rates = ['slow', 'medium', 'fast'];
-    final pitches = ['low', 'medium', 'high'];
-
-    return wrapWithProsody(
-      text,
-      rate: rates[_random.nextInt(rates.length)],
-      pitch: pitches[_random.nextInt(pitches.length)],
-    );
-  }
-
   String _addRandomPauses(String text) {
     if (!text.contains('.')) return text;
 
