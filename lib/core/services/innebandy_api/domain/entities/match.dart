@@ -5,6 +5,7 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.da
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_intermediate.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_result.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -346,7 +347,7 @@ class IbyMatch {
 
   /// Generates complete SSML for the match including intro, away team, home team, and referee info
   String generateSsml(WidgetRef ref) {
-    final lineup = ref.read(lineupProvider);
+    final lineup = ref.read(effectiveLineupProvider);
     String ssml;
 
     // Check if we have valid lineup data (not the default empty state)
@@ -402,7 +403,7 @@ Välkomna! Testtext är nu slut
   }
 
   String _generateHomeTeamLineup(WidgetRef ref) {
-    final lineup = ref.read(lineupProvider);
+    final lineup = ref.read(effectiveLineupProvider);
     String ssml;
 
     // Check if we have valid lineup data
@@ -444,7 +445,7 @@ Välkomna! Testtext är nu slut
   }
 
   String _generateAwayTeamLineup(WidgetRef ref) {
-    final lineup = ref.read(lineupProvider);
+    final lineup = ref.read(effectiveLineupProvider);
     String ssml;
 
     // Check if we have valid lineup data

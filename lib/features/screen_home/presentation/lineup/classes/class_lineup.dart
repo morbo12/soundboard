@@ -5,18 +5,17 @@ import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
-import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/widgets/manual_lineup_entry_widget.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/widgets/manual_event_generator_widget.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
 // [Keep other imports...]
-
-// Add the loading state provider
-final isLoadingProvider = StateProvider<bool>((ref) => false);
 
 class Lineup extends ConsumerStatefulWidget {
   final double availableWidth;
@@ -29,133 +28,90 @@ class Lineup extends ConsumerStatefulWidget {
 }
 
 class _LineupState extends ConsumerState<Lineup> {
-  final List<String> loadingMessages = [
-    "Warming up the virtual vocal cords...",
-    "Teaching robots to sing...",
-    "Composing your audio masterpiece...",
-    "Converting text to sweet melodies...",
-    "Preparing your lineup announcement...",
-    "Tuning the digital microphone...",
-    "Getting the virtual crowd excited...",
-    "Clearing throat (beep boop)...",
-    "Loading commentary powers...",
-    "Summoning the sports announcer spirit...",
-  ];
   final Logger logger = const Logger('Lineup');
-
-  int currentMessageIndex = 0;
-  Timer? messageRotationTimer;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    messageRotationTimer?.cancel();
-    super.dispose();
-  }
-
-  void startMessageRotation() {
-    currentMessageIndex = 0;
-    messageRotationTimer?.cancel();
-    messageRotationTimer = Timer.periodic(const Duration(milliseconds: 2000), (
-      timer,
-    ) {
-      setState(() {
-        currentMessageIndex =
-            (currentMessageIndex + 1) % loadingMessages.length;
-      });
-    });
-  }
-
-  void stopMessageRotation() {
-    messageRotationTimer?.cancel();
-    messageRotationTimer = null;
-  }
 
   @override
   Widget build(BuildContext context) {
     final selectedMatch = ref.watch(selectedMatchProvider);
-    final isLoading = ref.watch(isLoadingProvider);
+    final isManualMode = ref.watch(isManualLineupModeProvider);
     final theme = Theme.of(context);
 
-    return Stack(
-      children: [
-        SizedBox(
-          width: widget.availableWidth,
-          height: widget.availableHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: SingleChildScrollView(
-                    child: _buildHeader(theme, selectedMatch),
-                  ),
-                ),
-                _buildDivider(theme),
-                Expanded(
-                  flex: 3,
-                  child: LineupData(
-                    availableWidth: widget.availableWidth,
-                    availableHeight: widget.availableHeight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (isLoading)
-          Container(
-            width: widget.availableWidth,
-            height: widget.availableHeight,
-            color: Colors.black54,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      width: widget.availableWidth,
+      height: widget.availableHeight,
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Column(
+          children: [
+            // Mode Toggle Switch
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0.0, 0.5),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
-                    child: Text(
-                      loadingMessages[currentMessageIndex],
-                      key: ValueKey<int>(currentMessageIndex),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  const Text('Manual Mode'),
+                  Switch(
+                    value: isManualMode,
+                    onChanged: (value) {
+                      ref.read(isManualLineupModeProvider.notifier).state =
+                          value;
+                    },
                   ),
                 ],
               ),
             ),
-          ),
-      ],
+            const SizedBox(height: 8),
+
+            // Only show header section in API mode (not manual mode)
+            if (!isManualMode) ...[
+              Expanded(
+                flex: 1,
+                child: SingleChildScrollView(
+                  child: _buildHeader(theme, selectedMatch),
+                ),
+              ),
+              _buildDivider(theme),
+            ],
+            Expanded(
+              flex: 3,
+              child: isManualMode
+                  ? ManualLineupEntryWidget(
+                      availableWidth: widget.availableWidth,
+                      availableHeight: widget.availableHeight * 0.6,
+                    )
+                  : LineupData(
+                      availableWidth: widget.availableWidth,
+                      availableHeight: widget.availableHeight,
+                    ),
+            ),
+
+            // Add Manual Event Generator at the bottom when in manual mode
+            if (isManualMode) ...[
+              _buildDivider(theme),
+              Expanded(
+                flex: 2,
+                child: ManualEventGeneratorWidget(
+                  availableWidth: widget.availableWidth,
+                  availableHeight: widget.availableHeight * 0.4,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildHeader(ThemeData theme, dynamic selectedMatch) {
+    final isManualMode = ref.watch(isManualLineupModeProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer,
@@ -165,22 +121,25 @@ class _LineupState extends ConsumerState<Lineup> {
       child: Column(
         children: [
           _buildPlayButton(theme, selectedMatch),
-          _buildDivider(theme),
-          const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: GoalInputWidget(team: "homeTeam")),
-              Expanded(child: GoalInputWidget(team: "awayTeam")),
-            ],
-          ),
-          _buildDivider(theme),
-          const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: PenaltyInputWidget(team: "homeTeam")),
-              Expanded(child: PenaltyInputWidget(team: "awayTeam")),
-            ],
-          ),
+          // Only show the goal/penalty inputs in API mode (not manual mode)
+          if (!isManualMode) ...[
+            _buildDivider(theme),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: GoalInputWidget(team: "homeTeam")),
+                Expanded(child: GoalInputWidget(team: "awayTeam")),
+              ],
+            ),
+            _buildDivider(theme),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: PenaltyInputWidget(team: "homeTeam")),
+                Expanded(child: PenaltyInputWidget(team: "awayTeam")),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -234,13 +193,9 @@ class _LineupState extends ConsumerState<Lineup> {
   }
 
   Future<void> _handlePlayLineup(dynamic selectedMatch) async {
-    // Show loading indicator and start message rotation
-    ref.read(isLoadingProvider.notifier).state = true;
-    startMessageRotation();
-
     try {
       // Debug: Check the lineup data before generating SSML
-      final lineupData = ref.read(lineupProvider);
+      final lineupData = ref.read(effectiveLineupProvider);
       logger.d("[_handlePlayLineup] Lineup matchId: ${lineupData.matchId}");
       logger.d(
         "[_handlePlayLineup] Home team players count: ${lineupData.homeTeamPlayers.length}",
@@ -270,9 +225,6 @@ class _LineupState extends ConsumerState<Lineup> {
       final awayTeamTTS = await textToSpeechService.getTtsNoFile(
         text: selectedMatch.awayTeamSsml(ref),
       );
-
-      stopMessageRotation();
-      ref.read(isLoadingProvider.notifier).state = false;
 
       ref.read(azCharCountProvider.notifier).state +=
           selectedMatch.generateSsml(ref).length as int;
@@ -397,12 +349,7 @@ class _LineupState extends ConsumerState<Lineup> {
       //     .playBytes(audio: speech.audio.buffer.asUint8List(), ref: ref);
     } catch (e) {
       logger.d("Error generating audio: $e");
-
       // You might want to show an error message to the user here
-    } finally {
-      // Stop message rotation and hide loading indicator
-      stopMessageRotation();
-      ref.read(isLoadingProvider.notifier).state = false;
     }
   }
 

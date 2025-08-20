@@ -9,6 +9,7 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dar
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_home/presentation/events/widgets/live_match_card.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import '../../live/widget_event.dart';
 
 part 'class_live_events.g.dart';
@@ -27,7 +28,7 @@ class MatchEventsStream extends _$MatchEventsStream {
       _streamController.close();
     });
 
-    // Only add initial empty list if not already initialized
+    // Initialize with empty list - manual events will be added in _buildEventsListView
     if (!_isInitialized) {
       _isInitialized = true;
       _streamController.add([]);
@@ -81,16 +82,16 @@ class LiveEvents extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedMatch = ref.watch(selectedMatchProvider);
+    final effectiveMatch = ref.watch(effectiveMatchProvider);
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Column(
         children: [
-          LiveMatchCard(match: selectedMatch),
+          LiveMatchCard(match: effectiveMatch),
           const SizedBox(height: 4),
           Expanded(
-            child: selectedMatch.matchId != 0
+            child: effectiveMatch.matchId != 0
                 ? _buildEventsList(context, ref)
                 : const Center(child: Text('Select a match to view events')),
           ),
@@ -114,20 +115,79 @@ class LiveEvents extends ConsumerWidget {
         );
   }
 
-  Widget _buildEventsListView(List<IbyMatchEvent> events, WidgetRef ref) {
-    if (events.isEmpty) return const Center(child: Text('No events yet'));
+  Widget _buildEventsListView(List<IbyMatchEvent> apiEvents, WidgetRef ref) {
+    // Get manual events and combine with API events
+    final manualEvents = ref.watch(manualEventsProvider);
+    final allEvents = <IbyMatchEvent>[...apiEvents, ...manualEvents];
 
-    final selectedMatch = ref.watch(selectedMatchProvider);
-    final isLive = selectedMatch.matchStatus != 4;
+    // Sort by time (latest first for live display)
+    allEvents.sort((a, b) {
+      if (a.period != b.period) return b.period.compareTo(a.period);
+      if (a.minute != b.minute) return b.minute.compareTo(a.minute);
+      return b.second.compareTo(a.second);
+    });
+
+    if (allEvents.isEmpty) {
+      final isManualMode = ref.watch(isManualLineupModeProvider);
+      return Center(
+        child: Text(
+          isManualMode
+              ? 'No events generated yet. Use the event generator below to create events.'
+              : 'No events yet',
+        ),
+      );
+    }
+
+    final effectiveMatch = ref.watch(effectiveMatchProvider);
+    final isLive = effectiveMatch.matchStatus != 4;
 
     return ListView.builder(
       controller: scrollController,
-      itemCount: events.length,
+      itemCount: allEvents.length,
       itemBuilder: (context, index) {
-        final eventIndex = isLive ? index : events.length - 1 - index;
-        return EventWidget(
-          key: ValueKey('${events[eventIndex].matchEventId}'),
-          data: events[eventIndex],
+        final eventIndex = isLive ? index : allEvents.length - 1 - index;
+        final event = allEvents[eventIndex];
+        final isManual = manualEvents.contains(event);
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+          decoration: isManual
+              ? BoxDecoration(
+                  border: Border.all(
+                    color: Colors.orange.withOpacity(0.7),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                )
+              : null,
+          child: Stack(
+            children: [
+              EventWidget(key: ValueKey('${event.matchEventId}'), data: event),
+              if (isManual)
+                Positioned(
+                  top: 2,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Text(
+                      'M',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
       },
     );

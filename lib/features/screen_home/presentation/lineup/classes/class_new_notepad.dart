@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -75,7 +76,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
       final number = int.parse(numberStr);
       if (number < 1 || number > 99) return '';
 
-      final lineup = ref.read(lineupProvider);
+      final lineup = ref.read(effectiveLineupProvider);
       final players = widget.team == "homeTeam"
           ? lineup.homeTeamPlayers
           : lineup.awayTeamPlayers;
@@ -325,7 +326,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
       final number = int.parse(numberStr);
       if (number < 1 || number > 99) return '';
 
-      final lineup = ref.read(lineupProvider);
+      final lineup = ref.read(effectiveLineupProvider);
       final players = widget.team == "homeTeam"
           ? lineup.homeTeamPlayers
           : lineup.awayTeamPlayers;

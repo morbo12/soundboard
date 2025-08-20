@@ -6,6 +6,7 @@ import 'package:soundboard/common/models/enum_goaltypes.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_color_state_notifier.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 
 class LineupData extends ConsumerWidget {
   final double availableWidth;
@@ -21,7 +22,7 @@ class LineupData extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMatch = ref.watch(selectedMatchProvider);
-    final selectedMatchLineup = ref.watch(lineupProvider);
+    final selectedMatchLineup = ref.watch(effectiveLineupProvider);
 
     if (selectedMatch.matchId == 0) {
       return const Center(child: Text("No Data"));
