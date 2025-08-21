@@ -817,6 +817,7 @@ class AudioManager {
     if (category != null) {
       switch (category) {
         case AudioCategory.specialJingle:
+        case AudioCategory.goalHorn:
           return AudioChannel.channel2;
         default:
           return AudioChannel.channel1;
