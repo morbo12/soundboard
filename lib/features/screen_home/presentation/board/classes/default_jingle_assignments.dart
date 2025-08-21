@@ -8,13 +8,21 @@ class DefaultJingleAssignments {
   static Future<Map<String, GridJingleConfig>> getDefaultAssignments() async {
     final assignments = <String, GridJingleConfig>{};
 
-    assignments['0_0'] = _createEmptyButton('AWAY TEAM');
-    assignments['0_1'] = _createEmptyButton('HOME TEAM');
+    assignments['0_0'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'Bortalag\nBakgrund',
+      'eu.fbtools - AwayTeamBackground - Jumpstart.flac',
+    );
+    assignments['0_1'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'Hemmalag\nBakgrund',
+      'eu.fbtools - HomeTeamBackground - Contradiction.flac',
+    );
 
     // Provide some example category assignments
     assignments['1_0'] = _createSpecificFile(
       AudioCategory.specialJingle,
-      'RATATA',
+      'Match Period\nStart',
       'eu.fbtools - Ratata.flac',
     );
     assignments['1_2'] = _createRandomCategory(
@@ -25,27 +33,38 @@ class DefaultJingleAssignments {
     // Users can upload their own files and assign them to these buttons
 
     // Map special effect buttons to specific files so shipped assets work OOTB
+    assignments['2_0'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'TIMEOUT\nBortalag',
+      'eu.fbtools - timeout - bortalag.flac', // Example specific file
+    );
     assignments['2_1'] = _createSpecificFile(
       AudioCategory.specialJingle,
-      'TIMEOUT',
-      'treeMinFile.flac', // Example specific file
+      'TIMEOUT\nHemmalag',
+      'eu.fbtools - timeout - hemmalag.flac', // Example specific file
     );
     assignments['2_2'] = _createSpecificFile(
       AudioCategory.penaltyJingle,
       'UTVISNING',
       'eu.fbtools - En stund på kanten.flac', // Example specific file
     );
-    // Button 3_3 left empty for user customization
-    assignments['3_0'] = _createSpecificFile(
-      AudioCategory.specialJingle,
-      'POWERUP',
-      'powerUpFile.mp3', // Example specific file
-    );
-    assignments['3_1'] = _createSpecificFile(
+    assignments['2_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
       '1 MIN',
       'eu.fbtools - oneMinFile.flac', // Example specific file
     );
+    // Button 3_3 left empty for user customization
+    assignments['3_0'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'POWERUP\nBortalag',
+      'eu.fbtools - Bortalag Fulltalig - kvinnlig.flac', // Example specific file
+    );
+    assignments['3_1'] = _createSpecificFile(
+      AudioCategory.specialJingle,
+      'POWERUP\nHemmalag',
+      'eu.fbtools - Hemmalag Fulltalig - kvinnlig.flac', // Example specific file
+    );
+
     assignments['3_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
       '3 MIN',
