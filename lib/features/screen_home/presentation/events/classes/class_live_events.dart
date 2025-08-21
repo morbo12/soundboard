@@ -101,11 +101,22 @@ class LiveEvents extends ConsumerWidget {
   }
 
   Widget _buildEventsList(BuildContext context, WidgetRef ref) {
+    final isManualMode = ref.watch(isManualLineupModeProvider);
+
     return ref
         .watch(matchEventsStreamProvider)
         .when(
           data: (events) => _buildEventsListView(events, ref),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => isManualMode
+              ? _buildEventsListView(
+                  [],
+                  ref,
+                ) // Skip loading indicator in manual mode
+              : Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
           error: (error, _) => Center(
             child: Text(
               'Error loading events: $error',
