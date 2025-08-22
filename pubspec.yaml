@@ -109,7 +109,12 @@ flutter:
     - assets/intros/
     - assets/icon/
     - assets/icon/fbtools.eu.png
-    - assets/jingles/
+    - assets/jingles/generic/
+    - assets/jingles/goal/
+    - assets/jingles/goalhorn/
+    - assets/jingles/penalty/
+    - assets/jingles/special/
+
 
 flutter_launcher_icons:
   android: true
