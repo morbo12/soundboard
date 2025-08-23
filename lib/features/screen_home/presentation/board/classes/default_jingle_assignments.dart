@@ -11,19 +11,19 @@ class DefaultJingleAssignments {
     assignments['0_0'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'Bortalag\nBakgrund',
-      'eu.fbtools - AwayTeamBackground - Jumpstart.flac',
+      'eu.fbtools - AwayTeamBackground - Jumpstart.mp3',
     );
     assignments['0_1'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'Hemmalag\nBakgrund',
-      'eu.fbtools - HomeTeamBackground - Contradiction.flac',
+      'eu.fbtools - HomeTeamBackground - Contradiction.mp3',
     );
 
     // Provide some example category assignments
     assignments['1_0'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'Match Period\nStart',
-      'eu.fbtools - Ratata.flac',
+      'eu.fbtools - Ratata.mp3',
     );
     assignments['1_2'] = _createRandomCategory(
       AudioCategory.genericJingle,
@@ -36,39 +36,39 @@ class DefaultJingleAssignments {
     assignments['2_0'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'TIMEOUT\nBortalag',
-      'eu.fbtools - timeout - bortalag.flac', // Example specific file
+      'eu.fbtools - timeout - bortalag.mp3', // Example specific file
     );
     assignments['2_1'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'TIMEOUT\nHemmalag',
-      'eu.fbtools - timeout - hemmalag.flac', // Example specific file
+      'eu.fbtools - timeout - hemmalag.mp3', // Example specific file
     );
     assignments['2_2'] = _createSpecificFile(
       AudioCategory.penaltyJingle,
       'UTVISNING',
-      'eu.fbtools - En stund på kanten.flac', // Example specific file
+      'eu.fbtools - En stund på kanten.mp3', // Example specific file
     );
     assignments['2_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
       '1 MIN',
-      'eu.fbtools - oneMinFile.flac', // Example specific file
+      'eu.fbtools - oneMinFile.mp3', // Example specific file
     );
     // Button 3_3 left empty for user customization
     assignments['3_0'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'POWERUP\nBortalag',
-      'eu.fbtools - Bortalag Fulltalig - kvinnlig.flac', // Example specific file
+      'eu.fbtools - Bortalag Fulltalig - kvinnlig.mp3', // Example specific file
     );
     assignments['3_1'] = _createSpecificFile(
       AudioCategory.specialJingle,
       'POWERUP\nHemmalag',
-      'eu.fbtools - Hemmalag Fulltalig - kvinnlig.flac', // Example specific file
+      'eu.fbtools - Hemmalag Fulltalig - kvinnlig.mp3', // Example specific file
     );
 
     assignments['3_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
       '3 MIN',
-      'eu.fbtools - threeMinFile.flac', // Example specific file
+      'eu.fbtools - threeMinFile.mp3', // Example specific file
     );
     // Button 4_3 left empty for user customization
 
