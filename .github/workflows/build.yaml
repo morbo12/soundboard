@@ -18,7 +18,7 @@ jobs:
   build-job:
     timeout-minutes: 60
     name: Build Release Packages
-    runs-on: windows-latest
+    runs-on: windows-2025
     outputs:
       VERSION: ${{ steps.extract_info.outputs.VERSION }}
       NAME: ${{ steps.extract_info.outputs.NAME }}
