@@ -84,7 +84,7 @@ jobs:
           $version = $version -replace '\+.*$', ''
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           echo "NAME=$name" >> $env:GITHUB_OUTPUT
-          echo "#define MyAppVersion \"$version\"" > version.iss
+          echo "$version" > version.iss
 
       # - name: Compress Archives and Rename APK
       #   shell: pwsh
