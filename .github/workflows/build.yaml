@@ -95,10 +95,13 @@ jobs:
       #     Move-Item -Path build\app\outputs\flutter-apk\app-release.apk -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk"
 
       - name: Compile .ISS to .EXE Installer
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
-        with:
-          path: soundboard.iss
-          options: /O+
+        shell: pwsh
+        run: |
+          $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $innoSetupPath)) {
+            throw "Inno Setup compiler not found at $innoSetupPath"
+          }
+          & "$innoSetupPath" /O+ "soundboard.iss"
 
       - name: Determine Release Type
         id: release_type
