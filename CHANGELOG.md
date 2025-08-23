@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta6] - 2025-08-23
+
+### Fixed
+
+- All categories selectable
+- Lineup plays correct
+
+### Other
+
+- Distribute as Inno Setup exe
+
 ## [0.4.0-beta5] - 2025-08-16
 
 ### Added
