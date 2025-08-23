@@ -84,6 +84,7 @@ jobs:
           $version = $version -replace '\+.*$', ''
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           echo "NAME=$name" >> $env:GITHUB_OUTPUT
+          echo "#define MyAppVersion \"$version\"" > version.iss
 
       # - name: Compress Archives and Rename APK
       #   shell: pwsh
@@ -97,7 +98,7 @@ jobs:
       - name: Compile .ISS to .EXE Installer
         shell: pwsh
         run: |
-          $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          $innoSetupPath = "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $innoSetupPath)) {
             throw "Inno Setup compiler not found at $innoSetupPath"
           }
