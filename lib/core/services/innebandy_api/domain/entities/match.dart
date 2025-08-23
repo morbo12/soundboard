@@ -6,6 +6,7 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/match_eve
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_intermediate.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_result.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
+import 'package:soundboard/core/properties.dart';
 
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -365,127 +366,156 @@ class IbyMatch {
   }
 
   String _generateTestSsml() {
-    String testssml = """
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
+    String testssml =
+        """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
 Välkomna till Testhallen!
-<break time="500ms" />
+<break time="500ms"/>
 Testlaget hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan testlag blå och testlag vit
-Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
-Nummer <lang xml:lang="sv-SE">27</lang>, <say-as interpret-as='name'>Eddie Rylin</say-as>,
-Nummer 42, <say-as interpret-as='name'>Henry Dahlström</say-as>,
-Nummer 82, <say-as interpret-as='name'>Liam Sandberg</say-as>,
+Nummer 11, <say-as interpret-as="name">Noah Zetterholm</say-as>,
+Nummer <lang xml:lang="sv-SE">27</lang>, <say-as interpret-as="name">Eddie Rylin</say-as>,
+Nummer 42, <say-as interpret-as="name">Henry Dahlström</say-as>,
+Nummer 82, <say-as interpret-as="name">Liam Sandberg</say-as>,
 Välkomna! Testtext är nu slut
-""";
+</voice>
+</speak>""";
     return testssml;
   }
 
   String _generateWelcomeMessage(WidgetRef ref) {
     final lineup = ref.read(lineupProvider);
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
     final String ssml;
 
     // Check if we have valid lineup data
     if (lineup.matchId == 0 || lineup.homeTeamPlayers.isEmpty) {
-      ssml = """
-    Välkomna till Testhallen!
-    <break time="1000ms" />
-    Testlaget hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan Hemmalaget och Bortalaget
-    <break time="1000ms" />
-    """;
+      ssml =
+          """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
+Välkomna till Testhallen!
+<break time="1000ms"/>
+Testlaget hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan Hemmalaget och Bortalaget
+<break time="1000ms"/>
+</voice>
+</speak>""";
     } else {
       ssml =
-          """
-    Välkomna till $venue!
-    <break time="1000ms" />
-    ${stripTeamSuffix(homeTeam)} hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan ${stripTeamSuffix(homeTeam)} och ${stripTeamSuffix(awayTeam)}
-    <break time="1000ms" />
-    """;
+          """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
+Välkomna till $venue!
+<break time="1000ms"/>
+${stripTeamSuffix(homeTeam)} hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan ${stripTeamSuffix(homeTeam)} och ${stripTeamSuffix(awayTeam)}
+<break time="1000ms"/>
+</voice>
+</speak>""";
     }
     return ssml;
   }
 
   String _generateHomeTeamLineup(WidgetRef ref) {
     final lineup = ref.read(effectiveLineupProvider);
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
     String ssml;
 
     // Check if we have valid lineup data
     if (lineup.matchId == 0 || lineup.homeTeamPlayers.isEmpty) {
-      ssml = """
-    Hemmalaget ställer upp med följande spelare<break time='750ms' />
-    Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
-    Nummer 27, <say-as interpret-as='name'>Eddie Rylin</say-as>,
-    Nummer 42, <say-as interpret-as='name'>Henry Dahlström</say-as>,
-    Nummer 82, <say-as interpret-as='name'>Liam Sandberg</say-as>,
-    Välkomna! Testtext är nu slut
-    """;
+      ssml =
+          """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
+Hemmalaget ställer upp med följande spelare<break time="750ms"/>
+Nummer 11, <say-as interpret-as="name">Noah Zetterholm</say-as>,
+Nummer 27, <say-as interpret-as="name">Eddie Rylin</say-as>,
+Nummer 42, <say-as interpret-as="name">Henry Dahlström</say-as>,
+Nummer 82, <say-as interpret-as="name">Liam Sandberg</say-as>,
+Välkomna! Testtext är nu slut
+</voice>
+</speak>""";
     } else {
       ssml =
-          "${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time='750ms' />\n";
+          "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"sv-SE\">\n<voice name=\"$voiceName\">\n${stripTeamSuffix(homeTeam)} ställer upp med följande spelare<break time=\"750ms\"/>\n";
       String homeGoalie =
-          "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
+          "Dagens målvakt är inte inlagd i truppen<break time=\"750ms\"/>\n";
       for (TeamPlayer player in lineup.homeTeamPlayers) {
         if (player.position == "Målvakt") {
           homeGoalie =
-              "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as><break time='500ms' />\n";
+              "Dagens målvakt är <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"500ms\"/>\n";
         } else {
           ssml += player.shirtNo == null
-              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+              ? "<say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n";
         }
       }
       ssml += homeGoalie;
-      ssml += "<break time=\"500ms\" />\n";
+      ssml += "<break time=\"500ms\"/>\n";
       ssml +=
-          "Ledare för ${stripTeamSuffix(homeTeam)} är<break time='750ms' />\n";
+          "Ledare för ${stripTeamSuffix(homeTeam)} är<break time=\"750ms\"/>\n";
       for (TeamTeamPerson teamPerson in lineup.homeTeamTeamPersons) {
         ssml +=
-            "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='1000ms' />\n";
+            "<say-as interpret-as=\"name\">${teamPerson.name}</say-as><break time=\"1000ms\"/>\n";
       }
-      ssml += "<break time=\"1000ms\" />\n";
+      ssml += "<break time=\"1000ms\"/>\n</voice>\n</speak>";
     }
     return ssml;
   }
 
   String _generateAwayTeamLineup(WidgetRef ref) {
     final lineup = ref.read(effectiveLineupProvider);
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
     String ssml;
 
     // Check if we have valid lineup data
     if (lineup.matchId == 0 || lineup.awayTeamPlayers.isEmpty) {
-      ssml = """
-    Bortalaget ställer upp med följande spelare<break time='750ms' />
-    Nummer 11, <say-as interpret-as='name'>Noah Zetterholm</say-as>,
-    Nummer 27, <say-as interpret-as='name'>Eddie Rylin</say-as>,
-    Nummer 42, <say-as interpret-as='name'>Henry Dahlström</say-as>,
-    Nummer 82, <say-as interpret-as='name'>Liam Sandberg</say-as>,
-    """;
+      ssml =
+          """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
+Bortalaget ställer upp med följande spelare<break time="750ms"/>
+Nummer 11, <say-as interpret-as="name">Noah Zetterholm</say-as>,
+Nummer 27, <say-as interpret-as="name">Eddie Rylin</say-as>,
+Nummer 42, <say-as interpret-as="name">Henry Dahlström</say-as>,
+Nummer 82, <say-as interpret-as="name">Liam Sandberg</say-as>,
+</voice>
+</speak>""";
     } else {
       ssml =
-          "${stripTeamSuffix(awayTeam)} ställer upp med följande spelare<break time='750ms' />\n";
+          "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"sv-SE\">\n<voice name=\"$voiceName\">\n${stripTeamSuffix(awayTeam)} ställer upp med följande spelare<break time=\"750ms\"/>\n";
       String awayGoalie =
-          "Dagens målvakt är inte inlagd i truppen<break time='750ms' />\n";
+          "Dagens målvakt är inte inlagd i truppen<break time=\"750ms\"/>\n";
       for (TeamPlayer player in lineup.awayTeamPlayers) {
         if (player.position == "Målvakt") {
           awayGoalie =
-              "Dagens målvakt är <say-as interpret-as='name'>${player.name}</say-as>,\n";
+              "Dagens målvakt är <say-as interpret-as=\"name\">${player.name}</say-as>,\n";
         } else {
           ssml += player.shirtNo == null
-              ? "<say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n"
-              : "Nummer ${player.shirtNo}, <say-as interpret-as='name'>${player.name}</say-as><break time='750ms' />\n";
+              ? "<say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n"
+              : "Nummer ${player.shirtNo}, <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n";
         }
       }
       ssml += awayGoalie;
-      ssml += "<break time=\"500ms\" />\n";
+      ssml += "<break time=\"500ms\"/>\n";
       ssml +=
-          "Ledare för ${stripTeamSuffix(awayTeam)} är<break time='750ms' />\n";
+          "Ledare för ${stripTeamSuffix(awayTeam)} är<break time=\"750ms\"/>\n";
       for (TeamTeamPerson teamPerson in lineup.awayTeamTeamPersons) {
         ssml +=
-            "<say-as interpret-as='name'>${teamPerson.name}</say-as><break time='750ms' />\n";
+            "<say-as interpret-as=\"name\">${teamPerson.name}</say-as><break time=\"750ms\"/>\n";
       }
-      ssml += "<break time=\"1000ms\" />\n";
+      ssml += "<break time=\"1000ms\"/>\n</voice>\n</speak>";
     }
     return ssml;
   }
 
   String _generateRefereeMessage() {
-    return "Domare i denna match är,,\n$referee1 och $referee2\n";
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
+    return """<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="sv-SE">
+<voice name="$voiceName">
+Domare i denna match är,,
+$referee1 och $referee2
+</voice>
+</speak>""";
   }
 }
