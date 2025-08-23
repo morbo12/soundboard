@@ -5,13 +5,14 @@
 #define MyAppPublisher "FBTools EU"
 #define MyAppURL "https://www.fbtools.eu"
 #define MyAppExeName "soundboard.exe"
+#include "version.iss"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{91AABA34-C191-4325-84D7-E681ED39754A}
 AppName={#MyAppName}
-AppVersion={#file "version.iss"}
+AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
