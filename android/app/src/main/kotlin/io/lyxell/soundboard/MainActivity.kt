@@ -1,4 +1,4 @@
-package eu.fbapps.soundboard
+package eu.fbtools.soundboard
 
 import io.flutter.embedding.android.FlutterActivity
 

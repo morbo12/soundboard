@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "eu.fbapps" "\0"
+            VALUE "CompanyName", "eu.fbtools" "\0"
             VALUE "FileDescription", "soundboard" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "soundboard" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2023 FbApps Eu. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 FbTools Eu. All rights reserved." "\0"
             VALUE "OriginalFilename", "soundboard.exe" "\0"
             VALUE "ProductName", "soundboard" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

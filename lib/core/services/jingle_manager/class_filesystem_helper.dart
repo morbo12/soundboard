@@ -9,7 +9,7 @@ class FileSystemHelper {
   // Old app ID path component
   static const String _oldAppId = 'io.lyxell';
   // New app ID path component
-  static const String _newAppId = 'eu.fbapps';
+  static const String _newAppId = 'eu.fbtools';
 
   // Gets the old application cache directory path
   Future<String?> _getOldCacheDirectoryPath() async {
