@@ -57,8 +57,8 @@ Name: "swedish"; MessagesFile: "compiler:Languages\Swedish.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\lars\flutter_code\soundboard_new\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}";  Flags: ignoreversion 
-Source: "C:\Users\lars\flutter_code\soundboard_new\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs 
+Source: "build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}";  Flags: ignoreversion 
+Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 ; These files will be downloaded and verified during the actual installation
 Source: "https://github.com/morbo12/eu.fbtools-BasicJinglePack/releases/download/v1.0.0/eu.fbtools-BasicJinglePack_1.0.0.zip"; \
