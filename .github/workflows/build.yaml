@@ -84,11 +84,17 @@ jobs:
       - name: Compress Archives and Rename APK
         shell: pwsh
         run: |
-          mkdir -p release\data\flutter_assets\asset\
-          Move-Item -Path .\build\windows\x64\runner\Release\data\flutter_assets\asset\jingles -Destination release\data\flutter_assets\asset\
-          Compress-Archive -Path release\data\flutter_assets\asset\jingles -Destination release\eu.fbtools - BasicJinglePack_{{ steps.extract_info.outputs.VERSION }.zip
-          Compress-Archive -Path .\build\windows\x64\runner\Release\* -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip"
+          mkdir -p release
+          # Compress-Archive -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles\* -Destination release\eu.fbtools-BasicJinglePack_{{ steps.extract_info.outputs.VERSION }.zip
+          # Remove-Item -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles -Force -Recurse
+          # Compress-Archive -Path .\build\windows\x64\runner\Release\* -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip"
           Move-Item -Path build\app\outputs\flutter-apk\app-release.apk -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk"
+
+      - name: Compile .ISS to .EXE Installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: soundboard.iss
+          options: /O+
 
       - name: Determine Release Type
         id: release_type
