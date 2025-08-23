@@ -36,7 +36,7 @@ jobs:
 
       - name: Upgrade InnoSetup
         run: |
-          winget install --id JRSoftware.InnoSetup -e -s winget -i
+          winget install --id JRSoftware.InnoSetup -e -s winget -h
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
