@@ -98,10 +98,25 @@ jobs:
       - name: Compile .ISS to .EXE Installer
         shell: pwsh
         run: |
-          $innoSetupPath = "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
-          if (-not (Test-Path $innoSetupPath)) {
-            throw "Inno Setup compiler not found at $innoSetupPath"
+          $innoSetupPaths = @(
+            "${env:ProgramFiles}\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "${env:LOCALAPPDATA}\Programs\Inno Setup 6\ISCC.exe"
+          )
+
+          $innoSetupPath = $null
+          foreach ($path in $innoSetupPaths) {
+            if (Test-Path $path) {
+              $innoSetupPath = $path
+              Write-Host "Found Inno Setup compiler at: $path"
+              break
+            }
           }
+
+          if (-not $innoSetupPath) {
+            throw "Inno Setup compiler not found in any of the expected locations: $($innoSetupPaths -join ', ')"
+          }
+
           & "$innoSetupPath" /O+ "soundboard.iss"
 
       - name: Determine Release Type
