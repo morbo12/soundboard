@@ -8,6 +8,7 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dar
 
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_lineup_data.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/classes/class_new_notepad.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
@@ -235,21 +236,41 @@ class _LineupState extends ConsumerState<Lineup> {
 
       logger.d("[_handlePlayLineup] Starting background music");
 
-      // Find specific AwayJingle by name for background music
-      final awayJingle = jingleManager.audioManager.audioInstances
-          .where(
-            (instance) =>
-                instance.audioCategory == AudioCategory.specialJingle &&
-                instance.displayName == 'AwayJingle',
-          )
-          .firstOrNull;
+      // Find specific AwayJingle by configured file path or fallback
+      final awayJinglePath = SettingsBox().awayJingleFilePath;
+      AudioFile? awayJingle;
+
+      if (awayJinglePath.isNotEmpty) {
+        // Try to find the configured jingle by file path
+        awayJingle = jingleManager.audioManager.audioInstances
+            .where(
+              (instance) =>
+                  instance.audioCategory == AudioCategory.specialJingle &&
+                  instance.filePath == awayJinglePath,
+            )
+            .firstOrNull;
+      }
+
+      // Fallback to displayName search if configured jingle not found
+      if (awayJingle == null) {
+        logger.d(
+          "[_handlePlayLineup] Configured away jingle not found, falling back to displayName search",
+        );
+        awayJingle = jingleManager.audioManager.audioInstances
+            .where(
+              (instance) =>
+                  instance.audioCategory == AudioCategory.specialJingle &&
+                  instance.displayName == 'AwayJingle',
+            )
+            .firstOrNull;
+      }
 
       if (awayJingle != null) {
-        await jingleManager.audioManager.playAudio(
-          AudioCategory.specialJingle,
+        await jingleManager.audioManager.playAudioFile(
+          awayJingle, // Play the specific AudioFile we found
           ref,
           shortFade: true,
-          isBackgroundMusic: true,
+          isBackgroundMusic: true, // This will make it play as background music
         );
       }
 
@@ -301,21 +322,41 @@ class _LineupState extends ConsumerState<Lineup> {
 
       logger.d("[_handlePlayLineup] Playing Home team background music");
 
-      // Find specific HomeJingle by name for background music
-      final homeJingle = jingleManager.audioManager.audioInstances
-          .where(
-            (instance) =>
-                instance.audioCategory == AudioCategory.specialJingle &&
-                instance.displayName == 'HomeJingle',
-          )
-          .firstOrNull;
+      // Find specific HomeJingle by configured file path or fallback
+      final homeJinglePath = SettingsBox().homeJingleFilePath;
+      AudioFile? homeJingle;
+
+      if (homeJinglePath.isNotEmpty) {
+        // Try to find the configured jingle by file path
+        homeJingle = jingleManager.audioManager.audioInstances
+            .where(
+              (instance) =>
+                  instance.audioCategory == AudioCategory.specialJingle &&
+                  instance.filePath == homeJinglePath,
+            )
+            .firstOrNull;
+      }
+
+      // Fallback to displayName search if configured jingle not found
+      if (homeJingle == null) {
+        logger.d(
+          "[_handlePlayLineup] Configured home jingle not found, falling back to displayName search",
+        );
+        homeJingle = jingleManager.audioManager.audioInstances
+            .where(
+              (instance) =>
+                  instance.audioCategory == AudioCategory.specialJingle &&
+                  instance.displayName == 'HomeJingle',
+            )
+            .firstOrNull;
+      }
 
       if (homeJingle != null) {
-        await jingleManager.audioManager.playAudio(
-          AudioCategory.specialJingle,
+        await jingleManager.audioManager.playAudioFile(
+          homeJingle, // Play the specific AudioFile we found
           ref,
           shortFade: true,
-          isBackgroundMusic: true,
+          isBackgroundMusic: true, // This will make it play as background music
         );
       }
 

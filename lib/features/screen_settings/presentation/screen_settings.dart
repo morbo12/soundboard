@@ -12,6 +12,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_lineup_jingles.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_music_upload_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -79,6 +80,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Gap(2),
               const GridSettingsSection(),
               const Gap(5),
+
+              settingsHeaderText("Lineup Jingles"),
+              settingsHeader2Text(
+                "Configure which jingles to use for home and away team lineups",
+              ),
+              const Gap(2),
+              const LineupJingleSettingsButton(),
+              const Gap(10),
 
               settingsHeaderText("Music Player"),
               settingsHeader2Text(

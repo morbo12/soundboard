@@ -486,6 +486,7 @@ class AudioManager {
     AudioFile audiofile,
     WidgetRef ref, {
     bool shortFade = true,
+    bool isBackgroundMusic = false,
   }) async {
     await _ensureInitialized(ref);
 
@@ -508,6 +509,7 @@ class AudioManager {
           ref,
           random: true,
           shortFade: shortFade,
+          isBackgroundMusic: isBackgroundMusic,
         );
         return;
       }
@@ -533,6 +535,7 @@ class AudioManager {
 
       final channel = _getChannelForAudioType(
         category: audiofile.audioCategory,
+        isBackgroundMusic: isBackgroundMusic,
       );
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
@@ -545,6 +548,7 @@ class AudioManager {
         channel,
         audiofile.filePath,
         fadeDuration: fadeDuration,
+        isBackgroundMusic: isBackgroundMusic,
         audioFile: audiofile,
       );
     } catch (e) {

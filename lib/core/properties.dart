@@ -37,6 +37,10 @@ enum Settings {
   gridRows,
   volumeSystemConfig,
 
+  // Lineup jingle settings
+  homeJingleFilePath,
+  awayJingleFilePath,
+
   // API settings for Soundboard API
   apiProductKey,
   apiDeviceId,
@@ -269,6 +273,17 @@ extension GeneralSettingsExtension on SettingsBox {
   set volumeSystemConfig(VolumeSystemConfig config) {
     put(Settings.volumeSystemConfig, config.toJson());
   }
+
+  // Lineup jingle settings
+  set homeJingleFilePath(String value) =>
+      put(Settings.homeJingleFilePath, value);
+  String get homeJingleFilePath =>
+      get(Settings.homeJingleFilePath, defaultValue: "");
+
+  set awayJingleFilePath(String value) =>
+      put(Settings.awayJingleFilePath, value);
+  String get awayJingleFilePath =>
+      get(Settings.awayJingleFilePath, defaultValue: "");
 
   // API settings for Soundboard API
   set apiProductKey(String value) => put(Settings.apiProductKey, value);
