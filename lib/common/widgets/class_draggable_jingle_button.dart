@@ -349,13 +349,7 @@ class DraggableJingleButton extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final categories = [
-      AudioCategory.genericJingle,
-      AudioCategory.goalJingle,
-      AudioCategory.clapJingle,
-      AudioCategory.specialJingle,
-      AudioCategory.goalHorn,
-    ];
+    final categories = AudioCategory.values;
 
     final selectedCategory = await showDialog<AudioCategory>(
       context: context,
