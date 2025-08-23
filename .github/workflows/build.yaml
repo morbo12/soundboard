@@ -63,8 +63,8 @@ jobs:
       - name: Build Windows App
         run: flutter build windows --release
 
-      - name: Build APK
-        run: flutter build apk --release
+      # - name: Build APK
+      #   run: flutter build apk --release
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -81,14 +81,14 @@ jobs:
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           echo "NAME=$name" >> $env:GITHUB_OUTPUT
 
-      - name: Compress Archives and Rename APK
-        shell: pwsh
-        run: |
-          mkdir -p release
-          # Compress-Archive -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles\* -Destination release\eu.fbtools-BasicJinglePack_{{ steps.extract_info.outputs.VERSION }.zip
-          # Remove-Item -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles -Force -Recurse
-          # Compress-Archive -Path .\build\windows\x64\runner\Release\* -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip"
-          Move-Item -Path build\app\outputs\flutter-apk\app-release.apk -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk"
+      # - name: Compress Archives and Rename APK
+      #   shell: pwsh
+      #   run: |
+      #     mkdir -p release
+      #     # Compress-Archive -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles\* -Destination release\eu.fbtools-BasicJinglePack_{{ steps.extract_info.outputs.VERSION }.zip
+      #     # Remove-Item -Path build\windows\x64\runner\Release\data\flutter_assets\assets\jingles -Force -Recurse
+      #     # Compress-Archive -Path .\build\windows\x64\runner\Release\* -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.zip"
+      #     Move-Item -Path build\app\outputs\flutter-apk\app-release.apk -Destination "release/${{ steps.extract_info.outputs.NAME }}_${{ steps.extract_info.outputs.VERSION }}.apk"
 
       - name: Compile .ISS to .EXE Installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
