@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:animated_introduction/animated_introduction.dart';
 import 'package:soundboard/about/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -43,20 +42,6 @@ class _PlayerState extends ConsumerState<Player> {
   bool _isIntroCompleted = false;
   static const String _introCompletedKey = 'intro_completed';
   bool _isLoading = true;
-  final List<SingleIntroScreen> pages = [
-    const SingleIntroScreen(
-      title: 'Ny features #1',
-      description:
-          'Lineup är flyttad upp till höger\nPeriodstatistik visas och är klickbar för att spela upp ljud i högtalarna',
-      imageAsset: 'assets/intros/intro1.png',
-    ),
-    const SingleIntroScreen(
-      title: 'Ny feature #2 - scratchpad',
-      description:
-          "Här kan man skriva ner domarens information vid mål, berörda spelare higlightas i lineup",
-      imageAsset: 'assets/intros/intro2.png',
-    ),
-  ];
 
   void launchSpotify() async {
     final Uri url = Uri.parse(SettingsBox().spotifyUri);
@@ -263,22 +248,7 @@ class _PlayerState extends ConsumerState<Player> {
         ),
       );
     }
-    // If intro is not completed, show intro screens
-    if (!_isIntroCompleted) {
-      return AnimatedIntroduction(
-        doneText: "Done",
-        slides: pages,
-        containerBg: Theme.of(context).colorScheme.surface,
-        footerBgColor: Theme.of(context).colorScheme.primaryContainer,
-        textColor: Theme.of(context).colorScheme.onPrimaryContainer,
-        activeDotColor: Theme.of(context).colorScheme.onPrimaryContainer,
-        inactiveDotColor: Theme.of(context).colorScheme.onPrimaryFixed,
-        indicatorType: IndicatorType.circle,
-        onDone: () {
-          _setIntroCompleted();
-        },
-      );
-    }
+
     return Scaffold(
       body: isJingleManagerInitialized
           ? _buildMainContent(selectedIndex)

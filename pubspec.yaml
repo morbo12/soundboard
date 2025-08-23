@@ -61,7 +61,6 @@ dependencies:
   riverpod_annotation: ^2.6.1	
   flutter_riverpod: ^2.6.1	
   file_picker: ^10.1.2
-  animated_introduction: ^1.0.4
   shared_preferences: ^2.5.2
   win32audio: ^1.4.0
   flutter_libserialport: ^0.6.0
@@ -109,12 +108,6 @@ flutter:
     - assets/intros/
     - assets/icon/
     - assets/icon/fbtools.eu.png
-    - assets/jingles/generic/
-    - assets/jingles/goal/
-    - assets/jingles/goalhorn/
-    - assets/jingles/penalty/
-    - assets/jingles/special/
-
 
 flutter_launcher_icons:
   android: true
