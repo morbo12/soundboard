@@ -25,6 +25,11 @@ class DefaultJingleAssignments {
       'Match Period\nStart',
       'eu.fbtools - Ratata.mp3',
     );
+    assignments['1_1'] = _createSpecificFile(
+      AudioCategory.penaltyJingle,
+      'UTVISNING',
+      'eu.fbtools - En stund på kanten v1 - b0d10f14 - [sports pop, instrumental, playful].mp3', // Example specific file
+    );
     assignments['1_2'] = _createRandomCategory(
       AudioCategory.genericJingle,
       'RANDOM\nJINGLE',
@@ -43,11 +48,7 @@ class DefaultJingleAssignments {
       'TIMEOUT\nHemmalag',
       'eu.fbtools - timeout - hemmalag.mp3', // Example specific file
     );
-    assignments['2_2'] = _createSpecificFile(
-      AudioCategory.penaltyJingle,
-      'UTVISNING',
-      'eu.fbtools - En stund på kanten.mp3', // Example specific file
-    );
+
     assignments['2_2'] = _createSpecificFile(
       AudioCategory.specialJingle,
       '1 MIN',
