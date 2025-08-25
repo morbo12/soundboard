@@ -2,6 +2,7 @@ import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/providers/deej_providers.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/application/mixer_manager/mixer_manager.dart';
+import 'package:soundboard/features/screen_home/application/deej_processor/deej_processor_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/utils/platform_utils.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
@@ -258,9 +259,15 @@ class VolumeControlServiceV2 {
     }
   }
 
+  /// Helper method to find the Deej slider index for a specific target
+  int _getDeejSliderForTarget(VolumeSystemConfig config, DeejTarget target) {
+    final mapping = config.deejMappings.where((m) => m.target == target).firstOrNull;
+    return mapping?.deejSliderIdx ?? -1;
+  }
+
   /// Gets the target volume for an AudioPlayer channel
   /// Returns max volume when Deej disconnected, provider volume when connected and mapped
-  double getAudioPlayerTargetVolume(int channelNumber) {
+  Future<double> getAudioPlayerTargetVolume(int channelNumber) async {
     final isDeejConnected = _ref.read(deejConnectionStatusProvider);
 
     if (!isDeejConnected) {
@@ -278,7 +285,28 @@ class VolumeControlServiceV2 {
       );
 
       if (isMapped) {
-        // Use provider volume when mapped to Deej
+        // Get the actual Deej slider position instead of provider volume
+        // Provider volume can be corrupted by fades, but Deej slider shows real hardware position
+        final deejSliderIdx = _getDeejSliderForTarget(config, targetToCheck);
+        if (deejSliderIdx != -1) {
+          // Get the real Deej slider value from DeejProcessorService
+          try {
+            final deejService = await _ref.read(deejProcessorServiceProvider.future);
+            final sliderValues = deejService.sliderValues;
+            
+            if (deejSliderIdx < sliderValues.length) {
+              final actualSliderValue = sliderValues[deejSliderIdx];
+              logger.d(
+                'Channel $channelNumber target volume from actual Deej slider $deejSliderIdx: $actualSliderValue',
+              );
+              return actualSliderValue;
+            }
+          } catch (e) {
+            logger.w('Failed to get Deej slider value, falling back to provider: $e');
+          }
+        }
+        
+        // Fallback to provider volume if we can't get Deej slider value
         final provider = channelNumber == 1
             ? c1VolumeProvider
             : c2VolumeProvider;

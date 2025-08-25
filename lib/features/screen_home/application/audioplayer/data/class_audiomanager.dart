@@ -133,13 +133,16 @@ class AudioManager {
   }
 
   /// Gets the current target volume for a channel based on the new volume system
-  double _getCurrentTargetVolume(WidgetRef ref, AudioChannel channel) {
+  Future<double> _getCurrentTargetVolume(
+    WidgetRef ref,
+    AudioChannel channel,
+  ) async {
     try {
       final channelNumber = channel == AudioChannel.channel1 ? 1 : 2;
 
       // Use the VolumeControlServiceV2 to get the target volume
       final volumeService = VolumeControlServiceV2(ref);
-      final targetVolume = volumeService.getAudioPlayerTargetVolume(
+      final targetVolume = await volumeService.getAudioPlayerTargetVolume(
         channelNumber,
       );
 
@@ -314,18 +317,18 @@ class AudioManager {
           ? AudioChannel.channel2
           : AudioChannel.channel1;
 
-      // For Deej-mapped channels, set to current target volume instead of 0
-      // For non-Deej channels, start at 0 for smooth fade-in
-      if (_isChannelMappedToDeej(ref, channel)) {
-        final targetVolume = _getCurrentTargetVolume(ref, channel);
-        logger.d(
-          "Channel ${channel.name} is Deej-mapped, setting to target volume: $targetVolume",
-        );
-        // Use _setChannelVolume to ensure proper synchronization
-        await _setChannelVolume(ref, channel, targetVolume);
-      } else {
-        await _setChannelVolume(ref, channel, 0.0);
-      }
+      // Set channel to appropriate target volume immediately (no fade-in needed)
+      final targetVolume = await _getCurrentTargetVolume(ref, channel);
+      logger.d(
+        "Setting channel ${channel.name} to target volume: $targetVolume",
+      );
+      await _setChannelVolume(
+        ref,
+        channel,
+        targetVolume,
+        forceProviderUpdate:
+            true, // Always update visual sliders when starting playback
+      );
 
       logger.d("Fading and stopping channel ${otherChannel.name}");
       _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
@@ -363,19 +366,10 @@ class AudioManager {
           await _setChannelVolume(ref, channel, 0.0);
         });
       } else {
-        // For Deej-mapped channels, volume is already set correctly
-        // For non-Deej channels, fade in to target volume
-        if (!_isChannelMappedToDeej(ref, channel)) {
-          final targetVolume = _getCurrentTargetVolume(ref, channel);
-          await _fadeChannel(ref, channel, targetVolume, fadeDuration);
-          logger.d(
-            "Fading to target volume: $targetVolume for ${channel.name}",
-          );
-        } else {
-          logger.d(
-            "Channel ${channel.name} is Deej-mapped - volume already set, no fade needed",
-          );
-        }
+        // Volume is already set correctly - no fade needed when starting playback
+        logger.d(
+          "Channel ${channel.name} volume already set to target - no fade needed",
+        );
       }
     } catch (e) {
       logger.e("Error playing audio file: $e");
@@ -396,8 +390,9 @@ class AudioManager {
   Future<void> _setChannelVolume(
     WidgetRef ref,
     AudioChannel channel,
-    double volume,
-  ) async {
+    double volume, {
+    bool forceProviderUpdate = false,
+  }) async {
     try {
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
       final provider = channel == AudioChannel.channel1
@@ -406,11 +401,13 @@ class AudioManager {
 
       logger.d("Setting volume to $volume for channel ${channel.name}");
 
-      // Always set the AudioPlayer volume, but only update provider if not Deej-mapped
+      // Always set the AudioPlayer volume
       await player.setVolume(volume);
 
-      if (!_isChannelMappedToDeej(ref, channel)) {
+      // Update provider if not Deej-mapped OR if explicitly requested (for playback start)
+      if (!_isChannelMappedToDeej(ref, channel) || forceProviderUpdate) {
         ref.read(provider.notifier).updateVolume(volume);
+        logger.d("Updated provider for ${channel.name} - volume: $volume");
       } else {
         logger.d(
           "AudioPlayer volume set but provider not updated - ${channel.name} is mapped to Deej",
@@ -879,7 +876,7 @@ class AudioManager {
 
       // Only set volume if channel is not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        final targetVolume = _getCurrentTargetVolume(
+        final targetVolume = await _getCurrentTargetVolume(
           ref,
           AudioChannel.channel2,
         );
@@ -915,7 +912,7 @@ class AudioManager {
 
       // Only set volume if channel is not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        final targetVolume = _getCurrentTargetVolume(
+        final targetVolume = await _getCurrentTargetVolume(
           ref,
           AudioChannel.channel2,
         );
