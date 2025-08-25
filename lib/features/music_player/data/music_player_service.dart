@@ -17,6 +17,7 @@ class MusicPlayerService {
   MusicPlaybackState _currentState = const MusicPlaybackState();
   Timer? _positionTimer;
   final Random _random = Random();
+  bool _fadeInProgress = false;
 
   /// Stream of playback state changes
   Stream<MusicPlaybackState> get stateStream => _stateController.stream;
@@ -47,6 +48,7 @@ class MusicPlayerService {
     // Listen to position changes
     _audioPlayer.onPositionChanged.listen((Duration position) {
       _updateState(_currentState.copyWith(currentPosition: position));
+      _checkForCrossfade(position);
     });
 
     // Listen for playback completion
@@ -60,23 +62,75 @@ class MusicPlayerService {
     _stateController.add(newState);
   }
 
+  void _checkForCrossfade(Duration position) {
+    // Only check if we're playing and have a playlist with more content
+    if (!_currentState.isPlaying || 
+        _fadeInProgress || 
+        _currentState.totalDuration == Duration.zero ||
+        _currentState.playlist.isEmpty) {
+      return;
+    }
+
+    // Start crossfade 4 seconds before the song ends
+    const Duration crossfadeStartOffset = Duration(seconds: 4);
+    final Duration timeRemaining = _currentState.totalDuration - position;
+    
+    if (timeRemaining <= crossfadeStartOffset && timeRemaining > Duration.zero) {
+      _fadeInProgress = true;
+      _startCrossfade();
+    }
+  }
+
+  Future<void> _startCrossfade() async {
+    try {
+      // Check if we should proceed to next track
+      if (_currentState.isRepeatEnabled && _currentState.currentTrack != null) {
+        // Don't crossfade when repeating the same track
+        _fadeInProgress = false;
+        return;
+      }
+      
+      if (_currentState.playlist.isEmpty) {
+        _fadeInProgress = false;
+        return;
+      }
+
+      // Start the crossfade with 4 second total duration
+      await nextWithFade(
+        fadeOut: const Duration(milliseconds: 2000),
+        fadeIn: const Duration(milliseconds: 2000),
+      );
+    } catch (e) {
+      logger.e("Error during crossfade: $e");
+    } finally {
+      _fadeInProgress = false;
+    }
+  }
+
   void _onTrackComplete() {
+    // Reset fade flag when track actually completes
+    _fadeInProgress = false;
+    
     if (_currentState.isRepeatEnabled && _currentState.currentTrack != null) {
       // Repeat current track
       seek(Duration.zero);
       play();
     } else if (_currentState.hasNext) {
-      // Play next track
+      // Play next track (may be redundant if crossfade already handled it)
       next();
     } else {
-      // End of playlist
-      _updateState(
-        _currentState.copyWith(
-          isPlaying: false,
-          isPaused: false,
-          currentPosition: Duration.zero,
-        ),
-      );
+      // End of playlist - restart from beginning for continuous playback
+      if (_currentState.playlist.isNotEmpty) {
+        _selectTrack(0);
+      } else {
+        _updateState(
+          _currentState.copyWith(
+            isPlaying: false,
+            isPaused: false,
+            currentPosition: Duration.zero,
+          ),
+        );
+      }
     }
   }
 
@@ -206,8 +260,8 @@ class MusicPlayerService {
 
   /// Play the next track
   Future<void> next() async {
-    if (!_currentState.hasNext && !_currentState.isRepeatEnabled) {
-      logger.d("No next track available");
+    if (_currentState.playlist.isEmpty) {
+      logger.d("No playlist available");
       return;
     }
 
@@ -231,18 +285,13 @@ class MusicPlayerService {
 
   /// Play the next track with fade-out/fade-in transition
   Future<void> nextWithFade({
-    Duration fadeOut = const Duration(milliseconds: 200),
-    Duration fadeIn = const Duration(milliseconds: 200),
+    Duration fadeOut = const Duration(milliseconds: 2000),
+    Duration fadeIn = const Duration(milliseconds: 2000),
   }) async {
     try {
       final wasPlaying = _currentState.isPlaying;
-      // Determine if we can advance to another track
-      final bool canAdvance = _currentState.isShuffleEnabled
-          ? _currentState.playlist.length > 1
-          : (_currentState.hasNext || _currentState.isRepeatEnabled);
-
-      if (!canAdvance) {
-        // Nothing to advance to; do nothing (avoid unnecessary fade blip)
+      // Check if we have a playlist to work with
+      if (_currentState.playlist.isEmpty) {
         return;
       }
 

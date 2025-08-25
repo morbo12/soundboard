@@ -85,8 +85,8 @@ class MusicPlayerNotifier extends Notifier<void> {
 
   /// Play the next track with a short fade-out and fade-in
   Future<void> nextWithFade({
-    Duration fadeOut = const Duration(milliseconds: 200),
-    Duration fadeIn = const Duration(milliseconds: 200),
+    Duration fadeOut = const Duration(milliseconds: 2000),
+    Duration fadeIn = const Duration(milliseconds: 2000),
   }) async {
     await _service.nextWithFade(fadeOut: fadeOut, fadeIn: fadeIn);
   }
