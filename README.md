@@ -119,7 +119,7 @@ Do you love this project? All kinds of contributions are welcome 🙌!
 - 💰 donations.
 
 <p align="center">
-  <a href="https://buymeacoffee.com/morbo12">Donate using By Me a Coffee</a>
+  <a href="https://buymeacoffee.com/morbo12"><img src="https://img.shields.io/badge/Donate-BuyMeACoffee-blue.svg" alt="Donate with Buy me a coffee" /></a>
 </p>
 
 ## Contributing
