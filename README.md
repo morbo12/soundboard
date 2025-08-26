@@ -48,5 +48,5 @@ Do you love this project? All kinds of contributions are welcome 🙌!
  * 💰 donations.
 
 <p align="center">
-  <a href="https://www.paypal.me/morbo12"><img src="www/donate.png" alt="donate" /></a>
+  <a href="https://buymeacoffee.com/morbo12">Donate using By Me a Coffee</a>
 </p>
