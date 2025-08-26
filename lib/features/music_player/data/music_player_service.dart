@@ -64,8 +64,8 @@ class MusicPlayerService {
 
   void _checkForCrossfade(Duration position) {
     // Only check if we're playing and have a playlist with more content
-    if (!_currentState.isPlaying || 
-        _fadeInProgress || 
+    if (!_currentState.isPlaying ||
+        _fadeInProgress ||
         _currentState.totalDuration == Duration.zero ||
         _currentState.playlist.isEmpty) {
       return;
@@ -74,8 +74,9 @@ class MusicPlayerService {
     // Start crossfade 4 seconds before the song ends
     const Duration crossfadeStartOffset = Duration(seconds: 4);
     final Duration timeRemaining = _currentState.totalDuration - position;
-    
-    if (timeRemaining <= crossfadeStartOffset && timeRemaining > Duration.zero) {
+
+    if (timeRemaining <= crossfadeStartOffset &&
+        timeRemaining > Duration.zero) {
       _fadeInProgress = true;
       _startCrossfade();
     }
@@ -89,7 +90,7 @@ class MusicPlayerService {
         _fadeInProgress = false;
         return;
       }
-      
+
       if (_currentState.playlist.isEmpty) {
         _fadeInProgress = false;
         return;
@@ -110,7 +111,7 @@ class MusicPlayerService {
   void _onTrackComplete() {
     // Reset fade flag when track actually completes
     _fadeInProgress = false;
-    
+
     if (_currentState.isRepeatEnabled && _currentState.currentTrack != null) {
       // Repeat current track
       seek(Duration.zero);
