@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:soundboard/common/widgets/class_large_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
@@ -337,35 +336,211 @@ class _JingleManagementButtonState
             .where((element) => element.audioCategory == widget.audioCategory)
             .length;
 
-        return LargeButton(
-          primaryText: widget.directoryName,
-          secondaryText: "($jingleCount files)",
-          onTap: _showJingleManager,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-            fixedSize: const Size.fromHeight(100),
-          ),
-        );
+        return _buildModernCard(context, jingleCount, _showJingleManager);
       },
-      loading: () => LargeButton(
-        primaryText: widget.directoryName,
-        secondaryText: "Loading...",
-        onTap: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-          fixedSize: const Size.fromHeight(100),
+      loading: () => _buildModernCard(context, 0, null, isLoading: true),
+      error: (error, stack) => _buildModernCard(context, 0, null, hasError: true),
+    );
+  }
+
+  Widget _buildModernCard(BuildContext context, int fileCount, VoidCallback? onTap, {bool isLoading = false, bool hasError = false}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Get category-specific styling
+    final categoryInfo = _getCategoryInfo();
+    
+    String statusText = isLoading 
+        ? "Loading..." 
+        : hasError 
+            ? "Error" 
+            : "($fileCount files)";
+    
+    Color containerColor = hasError 
+        ? colorScheme.errorContainer 
+        : categoryInfo['containerColor'];
+
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              colors: [
+                containerColor,
+                containerColor.withAlpha(200),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: categoryInfo['iconColor'],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  categoryInfo['icon'],
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.directoryName,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: hasError 
+                            ? colorScheme.onErrorContainer
+                            : categoryInfo['textColor'],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${categoryInfo['description']} $statusText',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: hasError 
+                            ? colorScheme.onErrorContainer.withAlpha(200)
+                            : categoryInfo['textColor'].withAlpha(200),
+                      ),
+                    ),
+                    if (!isLoading && !hasError) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _buildFeatureChip(context, 'Upload'),
+                          const SizedBox(width: 8),
+                          _buildFeatureChip(context, 'Manage'),
+                          const SizedBox(width: 8),
+                          _buildFeatureChip(context, categoryInfo['formatChip']),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (!isLoading) ...[
+                Icon(
+                  hasError ? Icons.error : Icons.arrow_forward_ios,
+                  color: hasError 
+                      ? colorScheme.onErrorContainer
+                      : categoryInfo['textColor'],
+                ),
+              ] else ...[
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
-      error: (error, stack) => LargeButton(
-        primaryText: widget.directoryName,
-        secondaryText: "Error",
-        onTap: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
-          fixedSize: const Size.fromHeight(100),
+    );
+  }
+
+  Map<String, dynamic> _getCategoryInfo() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    switch (widget.audioCategory) {
+      case AudioCategory.goalJingle:
+        return {
+          'icon': Icons.sports_soccer,
+          'iconColor': const Color(0xFF4CAF50), // Green for goals
+          'containerColor': Color.alphaBlend(
+            const Color(0xFF4CAF50).withAlpha(100),
+            colorScheme.primaryContainer,
+          ),
+          'textColor': colorScheme.onPrimaryContainer,
+          'description': 'Goal celebration sounds',
+          'formatChip': 'Audio Files',
+        };
+      case AudioCategory.clapJingle:
+        return {
+          'icon': Icons.front_hand,
+          'iconColor': const Color(0xFF2196F3), // Blue for clap
+          'containerColor': Color.alphaBlend(
+            const Color(0xFF2196F3).withAlpha(100),
+            colorScheme.primaryContainer,
+          ),
+          'textColor': colorScheme.onPrimaryContainer,
+          'description': 'Crowd clapping sounds',
+          'formatChip': 'Audio Files',
+        };
+      case AudioCategory.specialJingle:
+        return {
+          'icon': Icons.star,
+          'iconColor': const Color(0xFFE6B422), // Yellow/Gold for special
+          'containerColor': Color.alphaBlend(
+            const Color(0xFFE6B422).withAlpha(100),
+            colorScheme.primaryContainer,
+          ),
+          'textColor': colorScheme.onPrimaryContainer,
+          'description': 'Special event sounds',
+          'formatChip': 'Audio Files',
+        };
+      case AudioCategory.goalHorn:
+        return {
+          'icon': Icons.campaign,
+          'iconColor': const Color(0xFFFF5722), // Red/Orange for horn
+          'containerColor': Color.alphaBlend(
+            const Color(0xFFFF5722).withAlpha(100),
+            colorScheme.primaryContainer,
+          ),
+          'textColor': colorScheme.onPrimaryContainer,
+          'description': 'Air horn celebrations',
+          'formatChip': 'Audio Files',
+        };
+      case AudioCategory.penaltyJingle:
+        return {
+          'icon': Icons.warning,
+          'iconColor': const Color(0xFFFF9800), // Orange for penalty
+          'containerColor': Color.alphaBlend(
+            const Color(0xFFFF9800).withAlpha(100),
+            colorScheme.primaryContainer,
+          ),
+          'textColor': colorScheme.onPrimaryContainer,
+          'description': 'Penalty notification sounds',
+          'formatChip': 'Audio Files',
+        };
+      default:
+        return {
+          'icon': Icons.music_note,
+          'iconColor': colorScheme.primary,
+          'containerColor': colorScheme.secondaryContainer,
+          'textColor': colorScheme.onSecondaryContainer,
+          'description': 'Jingle sounds',
+          'formatChip': 'Audio Files',
+        };
+    }
+  }
+
+  Widget _buildFeatureChip(BuildContext context, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh.withAlpha(150),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

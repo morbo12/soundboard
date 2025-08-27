@@ -21,45 +21,92 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
         : SettingsBox().serialPortName;
     final autoConnect = SettingsBox().serialAutoConnect;
 
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      ),
-      onPressed: () {
-        _showSettingsDialog(context);
-      },
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Serial Device: $portName',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const Gap(4),
-              Text(
-                'Auto-connect: ${autoConnect ? "Enabled" : "Disabled"}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer.withValues(alpha: 204),
-                ),
-              ),
+    return Card(
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.teal.shade100,
+              Colors.teal.shade50,
             ],
           ),
-          Icon(
-            Icons.settings,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          onTap: () => _showSettingsDialog(context),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withAlpha(100),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.cable,
+                    color: Colors.teal.shade700,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Serial Device: $portName',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal.shade800,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: autoConnect ? Colors.green : Colors.orange,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              autoConnect ? 'AUTO' : 'MANUAL',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Configure serial port connection for Deej hardware mixer',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.teal.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.settings,
+                  color: Colors.teal.shade700,
+                  size: 24,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

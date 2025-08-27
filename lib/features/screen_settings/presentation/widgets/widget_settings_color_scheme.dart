@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:soundboard/core/theme/class_approved_color_schemes.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/properties.dart';
@@ -17,45 +16,92 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
   Widget build(BuildContext context) {
     final currentTheme = SettingsBox().myColorTheme;
 
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      ),
-      onPressed: () {
-        _showThemeDialog(context, ref);
-      },
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Color Theme: $currentTheme',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const Gap(4),
-              Text(
-                'Tap to change theme',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer.withValues(alpha: 204),
-                ),
-              ),
+    return Card(
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.purple.shade100,
+              Colors.purple.shade50,
             ],
           ),
-          Icon(
-            Icons.palette,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          onTap: () => _showThemeDialog(context, ref),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withAlpha(100),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.palette,
+                    color: Colors.purple.shade700,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Color Theme: $currentTheme',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade800,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'THEME',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap to change theme - personalize your interface',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.settings,
+                  color: Colors.purple.shade700,
+                  size: 24,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -85,8 +131,8 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
                             color: Colors.red,
                             size: 30,
                           ),
-                          Gap(8),
-                          Text('No themes available'),
+                          const SizedBox(height: 8),
+                          const Text('No themes available'),
                         ],
                       ),
                     ),

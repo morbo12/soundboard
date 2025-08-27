@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/common/widgets/class_large_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
 
 class CleanCacheButton extends StatefulWidget {
@@ -15,23 +14,103 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: LargeButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-              fixedSize: const Size.fromHeight(100),
+    return Card(
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.errorContainer,
+              Theme.of(context).colorScheme.errorContainer.withAlpha(200),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          onTap: _isLoading ? null : () => _handleCacheDeletion(),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.error.withAlpha(50),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.delete_forever,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'DANGER - Delete Jingle Cache',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onErrorContainer,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'CRITICAL',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onError,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Permanently removes all uploaded jingle files from cache storage',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onErrorContainer.withAlpha(200),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.warning_amber,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 24,
+                  ),
+              ],
             ),
-            noLines: 1,
-
-            onTap: _isLoading ? null : () => _handleCacheDeletion(),
-            secondaryText: 'N/A',
-            primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",
           ),
         ),
-      ],
+      ),
     );
   }
 

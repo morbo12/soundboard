@@ -32,50 +32,93 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
     );
     final hasKey = SettingsBox().azTtsKey.isNotEmpty;
 
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            ),
-            onPressed: () => _showSettingsBottomSheet(context),
+    return Card(
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.indigo.shade100,
+              Colors.indigo.shade50,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: InkWell(
+          onTap: () => _showSettingsBottomSheet(context),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
             child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TTS Voice: $voiceName',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withAlpha(100),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.record_voice_over,
+                    color: Colors.indigo.shade700,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'TTS Voice: $voiceName',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo.shade800,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: hasKey ? Colors.green : Colors.orange,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              hasKey ? 'CONFIGURED' : 'SETUP',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const Gap(4),
-                    Text(
-                      'Region: $regionName | Key: ${hasKey ? "Configured" : "Not configured"}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer.withValues(alpha: 204),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Region: $regionName | Key: ${hasKey ? "Configured" : "Not configured"}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.indigo.shade600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Icon(
                   Icons.settings,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  color: Colors.indigo.shade700,
+                  size: 24,
                 ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
