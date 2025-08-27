@@ -120,10 +120,7 @@ class GridSettingsButton extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade100,
-              Colors.blue.shade50,
-            ],
+            colors: [Colors.blue.shade100, Colors.blue.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -163,7 +160,10 @@ class GridSettingsButton extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.blue,
                               borderRadius: BorderRadius.circular(10),
@@ -190,11 +190,7 @@ class GridSettingsButton extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.blue.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.blue.shade700, size: 24),
               ],
             ),
           ),

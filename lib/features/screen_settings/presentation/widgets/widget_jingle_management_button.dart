@@ -339,25 +339,32 @@ class _JingleManagementButtonState
         return _buildModernCard(context, jingleCount, _showJingleManager);
       },
       loading: () => _buildModernCard(context, 0, null, isLoading: true),
-      error: (error, stack) => _buildModernCard(context, 0, null, hasError: true),
+      error: (error, stack) =>
+          _buildModernCard(context, 0, null, hasError: true),
     );
   }
 
-  Widget _buildModernCard(BuildContext context, int fileCount, VoidCallback? onTap, {bool isLoading = false, bool hasError = false}) {
+  Widget _buildModernCard(
+    BuildContext context,
+    int fileCount,
+    VoidCallback? onTap, {
+    bool isLoading = false,
+    bool hasError = false,
+  }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     // Get category-specific styling
     final categoryInfo = _getCategoryInfo();
-    
-    String statusText = isLoading 
-        ? "Loading..." 
-        : hasError 
-            ? "Error" 
-            : "($fileCount files)";
-    
-    Color containerColor = hasError 
-        ? colorScheme.errorContainer 
+
+    String statusText = isLoading
+        ? "Loading..."
+        : hasError
+        ? "Error"
+        : "($fileCount files)";
+
+    Color containerColor = hasError
+        ? colorScheme.errorContainer
         : categoryInfo['containerColor'];
 
     return Card(
@@ -370,10 +377,7 @@ class _JingleManagementButtonState
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [
-                containerColor,
-                containerColor.withAlpha(200),
-              ],
+              colors: [containerColor, containerColor.withAlpha(200)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -400,7 +404,7 @@ class _JingleManagementButtonState
                     Text(
                       widget.directoryName,
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        color: hasError 
+                        color: hasError
                             ? colorScheme.onErrorContainer
                             : categoryInfo['textColor'],
                         fontWeight: FontWeight.w600,
@@ -410,7 +414,7 @@ class _JingleManagementButtonState
                     Text(
                       '${categoryInfo['description']} $statusText',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: hasError 
+                        color: hasError
                             ? colorScheme.onErrorContainer.withAlpha(200)
                             : categoryInfo['textColor'].withAlpha(200),
                       ),
@@ -423,7 +427,10 @@ class _JingleManagementButtonState
                           const SizedBox(width: 8),
                           _buildFeatureChip(context, 'Manage'),
                           const SizedBox(width: 8),
-                          _buildFeatureChip(context, categoryInfo['formatChip']),
+                          _buildFeatureChip(
+                            context,
+                            categoryInfo['formatChip'],
+                          ),
                         ],
                       ),
                     ],
@@ -433,7 +440,7 @@ class _JingleManagementButtonState
               if (!isLoading) ...[
                 Icon(
                   hasError ? Icons.error : Icons.arrow_forward_ios,
-                  color: hasError 
+                  color: hasError
                       ? colorScheme.onErrorContainer
                       : categoryInfo['textColor'],
                 ),
@@ -453,7 +460,7 @@ class _JingleManagementButtonState
 
   Map<String, dynamic> _getCategoryInfo() {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     switch (widget.audioCategory) {
       case AudioCategory.goalJingle:
         return {
@@ -529,7 +536,7 @@ class _JingleManagementButtonState
 
   Widget _buildFeatureChip(BuildContext context, String label) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

@@ -31,7 +31,10 @@ class _ModernJingleSelectionDialogState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: AudioCategory.values.length, vsync: this);
+    _tabController = TabController(
+      length: AudioCategory.values.length,
+      vsync: this,
+    );
     _initializeNamePreservation();
   }
 
@@ -96,12 +99,12 @@ class _ModernJingleSelectionDialogState
   String _formatCategoryName(AudioCategory category) {
     final name = category.toString().split('.').last;
     // Convert camelCase to Title Case with spaces
-    return name.replaceAllMapped(
-      RegExp(r'([A-Z])'),
-      (match) => ' ${match.group(1)}',
-    ).trim().split(' ').map((word) => 
-      word[0].toUpperCase() + word.substring(1)
-    ).join(' ');
+    return name
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(1)}')
+        .trim()
+        .split(' ')
+        .map((word) => word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 
   @override
@@ -120,9 +123,7 @@ class _ModernJingleSelectionDialogState
             // Header with title and close button
             Row(
               children: [
-                Icon(Icons.music_note, 
-                     color: colorScheme.primary, 
-                     size: 28),
+                Icon(Icons.music_note, color: colorScheme.primary, size: 28),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -170,7 +171,10 @@ class _ModernJingleSelectionDialogState
             // Name preservation option
             Card(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Checkbox(
@@ -208,16 +212,20 @@ class _ModernJingleSelectionDialogState
               controller: _tabController,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              tabs: AudioCategory.values.map((category) => Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(_getCategoryIcon(category), size: 18),
-                    const SizedBox(width: 8),
-                    Text(_formatCategoryName(category)),
-                  ],
-                ),
-              )).toList(),
+              tabs: AudioCategory.values
+                  .map(
+                    (category) => Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(_getCategoryIcon(category), size: 18),
+                          const SizedBox(width: 8),
+                          Text(_formatCategoryName(category)),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 16),
 
@@ -225,9 +233,9 @@ class _ModernJingleSelectionDialogState
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: AudioCategory.values.map((category) =>
-                  _buildCategoryContent(context, category)
-                ).toList(),
+                children: AudioCategory.values
+                    .map((category) => _buildCategoryContent(context, category))
+                    .toList(),
               ),
             ),
 
@@ -246,10 +254,11 @@ class _ModernJingleSelectionDialogState
     return jingleManagerAsync.when(
       data: (jingleManager) {
         final jingles = jingleManager.audioManager.audioInstances
-            .where((j) => 
-              j.audioCategory == category &&
-              (_searchQuery.isEmpty || 
-               j.displayName.toLowerCase().contains(_searchQuery))
+            .where(
+              (j) =>
+                  j.audioCategory == category &&
+                  (_searchQuery.isEmpty ||
+                      j.displayName.toLowerCase().contains(_searchQuery)),
             )
             .toList();
 
@@ -265,7 +274,9 @@ class _ModernJingleSelectionDialogState
               child: ListTile(
                 leading: Icon(_getCategoryIcon(category)),
                 title: Text('Random ${_formatCategoryName(category)}'),
-                subtitle: Text('Play any ${category.toString().split('.').last} randomly'),
+                subtitle: Text(
+                  'Play any ${category.toString().split('.').last} randomly',
+                ),
                 trailing: const Icon(Icons.shuffle),
                 onTap: () => _selectCategoryRandom(context, category),
               ),
@@ -405,7 +416,9 @@ class _ModernJingleSelectionDialogState
     final categoryName = _formatCategoryName(category);
     final assignedAudioFile = AudioFile(
       filePath: '', // Empty as we'll use the category for playback
-      displayName: _preserveButtonName ? widget.currentButtonName : categoryName,
+      displayName: _preserveButtonName
+          ? widget.currentButtonName
+          : categoryName,
       audioCategory: category,
       isCategoryOnly: true,
     );

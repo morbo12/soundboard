@@ -18,7 +18,7 @@ class ModernMusicUploadDialog extends ConsumerStatefulWidget {
 class _ModernMusicUploadDialogState
     extends ConsumerState<ModernMusicUploadDialog> {
   final Logger _logger = const Logger('ModernMusicUploadDialog');
-  
+
   // Track upload progress and bulk selection
   final List<String> _uploadProgress = [];
   bool _isUploading = false;
@@ -101,9 +101,7 @@ class _ModernMusicUploadDialogState
               const SizedBox(height: 24),
 
               // Upload area
-              Expanded(
-                child: _buildUploadArea(context),
-              ),
+              Expanded(child: _buildUploadArea(context)),
 
               // Action buttons
               const SizedBox(height: 16),
@@ -134,21 +132,25 @@ class _ModernMusicUploadDialogState
           ),
         ),
         const SizedBox(height: 8),
-        
+
         // Supported formats info
         Wrap(
           spacing: 4,
           children: [
             Chip(
               label: const Text('.mp3'),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHigh,
               labelStyle: Theme.of(context).textTheme.bodySmall,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
             Chip(
               label: const Text('.flac'),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHigh,
               labelStyle: Theme.of(context).textTheme.bodySmall,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
@@ -156,7 +158,9 @@ class _ModernMusicUploadDialogState
             if (!Platform.isWindows) ...[
               Chip(
                 label: const Text('.ogg'),
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHigh,
                 labelStyle: Theme.of(context).textTheme.bodySmall,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
@@ -164,14 +168,18 @@ class _ModernMusicUploadDialogState
             ],
             Chip(
               label: const Text('.wav'),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHigh,
               labelStyle: Theme.of(context).textTheme.bodySmall,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
             Chip(
               label: const Text('.m4a'),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHigh,
               labelStyle: Theme.of(context).textTheme.bodySmall,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
@@ -179,11 +187,9 @@ class _ModernMusicUploadDialogState
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Existing files list
-        Expanded(
-          child: _buildExistingFiles(context),
-        ),
+        Expanded(child: _buildExistingFiles(context)),
       ],
     );
   }
@@ -195,15 +201,13 @@ class _ModernMusicUploadDialogState
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error loading files: ${snapshot.error}'),
-          );
+          return Center(child: Text('Error loading files: ${snapshot.error}'));
         }
-        
+
         final files = snapshot.data ?? [];
-        
+
         if (files.isEmpty) {
           return _buildEmptyState(context);
         }
@@ -241,11 +245,7 @@ class _ModernMusicUploadDialogState
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.checklist,
-              size: 20,
-              color: theme.colorScheme.primary,
-            ),
+            Icon(Icons.checklist, size: 20, color: theme.colorScheme.primary),
             const SizedBox(width: 8),
             Text(
               'Selection Mode: $selectedCount of $totalFiles selected',
@@ -269,7 +269,7 @@ class _ModernMusicUploadDialogState
 
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -334,10 +334,7 @@ class _ModernMusicUploadDialogState
             ),
           ],
         ),
-        title: Text(
-          fileName,
-          style: theme.textTheme.titleSmall,
-        ),
+        title: Text(fileName, style: theme.textTheme.titleSmall),
         subtitle: FutureBuilder<int>(
           future: file.length(),
           builder: (context, snapshot) {
@@ -350,28 +347,28 @@ class _ModernMusicUploadDialogState
             );
           },
         ),
-        trailing: _isSelectionMode ? null : PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'delete') {
-              _showDeleteConfirmation(context, file);
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Delete'),
+        trailing: _isSelectionMode
+            ? null
+            : PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    _showDeleteConfirmation(context, file);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
-        onTap: _isSelectionMode 
-          ? () => _toggleFileSelection(file.path)
-          : null,
+        onTap: _isSelectionMode ? () => _toggleFileSelection(file.path) : null,
       ),
     );
   }
@@ -396,9 +393,9 @@ class _ModernMusicUploadDialogState
               const SizedBox(width: 8),
               if (totalFiles > 0) ...[
                 OutlinedButton.icon(
-                  onPressed: allSelected 
-                    ? () => _deselectAllFiles()
-                    : () => _selectAllFiles(),
+                  onPressed: allSelected
+                      ? () => _deselectAllFiles()
+                      : () => _selectAllFiles(),
                   icon: Icon(allSelected ? Icons.deselect : Icons.select_all),
                   label: Text(allSelected ? 'Deselect All' : 'Select All'),
                 ),
@@ -485,7 +482,9 @@ class _ModernMusicUploadDialogState
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Selected Files'),
-        content: Text('Are you sure you want to delete ${_selectedFiles.length} selected files?'),
+        content: Text(
+          'Are you sure you want to delete ${_selectedFiles.length} selected files?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -560,7 +559,7 @@ class _ModernMusicUploadDialogState
         await file.delete();
         final refreshNotifier = ref.read(playlistRefreshProvider.notifier);
         refreshNotifier.state = refreshNotifier.state + 1;
-        
+
         if (mounted) {
           setState(() {}); // Refresh the file list
           ScaffoldMessenger.of(context).showSnackBar(
@@ -643,7 +642,7 @@ class _ModernMusicUploadDialogState
       try {
         final fileName = file.path.split('/').last.split('\\').last;
         final targetPath = '${targetDir.path}/$fileName';
-        
+
         await file.copy(targetPath);
 
         setState(() {
@@ -681,7 +680,7 @@ class _ModernMusicUploadDialogState
       final refreshNotifier = ref.read(playlistRefreshProvider.notifier);
       refreshNotifier.state = refreshNotifier.state + 1;
       _logger.d("Triggered playlist refresh after successful uploads");
-      
+
       // Force a UI refresh with a small delay to ensure files are visible
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 500));

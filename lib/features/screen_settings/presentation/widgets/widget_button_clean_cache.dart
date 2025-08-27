@@ -59,12 +59,17 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onErrorContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onErrorContainer,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.error,
                               borderRadius: BorderRadius.circular(10),
@@ -85,7 +90,9 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                         'Permanently removes all uploaded jingle files from cache storage',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).colorScheme.onErrorContainer.withAlpha(200),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onErrorContainer.withAlpha(200),
                         ),
                       ),
                     ],

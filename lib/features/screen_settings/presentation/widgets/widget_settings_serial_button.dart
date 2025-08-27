@@ -28,10 +28,7 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.teal.shade100,
-              Colors.teal.shade50,
-            ],
+            colors: [Colors.teal.shade100, Colors.teal.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -71,7 +68,10 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: autoConnect ? Colors.green : Colors.orange,
                               borderRadius: BorderRadius.circular(10),
@@ -98,11 +98,7 @@ class _SerialPortSettingsButtonState extends State<SerialPortSettingsButton> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.teal.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.teal.shade700, size: 24),
               ],
             ),
           ),

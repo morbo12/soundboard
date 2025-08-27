@@ -39,10 +39,7 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.indigo.shade100,
-              Colors.indigo.shade50,
-            ],
+            colors: [Colors.indigo.shade100, Colors.indigo.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -82,7 +79,10 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: hasKey ? Colors.green : Colors.orange,
                               borderRadius: BorderRadius.circular(10),
@@ -109,11 +109,7 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.indigo.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.indigo.shade700, size: 24),
               ],
             ),
           ),

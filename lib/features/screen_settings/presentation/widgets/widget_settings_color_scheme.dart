@@ -23,10 +23,7 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.purple.shade100,
-              Colors.purple.shade50,
-            ],
+            colors: [Colors.purple.shade100, Colors.purple.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -66,7 +63,10 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(10),
@@ -93,11 +93,7 @@ class _MyColorSchemeState extends ConsumerState<MyColorScheme> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.purple.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.purple.shade700, size: 24),
               ],
             ),
           ),

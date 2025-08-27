@@ -26,10 +26,7 @@ class LineupJingleSettingsButton extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.orange.shade100,
-              Colors.orange.shade50,
-            ],
+            colors: [Colors.orange.shade100, Colors.orange.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -69,10 +66,16 @@ class LineupJingleSettingsButton extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: (homeJingle != "Not configured" && awayJingle != "Not configured") 
-                                  ? Colors.green : Colors.orange,
+                              color:
+                                  (homeJingle != "Not configured" &&
+                                      awayJingle != "Not configured")
+                                  ? Colors.green
+                                  : Colors.orange,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
@@ -110,11 +113,7 @@ class LineupJingleSettingsButton extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.orange.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.orange.shade700, size: 24),
               ],
             ),
           ),

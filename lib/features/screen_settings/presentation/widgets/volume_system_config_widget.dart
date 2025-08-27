@@ -34,10 +34,7 @@ class _VolumeSystemConfigButtonState extends State<VolumeSystemConfigButton> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Colors.deepPurple.shade100,
-                  Colors.deepPurple.shade50,
-                ],
+                colors: [Colors.deepPurple.shade100, Colors.deepPurple.shade50],
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -79,9 +76,14 @@ class _VolumeSystemConfigButtonState extends State<VolumeSystemConfigButton> {
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isDeejConnected ? Colors.green : Colors.blue,
+                                  color: isDeejConnected
+                                      ? Colors.green
+                                      : Colors.blue,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(

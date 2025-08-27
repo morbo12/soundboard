@@ -73,32 +73,41 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
             .length;
 
         return _buildModernCard(
-          context, 
-          fileCount, 
+          context,
+          fileCount,
           tmp_category,
           () => _handleUpload(tmp_category),
         );
       },
-      loading: () => _buildModernCard(context, 0, tmp_category, null, isLoading: true),
-      error: (error, stack) => _buildModernCard(context, 0, tmp_category, null, hasError: true),
+      loading: () =>
+          _buildModernCard(context, 0, tmp_category, null, isLoading: true),
+      error: (error, stack) =>
+          _buildModernCard(context, 0, tmp_category, null, hasError: true),
     );
   }
 
-  Widget _buildModernCard(BuildContext context, int fileCount, AudioCategory category, VoidCallback? onTap, {bool isLoading = false, bool hasError = false}) {
+  Widget _buildModernCard(
+    BuildContext context,
+    int fileCount,
+    AudioCategory category,
+    VoidCallback? onTap, {
+    bool isLoading = false,
+    bool hasError = false,
+  }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     // Get category-specific styling
     final categoryInfo = _getCategoryInfo(category);
-    
-    String statusText = isLoading 
-        ? "Loading..." 
-        : hasError 
-            ? "Error" 
-            : "($fileCount files)";
-    
-    Color containerColor = hasError 
-        ? colorScheme.errorContainer 
+
+    String statusText = isLoading
+        ? "Loading..."
+        : hasError
+        ? "Error"
+        : "($fileCount files)";
+
+    Color containerColor = hasError
+        ? colorScheme.errorContainer
         : categoryInfo['containerColor'];
 
     return Card(
@@ -111,10 +120,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [
-                containerColor,
-                containerColor.withAlpha(200),
-              ],
+              colors: [containerColor, containerColor.withAlpha(200)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -141,7 +147,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
                     Text(
                       widget.directoryName,
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        color: hasError 
+                        color: hasError
                             ? colorScheme.onErrorContainer
                             : categoryInfo['textColor'],
                         fontWeight: FontWeight.w600,
@@ -151,7 +157,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
                     Text(
                       '${categoryInfo['description']} $statusText',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: hasError 
+                        color: hasError
                             ? colorScheme.onErrorContainer.withAlpha(200)
                             : categoryInfo['textColor'].withAlpha(200),
                       ),
@@ -174,7 +180,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
               if (!isLoading) ...[
                 Icon(
                   hasError ? Icons.error : Icons.cloud_upload,
-                  color: hasError 
+                  color: hasError
                       ? colorScheme.onErrorContainer
                       : categoryInfo['textColor'],
                 ),
@@ -194,7 +200,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
 
   Map<String, dynamic> _getCategoryInfo(AudioCategory category) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     switch (category) {
       case AudioCategory.goalJingle:
         return {
@@ -264,7 +270,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
 
   Widget _buildFeatureChip(BuildContext context, String label) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

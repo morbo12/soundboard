@@ -37,10 +37,7 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.green.shade100,
-              Colors.green.shade50,
-            ],
+            colors: [Colors.green.shade100, Colors.green.shade50],
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -80,7 +77,10 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: hasUrl ? Colors.green : Colors.orange,
                               borderRadius: BorderRadius.circular(10),
@@ -108,11 +108,7 @@ class _SettingsSpotifyState extends State<SettingsSpotify> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.settings,
-                  color: Colors.green.shade700,
-                  size: 24,
-                ),
+                Icon(Icons.settings, color: Colors.green.shade700, size: 24),
               ],
             ),
           ),

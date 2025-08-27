@@ -56,7 +56,10 @@ class ModernJingleUploadButton extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF4CAF50),
                             borderRadius: BorderRadius.circular(10),
@@ -83,11 +86,7 @@ class ModernJingleUploadButton extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.settings,
-                color: const Color(0xFF4CAF50),
-                size: 24,
-              ),
+              Icon(Icons.settings, color: const Color(0xFF4CAF50), size: 24),
             ],
           ),
         ),

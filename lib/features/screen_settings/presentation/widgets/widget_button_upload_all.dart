@@ -73,11 +73,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
                   color: const Color(0xFF673AB7), // Deep purple for zip
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.archive,
-                  color: Colors.white,
-                  size: 32,
-                ),
+                child: const Icon(Icons.archive, color: Colors.white, size: 32),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -111,10 +107,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
                   ],
                 ),
               ),
-              Icon(
-                Icons.upload_file,
-                color: colorScheme.onTertiaryContainer,
-              ),
+              Icon(Icons.upload_file, color: colorScheme.onTertiaryContainer),
             ],
           ),
         ),
@@ -124,7 +117,7 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
 
   Widget _buildFeatureChip(BuildContext context, String label) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

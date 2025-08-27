@@ -82,7 +82,9 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9C27B0).withAlpha(100), // Purple for music
+                      color: const Color(
+                        0xFF9C27B0,
+                      ).withAlpha(100), // Purple for music
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -108,7 +110,10 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF9C27B0),
                                 borderRadius: BorderRadius.circular(10),

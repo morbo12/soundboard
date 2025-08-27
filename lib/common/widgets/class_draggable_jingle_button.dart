@@ -385,9 +385,7 @@ class DraggableJingleButton extends ConsumerWidget {
         }
       } else if (result is AudioFile) {
         // Assign the selected jingle
-        ref
-            .read(jingleGridConfigProvider.notifier)
-            .assignJingle(index, result);
+        ref.read(jingleGridConfigProvider.notifier).assignJingle(index, result);
       }
     }
   }
