@@ -10,7 +10,8 @@ import 'package:soundboard/features/music_player/data/music_models.dart';
 class MusicPlayerService {
   final Logger logger = const Logger('MusicPlayerService');
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _primaryAudioPlayer = AudioPlayer();
+  final AudioPlayer _secondaryAudioPlayer = AudioPlayer();
   final StreamController<MusicPlaybackState> _stateController =
       StreamController<MusicPlaybackState>.broadcast();
 
@@ -18,6 +19,7 @@ class MusicPlayerService {
   Timer? _positionTimer;
   final Random _random = Random();
   bool _fadeInProgress = false;
+  bool _usePrimaryPlayer = true; // Track which player is currently active
 
   /// Stream of playback state changes
   Stream<MusicPlaybackState> get stateStream => _stateController.stream;
@@ -26,35 +28,93 @@ class MusicPlayerService {
   MusicPlaybackState get currentState => _currentState;
 
   MusicPlayerService() {
-    _initializeAudioPlayer();
+    _initializeAudioPlayers();
   }
 
-  void _initializeAudioPlayer() {
-    // Listen to player state changes
-    _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      _updateState(
-        _currentState.copyWith(
-          isPlaying: state == PlayerState.playing,
-          isPaused: state == PlayerState.paused,
-        ),
-      );
-    });
+  /// Get the currently active audio player
+  AudioPlayer get _activePlayer =>
+      _usePrimaryPlayer ? _primaryAudioPlayer : _secondaryAudioPlayer;
 
-    // Listen to duration changes
-    _audioPlayer.onDurationChanged.listen((Duration duration) {
-      _updateState(_currentState.copyWith(totalDuration: duration));
-    });
+  /// Get the currently inactive audio player (for crossfading)
+  AudioPlayer get _inactivePlayer =>
+      _usePrimaryPlayer ? _secondaryAudioPlayer : _primaryAudioPlayer;
 
-    // Listen to position changes
-    _audioPlayer.onPositionChanged.listen((Duration position) {
-      _updateState(_currentState.copyWith(currentPosition: position));
-      _checkForCrossfade(position);
-    });
+  void _initializeAudioPlayers() {
+    // Initialize listeners for the primary player
+    _setupPlayerListeners(_primaryAudioPlayer);
+    
+    // Initialize listeners for the secondary player (for crossfading)
+    _setupPlayerListeners(_secondaryAudioPlayer);
+  }
 
-    // Listen for playback completion
-    _audioPlayer.onPlayerComplete.listen((_) {
-      _onTrackComplete();
-    });
+  void _setupPlayerListeners(AudioPlayer player) {
+    if (player == _primaryAudioPlayer) {
+      // Primary player listeners
+      _primaryAudioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+        // Only update state if this is the active player
+        if (_usePrimaryPlayer) {
+          logger.d("Primary player state changed: $state (active: $_usePrimaryPlayer)");
+          _updateState(
+            _currentState.copyWith(
+              isPlaying: state == PlayerState.playing,
+              isPaused: state == PlayerState.paused,
+            ),
+          );
+        }
+      });
+
+      _primaryAudioPlayer.onDurationChanged.listen((Duration duration) {
+        if (_usePrimaryPlayer) {
+          _updateState(_currentState.copyWith(totalDuration: duration));
+        }
+      });
+
+      _primaryAudioPlayer.onPositionChanged.listen((Duration position) {
+        if (_usePrimaryPlayer) {
+          _updateState(_currentState.copyWith(currentPosition: position));
+          _checkForCrossfade(position);
+        }
+      });
+
+      _primaryAudioPlayer.onPlayerComplete.listen((_) {
+        if (_usePrimaryPlayer) {
+          _onTrackComplete();
+        }
+      });
+    } else {
+      // Secondary player listeners
+      _secondaryAudioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+        // Only update state if this is the active player
+        if (!_usePrimaryPlayer) {
+          logger.d("Secondary player state changed: $state (active: ${!_usePrimaryPlayer})");
+          _updateState(
+            _currentState.copyWith(
+              isPlaying: state == PlayerState.playing,
+              isPaused: state == PlayerState.paused,
+            ),
+          );
+        }
+      });
+
+      _secondaryAudioPlayer.onDurationChanged.listen((Duration duration) {
+        if (!_usePrimaryPlayer) {
+          _updateState(_currentState.copyWith(totalDuration: duration));
+        }
+      });
+
+      _secondaryAudioPlayer.onPositionChanged.listen((Duration position) {
+        if (!_usePrimaryPlayer) {
+          _updateState(_currentState.copyWith(currentPosition: position));
+          _checkForCrossfade(position);
+        }
+      });
+
+      _secondaryAudioPlayer.onPlayerComplete.listen((_) {
+        if (!_usePrimaryPlayer) {
+          _onTrackComplete();
+        }
+      });
+    }
   }
 
   void _updateState(MusicPlaybackState newState) {
@@ -208,10 +268,10 @@ class MusicPlayerService {
 
       if (_currentState.isPaused) {
         // Resume playback
-        await _audioPlayer.resume();
+        await _activePlayer.resume();
       } else {
         // Start playback from current track
-        await _audioPlayer.play(
+        await _activePlayer.play(
           DeviceFileSource(_currentState.currentTrack!.filePath),
         );
       }
@@ -225,7 +285,7 @@ class MusicPlayerService {
   /// Pause playback
   Future<void> pause() async {
     try {
-      await _audioPlayer.pause();
+      await _activePlayer.pause();
       logger.d("Playback paused");
     } catch (e) {
       logger.e("Error pausing playback: $e");
@@ -235,7 +295,7 @@ class MusicPlayerService {
   /// Stop playback
   Future<void> stop() async {
     try {
-      await _audioPlayer.stop();
+      await _activePlayer.stop();
       _updateState(
         _currentState.copyWith(
           isPlaying: false,
@@ -252,7 +312,7 @@ class MusicPlayerService {
   /// Seek to a specific position
   Future<void> seek(Duration position) async {
     try {
-      await _audioPlayer.seek(position);
+      await _activePlayer.seek(position);
       logger.d("Seeked to position: $position");
     } catch (e) {
       logger.e("Error seeking: $e");
@@ -284,7 +344,7 @@ class MusicPlayerService {
     await _selectTrack(nextIndex);
   }
 
-  /// Play the next track with fade-out/fade-in transition
+  /// Play the next track with seamless crossfade - no silence between tracks
   Future<void> nextWithFade({
     Duration fadeOut = const Duration(milliseconds: 2000),
     Duration fadeIn = const Duration(milliseconds: 2000),
@@ -297,48 +357,118 @@ class MusicPlayerService {
       }
 
       if (wasPlaying) {
-        final double originalVolume = _currentState.volume;
-        if (originalVolume > 0) {
-          await _fadeVolume(to: 0.0, duration: fadeOut);
+        // Determine the next track
+        int nextIndex;
+        if (_currentState.isShuffleEnabled) {
+          do {
+            nextIndex = _random.nextInt(_currentState.playlist.length);
+          } while (nextIndex == _currentState.currentTrackIndex &&
+              _currentState.playlist.length > 1);
+        } else {
+          nextIndex = _currentState.currentTrackIndex + 1;
+          if (nextIndex >= _currentState.playlist.length) {
+            nextIndex = 0; // Loop to beginning
+          }
         }
 
-        // Move to next track (respects shuffle/repeat logic via next())
-        await next();
+        final nextTrack = _currentState.playlist[nextIndex];
+        final originalVolume = _currentState.volume;
 
-        // next() will keep playing because state isPlaying remains true
-        await _fadeVolume(to: originalVolume, duration: fadeIn);
+        // Start playing next track on inactive player at zero volume
+        await _inactivePlayer.setVolume(0.0);
+        await _inactivePlayer.play(DeviceFileSource(nextTrack.filePath));
+
+        // Update state to reflect the new track
+        _updateState(
+          _currentState.copyWith(
+            currentTrack: nextTrack,
+            currentTrackIndex: nextIndex,
+          ),
+        );
+
+        // Now crossfade: fade out current, fade in next
+        await Future.wait([
+          _fadePlayerVolume(_activePlayer, from: originalVolume, to: 0.0, duration: fadeOut),
+          _fadePlayerVolume(_inactivePlayer, from: 0.0, to: originalVolume, duration: fadeIn),
+        ]);
+
+        // Stop the old player and swap roles
+        await _activePlayer.stop();
+        _usePrimaryPlayer = !_usePrimaryPlayer;
+
+        // Small delay to let the AudioPlayer state settle
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Force complete state refresh after player swap
+        await _refreshStateAfterSwap(originalVolume);
+
+        logger.d("Crossfaded to: ${nextTrack.name}");
       } else {
         // If not playing, just switch track without fade and keep paused state
         await next();
       }
     } catch (e) {
-      logger.e("Error during nextWithFade: $e");
+      logger.e("Error during crossfade: $e");
       // Best-effort fallback
       await next();
     }
   }
 
-  Future<void> _fadeVolume({
+  /// Fade a specific player's volume (for crossfading)
+  Future<void> _fadePlayerVolume(
+    AudioPlayer player, {
+    required double from,
     required double to,
     required Duration duration,
   }) async {
-    final double from = _currentState.volume;
     final double target = to.clamp(0.0, 1.0);
     if (duration.inMilliseconds <= 0 || (from - target).abs() < 0.001) {
-      await setVolume(target);
+      await player.setVolume(target);
       return;
     }
 
-    const int steps = 10; // small, quick fade
+    const int steps = 20; // Smooth fade with more steps
     final int stepMs = (duration.inMilliseconds / steps).round();
     for (int i = 1; i <= steps; i++) {
       final double t = i / steps;
       final double v = from + (target - from) * t;
-      await setVolume(v);
+      await player.setVolume(v);
       await Future.delayed(Duration(milliseconds: stepMs));
     }
     // Ensure exact target
-    await setVolume(target);
+    await player.setVolume(target);
+  }
+
+  /// Refresh the complete state after swapping players
+  Future<void> _refreshStateAfterSwap(double volume) async {
+    try {
+      // Get current state from the now-active player
+      final playerState = _activePlayer.state;
+      final duration = await _activePlayer.getDuration();
+      final position = await _activePlayer.getCurrentPosition();
+
+      _updateState(
+        _currentState.copyWith(
+          isPlaying: playerState == PlayerState.playing,
+          isPaused: playerState == PlayerState.paused,
+          volume: volume,
+          totalDuration: duration ?? _currentState.totalDuration,
+          currentPosition: position ?? Duration.zero,
+        ),
+      );
+
+      logger.d("State refreshed after player swap - Playing: ${playerState == PlayerState.playing}");
+    } catch (e) {
+      logger.e("Error refreshing state after swap: $e");
+      // Fallback to basic state update
+      _updateState(
+        _currentState.copyWith(
+          isPlaying: true, // Assume playing since we just crossfaded
+          isPaused: false,
+          volume: volume,
+        ),
+      );
+    }
   }
 
   /// Play the previous track
@@ -396,7 +526,7 @@ class MusicPlayerService {
   Future<void> setVolume(double volume) async {
     try {
       final clampedVolume = volume.clamp(0.0, 1.0);
-      await _audioPlayer.setVolume(clampedVolume);
+      await _activePlayer.setVolume(clampedVolume);
       _updateState(_currentState.copyWith(volume: clampedVolume));
       logger.d("Volume set to: $clampedVolume");
     } catch (e) {
@@ -427,7 +557,8 @@ class MusicPlayerService {
   /// Dispose of resources
   void dispose() {
     _positionTimer?.cancel();
-    _audioPlayer.dispose();
+    _primaryAudioPlayer.dispose();
+    _secondaryAudioPlayer.dispose();
     _stateController.close();
   }
 }
