@@ -42,7 +42,7 @@ class MusicPlayerService {
   void _initializeAudioPlayers() {
     // Initialize listeners for the primary player
     _setupPlayerListeners(_primaryAudioPlayer);
-    
+
     // Initialize listeners for the secondary player (for crossfading)
     _setupPlayerListeners(_secondaryAudioPlayer);
   }
@@ -53,7 +53,9 @@ class MusicPlayerService {
       _primaryAudioPlayer.onPlayerStateChanged.listen((PlayerState state) {
         // Only update state if this is the active player
         if (_usePrimaryPlayer) {
-          logger.d("Primary player state changed: $state (active: $_usePrimaryPlayer)");
+          logger.d(
+            "Primary player state changed: $state (active: $_usePrimaryPlayer)",
+          );
           _updateState(
             _currentState.copyWith(
               isPlaying: state == PlayerState.playing,
@@ -86,7 +88,9 @@ class MusicPlayerService {
       _secondaryAudioPlayer.onPlayerStateChanged.listen((PlayerState state) {
         // Only update state if this is the active player
         if (!_usePrimaryPlayer) {
-          logger.d("Secondary player state changed: $state (active: ${!_usePrimaryPlayer})");
+          logger.d(
+            "Secondary player state changed: $state (active: ${!_usePrimaryPlayer})",
+          );
           _updateState(
             _currentState.copyWith(
               isPlaying: state == PlayerState.playing,
@@ -388,8 +392,18 @@ class MusicPlayerService {
 
         // Now crossfade: fade out current, fade in next
         await Future.wait([
-          _fadePlayerVolume(_activePlayer, from: originalVolume, to: 0.0, duration: fadeOut),
-          _fadePlayerVolume(_inactivePlayer, from: 0.0, to: originalVolume, duration: fadeIn),
+          _fadePlayerVolume(
+            _activePlayer,
+            from: originalVolume,
+            to: 0.0,
+            duration: fadeOut,
+          ),
+          _fadePlayerVolume(
+            _inactivePlayer,
+            from: 0.0,
+            to: originalVolume,
+            duration: fadeIn,
+          ),
         ]);
 
         // Stop the old player and swap roles
@@ -457,7 +471,9 @@ class MusicPlayerService {
         ),
       );
 
-      logger.d("State refreshed after player swap - Playing: ${playerState == PlayerState.playing}");
+      logger.d(
+        "State refreshed after player swap - Playing: ${playerState == PlayerState.playing}",
+      );
     } catch (e) {
       logger.e("Error refreshing state after swap: $e");
       // Fallback to basic state update
