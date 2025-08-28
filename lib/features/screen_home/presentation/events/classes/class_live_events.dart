@@ -165,7 +165,7 @@ class LiveEvents extends ConsumerWidget {
           decoration: isManual
               ? BoxDecoration(
                   border: Border.all(
-                    color: Colors.orange.withOpacity(0.7),
+                    color: Colors.orange.withValues(alpha: 0.7),
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(4),

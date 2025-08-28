@@ -78,9 +78,9 @@ class LineupJingleSettingsButton extends ConsumerWidget {
                                   : Colors.orange,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(
+                            child: const Text(
                               'LINEUPS',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

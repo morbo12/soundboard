@@ -274,7 +274,7 @@ class _DeejMappingsDialogState extends State<DeejMappingsDialog> {
           Expanded(
             flex: 4, // Increased from 3 to give more space
             child: DropdownButtonFormField<String>(
-              value: currentProcess,
+              initialValue: currentProcess,
               decoration: InputDecoration(
                 labelText: 'Process',
                 border: const OutlineInputBorder(),
@@ -316,7 +316,7 @@ class _DeejMappingsDialogState extends State<DeejMappingsDialog> {
           Expanded(
             flex: 4, // Increased from 3 to give more space
             child: DropdownButtonFormField<int>(
-              value: currentUiSlider,
+              initialValue: currentUiSlider,
               decoration: const InputDecoration(
                 labelText: 'UI Slider',
                 border: OutlineInputBorder(),

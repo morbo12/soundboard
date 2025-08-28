@@ -175,10 +175,10 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                       Text('Testing connection...'),
                     ],
                   ),
-                  error: (error, stack) => Row(
+                  error: (error, stack) => const Row(
                     children: [
-                      const Icon(Icons.error, color: Colors.red),
-                      const SizedBox(width: 8),
+                      Icon(Icons.error, color: Colors.red),
+                      SizedBox(width: 8),
                       Text(
                         'Connection error',
                         style: TextStyle(color: Colors.red),
@@ -230,10 +230,10 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                       Text('Loading voices...'),
                     ],
                   ),
-                  error: (error, stack) => Row(
+                  error: (error, stack) => const Row(
                     children: [
-                      const Icon(Icons.error, color: Colors.red),
-                      const SizedBox(width: 8),
+                      Icon(Icons.error, color: Colors.red),
+                      SizedBox(width: 8),
                       Text(
                         'Error loading voices',
                         style: TextStyle(color: Colors.red),

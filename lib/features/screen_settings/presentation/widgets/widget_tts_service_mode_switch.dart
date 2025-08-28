@@ -57,28 +57,39 @@ class _TtsServiceModeSwitchState extends ConsumerState<TtsServiceModeSwitch> {
     bool hasApiKey,
   ) {
     return [
-      _buildServiceOption(
-        context: context,
-        title: 'Soundboard API',
-        subtitle: 'High-quality voices with MP3/WAV audio',
-        value: TtsServiceMode.soundboardApi,
-        currentMode: currentMode,
-        isEnabled: true, // Always allow selection
-        isRecommended: true,
-        hasApiKey: hasApiKey,
-        onChanged: _changeMode,
-      ),
-      const SizedBox(height: 4),
-      _buildServiceOption(
-        context: context,
-        title: 'Azure Direct SDK',
-        subtitle: 'Legacy direct Azure connection with WebM audio',
-        value: TtsServiceMode.azureDirect,
-        currentMode: currentMode,
-        isEnabled: true,
-        isRecommended: false,
-        hasApiKey: true, // Azure doesn't need this distinction
-        onChanged: _changeMode,
+      RadioGroup<TtsServiceMode>(
+        groupValue: currentMode,
+        onChanged: (TtsServiceMode? newValue) {
+          if (newValue != null) _changeMode(newValue);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildServiceOption(
+              context: context,
+              title: 'Soundboard API',
+              subtitle: 'High-quality voices with MP3/WAV audio',
+              value: TtsServiceMode.soundboardApi,
+              currentMode: currentMode,
+              isEnabled: true, // Always allow selection
+              isRecommended: true,
+              hasApiKey: hasApiKey,
+              onChanged: _changeMode,
+            ),
+            const SizedBox(height: 4),
+            _buildServiceOption(
+              context: context,
+              title: 'Azure Direct SDK',
+              subtitle: 'Legacy direct Azure connection with WebM audio',
+              value: TtsServiceMode.azureDirect,
+              currentMode: currentMode,
+              isEnabled: true,
+              isRecommended: false,
+              hasApiKey: true, // Azure doesn't need this distinction
+              onChanged: _changeMode,
+            ),
+          ],
+        ),
       ),
     ];
   }
@@ -96,7 +107,7 @@ class _TtsServiceModeSwitchState extends ConsumerState<TtsServiceModeSwitch> {
   }) {
     final needsApiKey = value == TtsServiceMode.soundboardApi && !hasApiKey;
 
-    return RadioListTile<TtsServiceMode>(
+    return ListTile(
       title: Row(
         children: [
           Text(title),
@@ -145,12 +156,11 @@ class _TtsServiceModeSwitchState extends ConsumerState<TtsServiceModeSwitch> {
             ? '$subtitle (Configure API key after selection)'
             : subtitle,
       ),
-      value: value,
-      groupValue: currentMode,
-      onChanged: isEnabled
-          ? (newValue) => newValue != null ? onChanged!(newValue) : null
-          : null,
-      secondary: Icon(
+      leading: Radio<TtsServiceMode>(
+        value: value,
+        // No onChanged or groupValue here: RadioGroup ancestor manages selection.
+      ),
+      trailing: Icon(
         value == TtsServiceMode.soundboardApi
             ? Icons.api
             : Icons.cloud_outlined,

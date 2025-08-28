@@ -100,12 +100,12 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                       children: [
                         Row(
                           children: [
-                            Text(
+                            const Text(
                               'Music Player',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF9C27B0),
+                                color: Color(0xFF9C27B0),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -140,9 +140,9 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
                       ],
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.settings,
-                    color: const Color(0xFF9C27B0),
+                    color: Color(0xFF9C27B0),
                     size: 24,
                   ),
                 ],

@@ -127,7 +127,7 @@ class _PlayerEntryFormDialogState extends ConsumerState<PlayerEntryFormDialog> {
 
               // Position
               DropdownButtonFormField<String>(
-                value: _selectedPosition,
+                initialValue: _selectedPosition,
                 decoration: const InputDecoration(
                   labelText: 'Position',
                   border: OutlineInputBorder(),

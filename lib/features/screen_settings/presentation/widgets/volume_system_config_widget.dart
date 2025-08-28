@@ -344,7 +344,7 @@ class _VolumeSystemConfigDialogState extends State<VolumeSystemConfigDialog> {
           Expanded(
             flex: 3,
             child: DropdownButtonFormField<DeejTarget>(
-              value: mapping?.target,
+              initialValue: mapping?.target,
               decoration: const InputDecoration(
                 labelText: 'Target',
                 border: OutlineInputBorder(),
@@ -373,7 +373,7 @@ class _VolumeSystemConfigDialogState extends State<VolumeSystemConfigDialog> {
             flex: 3,
             child: mapping?.target == DeejTarget.externalProcess
                 ? DropdownButtonFormField<String>(
-                    value: mapping?.processName,
+                    initialValue: mapping?.processName,
                     decoration: const InputDecoration(
                       labelText: 'Process',
                       border: OutlineInputBorder(),

@@ -46,12 +46,12 @@ class ModernJingleUploadButton extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
+                        const Text(
                           'Upload Jingles',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF4CAF50),
+                            color: Color(0xFF4CAF50),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -86,7 +86,7 @@ class ModernJingleUploadButton extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.settings, color: const Color(0xFF4CAF50), size: 24),
+              const Icon(Icons.settings, color: Color(0xFF4CAF50), size: 24),
             ],
           ),
         ),
