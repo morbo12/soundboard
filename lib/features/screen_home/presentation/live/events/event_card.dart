@@ -2,11 +2,13 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_colors.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_event_card.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_goalevent.dart';
+import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_penaltyevent.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class EventCard extends ConsumerWidget {
   const EventCard({super.key, required this.data});
@@ -15,37 +17,79 @@ class EventCard extends ConsumerWidget {
   static const double _smallFontSize = 11.0;
   final Logger logger = const Logger('EventCard');
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListTile(
-      isThreeLine: true,
-      // dense: true,
-      visualDensity: VisualDensity.compact,
-      onTap: () {
-        EventCardSsml(ref: ref, data: data).getEventText(context);
-        logger.d("Button pressed");
-      },
-      leading: Icon(
-        _getEventIcon(data.matchEventTypeId),
-        color: Theme.of(context).colorScheme.onPrimary,
-      ),
-      textColor: MatchEventColors(data.matchEventTypeId).getTextColor(context),
-      tileColor: MatchEventColors(data.matchEventTypeId).getTileColor(context),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildEventHeader(),
-          // _buildEventDetails(),
+  String _getEventText(BuildContext context, WidgetRef ref) {
+    switch (data.matchEventTypeId) {
+      case MatchEventType.utvisning:
+        return _stripSsmlTags(
+          SsmlPenaltyEvent(ref: ref, matchEvent: data).formatAnnouncement(),
+        );
+      case MatchEventType.straffmal:
+      case MatchEventType.mal:
+        return _stripSsmlTags(
+          SsmlGoalEvent(ref: ref, matchEvent: data).formatAnnouncement(),
+        );
+      default:
+        return "";
+    }
+  }
+
+  String _stripSsmlTags(String text) {
+    // Remove SSML/XML tags using regex
+    return text.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  void _showTextDialog(BuildContext context, String text) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Announcement Text'),
+        content: SingleChildScrollView(child: Text(text)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
-      subtitle: _buildEventDetails(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: ListTile(
+        isThreeLine: true,
+        // dense: true,
+        visualDensity: VisualDensity.compact,
+        onTap: () {
+          EventCardSsml(ref: ref, data: data).getEventText(context);
+          logger.d("Button pressed");
+        },
+        onLongPress: () {
+          final text = _getEventText(context, ref);
+          _showTextDialog(context, text);
+        },
+        leading: Icon(
+          _getEventIcon(data.matchEventTypeId),
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+        textColor: MatchEventColors(
+          data.matchEventTypeId,
+        ).getTextColor(context),
+        tileColor: MatchEventColors(
+          data.matchEventTypeId,
+        ).getTileColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildEventHeader(),
+            // _buildEventDetails(),
+          ],
+        ),
+        subtitle: _buildEventDetails(),
+      ),
     );
   }
 
@@ -56,30 +100,38 @@ class EventCard extends ConsumerWidget {
           "${MatchEventTypes.getEventName(data.matchEventTypeId)} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         AutoSizeText(
           "${data.minute}:${data.second.toString().padLeft(2, '0')} | ",
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize + 2, fontWeight: FontWeight.bold),
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         if (_isGoalEvent())
           AutoSizeText(
             "${data.goalsHomeTeam} - ${data.goalsAwayTeam} | ",
             minFontSize: _smallFontSize,
             style: const TextStyle(
-                fontSize: _smallFontSize, fontWeight: FontWeight.bold),
+              fontSize: _smallFontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         AutoSizeText(
-            data.matchTeamName.length < 20
-                ? data.matchTeamName
-                : "${data.matchTeamName.substring(0, 17) + "..."}",
-            minFontSize: _smallFontSize,
-            style: const TextStyle(
-                fontSize: _smallFontSize + 2,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic)),
+          data.matchTeamName.length < 20
+              ? data.matchTeamName
+              : "${data.matchTeamName.substring(0, 17) + "..."}",
+          minFontSize: _smallFontSize,
+          style: const TextStyle(
+            fontSize: _smallFontSize + 2,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
       ],
     );
   }
@@ -92,7 +144,9 @@ class EventCard extends ConsumerWidget {
           maxLines: 2,
           minFontSize: _smallFontSize,
           style: const TextStyle(
-              fontSize: _smallFontSize, fontStyle: FontStyle.normal),
+            fontSize: _smallFontSize,
+            fontStyle: FontStyle.normal,
+          ),
         ),
       ],
     );
@@ -159,7 +213,9 @@ class EventCardSubTile extends StatelessWidget {
       maxLines: 1,
       minFontSize: _smallFontSize,
       style: const TextStyle(
-          fontSize: _mediumFontSize, fontStyle: FontStyle.italic),
+        fontSize: _mediumFontSize,
+        fontStyle: FontStyle.italic,
+      ),
       textAlign: TextAlign.left,
     );
   }

@@ -1,7 +1,8 @@
 // ssml_period_event.dart
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_intermediate.dart';
+
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_intermediate.dart';
 import 'class_ssml_base.dart';
 
 class SsmlPeriodEvent extends BaseSsmlEvent {
@@ -14,9 +15,10 @@ class SsmlPeriodEvent extends BaseSsmlEvent {
   }
 
   @override
-  String formatAnnouncement() {
-    final intermediateOrFinal =
-        period == 3 ? "Matchen slutar" : "Ställningen i matchen är";
+  String formatContent() {
+    final intermediateOrFinal = period == 3
+        ? "Matchen slutar"
+        : "Ställningen i matchen är";
 
     return wrapWithProsody(
       "Perioden slutar ${_formatPeriodResult()} "
@@ -94,13 +96,12 @@ class SsmlPeriodEvent extends BaseSsmlEvent {
 
     return selectedMatch.intermediateResults.firstWhere(
       (result) => result.period == period,
-      orElse:
-          () => IbyMatchIntermediateResult(
-            period: period,
-            goalsHomeTeam: 0,
-            goalsAwayTeam: 0,
-            matchId: 0,
-          ),
+      orElse: () => IbyMatchIntermediateResult(
+        period: period,
+        goalsHomeTeam: 0,
+        goalsAwayTeam: 0,
+        matchId: 0,
+      ),
     );
   }
 

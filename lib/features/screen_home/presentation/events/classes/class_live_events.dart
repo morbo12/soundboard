@@ -1,235 +1,208 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/features/innebandy_api/application/api_client_provider.dart';
-import 'package:soundboard/features/innebandy_api/application/match_service.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
-import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
-import 'package:soundboard/utils/logger.dart';
-
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/features/screen_home/presentation/events/widgets/live_match_card.dart';
+import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import '../../live/widget_event.dart';
 
-Timer? _timer;
+part 'class_live_events.g.dart';
 
-class LiveEvents extends ConsumerStatefulWidget {
-  final ScrollController scrollController;
-  const LiveEvents({super.key, required this.scrollController});
-  @override
-  ConsumerState<LiveEvents> createState() => _LiveEventsState();
+@riverpod
+class MatchEventsStream extends _$MatchEventsStream {
+  static const _logger = Logger('MatchEventsStream');
+
+  Timer? _timer;
+  final _streamController = StreamController<List<IbyMatchEvent>>.broadcast();
+  bool _isInitialized = false;
+
+  Stream<List<IbyMatchEvent>> build() {
+    ref.onDispose(() {
+      _timer?.cancel();
+      _streamController.close();
+    });
+
+    // Initialize with empty list - manual events will be added in _buildEventsListView
+    if (!_isInitialized) {
+      _isInitialized = true;
+      _streamController.add([]);
+    }
+
+    return _streamController.stream;
+  }
+
+  Future<void> startStreaming(int matchId) async {
+    if (_timer?.isActive ?? false) return;
+
+    final apiClient = ref.watch(apiClientProvider);
+    final matchService = MatchService(apiClient);
+
+    // Clear existing events when starting a new stream
+    _streamController.add([]);
+
+    // Initial fetch
+    await _fetchAndUpdateMatch(matchId, matchService);
+
+    // Start periodic updates
+    _timer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => _fetchAndUpdateMatch(matchId, matchService),
+    );
+  }
+
+  Future<void> _fetchAndUpdateMatch(int matchId, MatchService service) async {
+    try {
+      final match = await service.getMatch(matchId: matchId);
+      ref.read(selectedMatchProvider.notifier).state = match;
+      _streamController.add(match.events ?? []);
+      if (match.matchStatus == 4) {
+        stopStreaming();
+      }
+    } catch (e) {
+      _logger.e('Error fetching match', e);
+    }
+  }
+
+  void stopStreaming() {
+    _timer?.cancel();
+    _timer = null;
+  }
 }
 
-class _LiveEventsState extends ConsumerState<LiveEvents> {
-  bool streamerRunning = false;
-  StreamController<List<IbyMatchEvent>> streamController =
-      StreamController<List<IbyMatchEvent>>();
-  late Stream<List<IbyMatchEvent>>? userStream;
-  late IbyMatch updatedMatch;
-  late List<IbyMatchEvent> matchEventList;
-  final Logger logger = const Logger('LiveEvents');
+class LiveEvents extends ConsumerWidget {
+  final ScrollController scrollController;
 
-  late int liveindex;
+  const LiveEvents({super.key, required this.scrollController});
 
   @override
-  void dispose() {
-    streamController.close();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final effectiveMatch = ref.watch(effectiveMatchProvider);
 
-  @override
-  void initState() {
-    super.initState();
-
-    // streamController.add(user);
-    userStream = streamController.stream;
-    // logger.d("SCROLLCONTROLLER: ${scrollController.position.pixels}");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedMatch = ref.watch(selectedMatchProvider);
-
-    return SizedBox(
-      width: 350,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),
-        child: Column(
-          children: [
-            // Header for Matchhändelser
-            Container(
-              // Top row with rounded corners
-              // width: maxWidth,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(10),
-                ),
-              ),
-              padding: const EdgeInsets.all(6.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onLongPress: () {
-                            logger.d("Timer cancelled");
-
-                            setState(() {
-                              if (_timer != null) {
-                                _timer?.cancel();
-                                streamerRunning = false;
-                              }
-                            });
-                          },
-                          onPressed: () {
-                            logger.d("Starting streamer");
-
-                            streamerRunning
-                                ? null
-                                : startMatchStreaming(
-                                    matchId: selectedMatch.matchId);
-                            streamerRunning = true;
-                          },
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer),
-                            "Matchhändelser",
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Theme.of(context).colorScheme.surfaceTint),
-                    ),
-                  ),
-                  const PeriodScores()
-                ],
-              ),
-            ),
-            // Line under header
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                    color: Theme.of(context).colorScheme.surfaceTint),
-              ),
-            ),
-            // Box for ListTiles
-
-            SizedBox(
-              height: MediaQuery.of(context).size.height > 600
-                  ? MediaQuery.of(context).size.height -
-                      158 -
-                      DefaultConstants().appBarHeight
-                  : 500,
-              child: StreamBuilder(
-                  stream: userStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List<IbyMatchEvent>? data = snapshot.data;
-                      return ListView.separated(
-                        controller: widget.scrollController,
-                        // reverse: true,
-                        shrinkWrap: true,
-                        itemCount: data!.length,
-                        itemBuilder: (context, index) {
-                          selectedMatch.matchStatus != 4
-                              ? liveindex =
-                                  index // Events are added on top during live
-                              : liveindex = data.length -
-                                  1 -
-                                  index; // Reverse index if match has ended
-                          return EventWidget(data: data[liveindex]);
-                        },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            const Divider(
-                          thickness: 1,
-                          height: 5,
-                        ),
-                      );
-                    } else {
-                      return const Text("No Data");
-                    }
-                  }),
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        children: [
+          LiveMatchCard(match: effectiveMatch),
+          const SizedBox(height: 4),
+          Expanded(
+            child: effectiveMatch.matchId != 0
+                ? _buildEventsList(context, ref)
+                : const Center(child: Text('Select a match to view events')),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> startMatchStreaming({required int matchId}) async {
-    // if (matchId != 4) {
-    // Start streaming or initiate periodic refresh here
-    // Example: create a Timer that calls getMatch every X seconds
-    const refreshInterval = Duration(seconds: 3); // Adjust as needed
+  Widget _buildEventsList(BuildContext context, WidgetRef ref) {
+    final isManualMode = ref.watch(isManualLineupModeProvider);
 
-    // Lets try to just pull once before we start the timer
-    try {
-      // Call the getMatch API and update the UI
-      // final accessToken = await APIService().getAccessToken();
-      // final apiClient = APIClient();
-      final apiClient = ref.watch(apiClientProvider);
+    return ref
+        .watch(matchEventsStreamProvider)
+        .when(
+          data: (events) => _buildEventsListView(events, ref),
+          loading: () => isManualMode
+              ? _buildEventsListView(
+                  [],
+                  ref,
+                ) // Skip loading indicator in manual mode
+              : Center(
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+          error: (error, _) => Center(
+            child: Text(
+              'Error loading events: $error',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        );
+  }
 
-      final matchService = MatchService(apiClient);
-      updatedMatch = await matchService.getMatch(matchId: matchId);
+  Widget _buildEventsListView(List<IbyMatchEvent> apiEvents, WidgetRef ref) {
+    // Get manual events and combine with API events
+    final manualEvents = ref.watch(manualEventsProvider);
+    final allEvents = <IbyMatchEvent>[...apiEvents, ...manualEvents];
 
-      matchEventList = updatedMatch.events!;
-      streamController.add(matchEventList);
-      ref.read(selectedMatchProvider.notifier).state = updatedMatch;
-    } catch (e) {
-      // Handle errors, e.g., log or show a message
-      logger.d('Error during streaming: $e');
+    // Sort by time (latest first for live display)
+    allEvents.sort((a, b) {
+      if (a.period != b.period) return b.period.compareTo(a.period);
+      if (a.minute != b.minute) return b.minute.compareTo(a.minute);
+      return b.second.compareTo(a.second);
+    });
+
+    if (allEvents.isEmpty) {
+      final isManualMode = ref.watch(isManualLineupModeProvider);
+      return Center(
+        child: Text(
+          isManualMode
+              ? 'No events generated yet. Use the event generator below to create events.'
+              : 'No events yet',
+        ),
+      );
     }
 
-    // Starting periodic timer
-    logger.d("starting timer");
+    final effectiveMatch = ref.watch(effectiveMatchProvider);
+    final isLive = effectiveMatch.matchStatus != 4;
 
-    _timer = Timer.periodic(refreshInterval, (Timer timer) async {
-      try {
-        // Call the getMatch API and update the UI
-        // final apiClient = APIClient();
-        final apiClient = ref.watch(apiClientProvider);
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: allEvents.length,
+      itemBuilder: (context, index) {
+        final eventIndex = isLive ? index : allEvents.length - 1 - index;
+        final event = allEvents[eventIndex];
+        final isManual = manualEvents.contains(event);
 
-        final matchService = MatchService(apiClient);
-        updatedMatch = await matchService.getMatch(matchId: matchId);
-
-        matchEventList = updatedMatch.events!;
-        ref.read(selectedMatchProvider.notifier).state = updatedMatch;
-
-        // Update the UI with the new match data
-        // Assuming you have a function to update the UI, replace with actual code
-        // updateUI(updatedMatch);
-        streamController.add(matchEventList);
-
-        // Check if the match status changed, and stop the timer if needed
-        if (updatedMatch.matchStatus == 4) {
-          if (kDebugMode) {
-            logger.d(
-                "Timer cancelled direct as we are not Live - ${updatedMatch.matchStatus}");
-          }
-          timer.cancel();
-          streamerRunning = false;
-        }
-      } catch (e) {
-        // Handle errors, e.g., log or show a message
-        logger.d('Error during streaming: $e');
-      }
-    });
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+          decoration: isManual
+              ? BoxDecoration(
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.7),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                )
+              : null,
+          child: Stack(
+            children: [
+              EventWidget(key: ValueKey('${event.matchEventId}'), data: event),
+              if (isManual)
+                Positioned(
+                  top: 2,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Text(
+                      'M',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
-  // }
 }
+
+// Contains AI-generated edits.

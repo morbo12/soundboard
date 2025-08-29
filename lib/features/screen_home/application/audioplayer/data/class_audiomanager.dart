@@ -7,21 +7,31 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
-import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
+import 'package:soundboard/core/constants/globals.dart';
+import 'package:soundboard/core/models/volume_system_config.dart';
+import 'package:soundboard/core/providers/volume_providers.dart';
+import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
-import 'package:soundboard/features/jingle_manager/application/class_audiocategory.dart';
+import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/player_fade.dart';
+import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/providers/deej_providers.dart';
 import 'package:flutter/foundation.dart';
-import 'package:soundboard/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/services/volume_control_service_v2.dart';
+import 'package:soundboard/features/screen_home/presentation/board/providers/audio_progress_provider.dart';
 
 /// Enum representing the available audio channels
 enum AudioChannel { channel1, channel2 }
 
 /// Manages audio playback with dual-channel support, fading effects,
 /// and various playback strategies.
+///
+/// CHANNEL ASSIGNMENT STRATEGY (Static):
+/// - Channel 1 (C1): Background music and regular jingles
+/// - Channel 2 (C2): Horn, TTS/byte audio, and special effects
+///
+/// This replaces the previous dynamic channel selection which was unreliable.
 class AudioManager {
   final Logger logger = const Logger('AudioManager');
 
@@ -47,13 +57,111 @@ class AudioManager {
   static const int _shortFadeDuration = 10;
   static const int _longFadeDuration = 300;
 
-  /// Constructor initializes audio channels with default volumes
+  /// Flag to track if volumes have been initialized
+  bool _volumesInitialized = false;
+
+  /// Constructor - channels initialized with default volume of 0.0
   AudioManager() {
+    // Volumes will be set by initializeVolumes() method when WidgetRef is available
+  }
+
+  /// Initializes audio channel volumes, respecting Deej mappings
+  Future<void> initializeVolumes(WidgetRef ref) async {
+    if (_volumesInitialized) return; // Already initialized
+
     try {
-      channel1.setVolume(SettingsBox().c1InitialVolume);
-      channel2.setVolume(SettingsBox().c2InitialVolume);
+      // Set C1 volume if not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel1)) {
+        await channel1.setVolume(SettingsBox().c1InitialVolume);
+        logger.d("Initialized C1 volume to ${SettingsBox().c1InitialVolume}");
+      } else {
+        logger.d("C1 mapped to Deej - skipping initial volume setting");
+      }
+
+      // Set C2 volume if not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        await channel2.setVolume(SettingsBox().c2InitialVolume);
+        logger.d("Initialized C2 volume to ${SettingsBox().c2InitialVolume}");
+      } else {
+        logger.d("C2 mapped to Deej - skipping initial volume setting");
+      }
+
+      _volumesInitialized = true;
     } catch (e) {
-      logger.e("Error initializing audio channels: $e");
+      logger.e("Error initializing audio channel volumes: $e");
+    }
+  }
+
+  /// Checks if an AudioPlayer channel is mapped to Deej and should skip automatic volume setting
+  bool _isChannelMappedToDeej(WidgetRef ref, AudioChannel channel) {
+    try {
+      // Check if Deej is connected
+      final isDeejConnected = ref.read(deejConnectionStatusProvider);
+      if (!isDeejConnected) {
+        return false; // If Deej is not connected, allow volume control
+      }
+
+      // Determine which DeejTarget corresponds to this channel
+      final DeejTarget targetForChannel = channel == AudioChannel.channel1
+          ? DeejTarget.audioPlayerC1
+          : DeejTarget.audioPlayerC2;
+
+      // Check if this AudioPlayer channel is mapped to any Deej slider
+      final config = SettingsBox().volumeSystemConfig;
+      final isChannelMapped = config.deejMappings.any(
+        (sliderConfig) => sliderConfig.target == targetForChannel,
+      );
+
+      if (isChannelMapped) {
+        logger.d(
+          'Channel ${channel.name} is mapped to Deej - skipping automatic volume setting',
+        );
+      }
+
+      return isChannelMapped;
+    } catch (e) {
+      logger.e('Error checking if channel is mapped to Deej: $e');
+      return false; // Default to allowing volume control if error
+    }
+  }
+
+  /// Ensures volumes are initialized before first use
+  Future<void> _ensureInitialized(WidgetRef ref) async {
+    if (!_volumesInitialized) {
+      await initializeVolumes(ref);
+    }
+  }
+
+  /// Gets the current target volume for a channel based on the new volume system
+  Future<double> _getCurrentTargetVolume(
+    WidgetRef ref,
+    AudioChannel channel,
+  ) async {
+    try {
+      final channelNumber = channel == AudioChannel.channel1 ? 1 : 2;
+
+      // Use the VolumeControlServiceV2 to get the target volume
+      final volumeService = VolumeControlServiceV2(ref);
+      final targetVolume = await volumeService.getAudioPlayerTargetVolume(
+        channelNumber,
+      );
+
+      logger.d(
+        'Channel ${channel.name} target volume from VolumeControlServiceV2: $targetVolume',
+      );
+
+      // Safety check: if target volume is 0, use a reasonable default
+      if (targetVolume <= 0.0) {
+        logger.w(
+          'Channel ${channel.name} target volume is 0 - using fallback volume 0.7',
+        );
+        return 0.7; // Use 70% as a reasonable fallback
+      }
+
+      return targetVolume;
+    } catch (e) {
+      logger.e('Error getting target volume for channel: $e');
+      return 1.0; // Default to maximum volume if error
     }
   }
 
@@ -61,11 +169,65 @@ class AudioManager {
   void addInstance(AudioFile audioInstance) =>
       audioInstances.add(audioInstance);
 
+  /// Updates the volume for a specific AudioPlayer channel
+  /// This is called by external volume control services (e.g., Deej)
+  Future<void> updateChannelVolume(
+    Ref ref,
+    int channelNumber,
+    double volume,
+  ) async {
+    try {
+      final player = channelNumber == 1 ? channel1 : channel2;
+
+      logger.d(
+        'updateChannelVolume called: C$channelNumber -> ${(volume * 100).toStringAsFixed(0)}%',
+      );
+      logger.d('Player state: ${player.state}');
+
+      // Directly set the volume on the AudioPlayer
+      await player.setVolume(volume);
+
+      // Update the provider for UI feedback (always update when called externally)
+      final provider = channelNumber == 1 ? c1VolumeProvider : c2VolumeProvider;
+      ref.read(provider.notifier).updateVolume(volume);
+
+      // Force log the current volume to verify it was set
+      logger.d(
+        'AudioPlayer C$channelNumber volume set. Player state after setVolume: ${player.state}',
+      );
+
+      logger.d(
+        'Successfully updated AudioPlayer C$channelNumber volume from external source: ${(volume * 100).toStringAsFixed(0)}%',
+      );
+    } catch (e) {
+      logger.e('Error updating AudioPlayer channel $channelNumber volume: $e');
+    }
+  }
+
+  /// Test method to manually set volume (for debugging)
+  Future<void> testSetVolume(int channelNumber, double volume) async {
+    try {
+      final player = channelNumber == 1 ? channel1 : channel2;
+      logger.d(
+        'TEST: Setting C$channelNumber volume to ${(volume * 100).toStringAsFixed(0)}%',
+      );
+      await player.setVolume(volume);
+      logger.d('TEST: Volume set successfully');
+    } catch (e) {
+      logger.e('TEST: Error setting volume: $e');
+    }
+  }
+
   /// Stops all audio playback with fade effect
   Future<void> stopAll(WidgetRef ref) async {
     try {
       await _fadeAndStop(ref, AudioChannel.channel1);
       await _fadeAndStop(ref, AudioChannel.channel2);
+
+      // Clear progress tracking when stopping all audio
+      ref.read(currentPlayingJingleProvider.notifier).state = null;
+      ref.read(currentJingleChannelProvider.notifier).state = null;
+      ref.read(lastPressedButtonProvider.notifier).state = null;
     } catch (e) {
       logger.e("Error stopping all audio", e.toString());
     }
@@ -113,10 +275,9 @@ class AudioManager {
     try {
       final fade = Fade(ref);
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
-      final provider =
-          channel == AudioChannel.channel1
-              ? c1VolumeProvider
-              : c2VolumeProvider;
+      final provider = channel == AudioChannel.channel1
+          ? c1VolumeProvider
+          : c2VolumeProvider;
       logger.d(
         "[_fadeChannel] Fading channel ${channel.name} duration $duration",
       );
@@ -149,19 +310,46 @@ class AudioManager {
     String filePath, {
     required int fadeDuration,
     bool isBackgroundMusic = false,
+    AudioFile? audioFile, // Track which jingle is playing
   }) async {
     try {
-      final otherChannel =
-          channel == AudioChannel.channel1
-              ? AudioChannel.channel2
-              : AudioChannel.channel1;
+      final otherChannel = channel == AudioChannel.channel1
+          ? AudioChannel.channel2
+          : AudioChannel.channel1;
 
-      await _setChannelVolume(ref, channel, 0.0);
+      // Set channel to appropriate target volume immediately (no fade-in needed)
+      final targetVolume = await _getCurrentTargetVolume(ref, channel);
+      logger.d(
+        "Setting channel ${channel.name} to target volume: $targetVolume",
+      );
+      await _setChannelVolume(
+        ref,
+        channel,
+        targetVolume,
+        forceProviderUpdate:
+            true, // Always update visual sliders when starting playback
+      );
+
       logger.d("Fading and stopping channel ${otherChannel.name}");
       _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
       logger.d("After _fadeAndStop");
 
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
+
+      // Update providers to track currently playing jingle
+      if (audioFile != null && !isBackgroundMusic) {
+        ref.read(currentPlayingJingleProvider.notifier).state = audioFile;
+        ref.read(currentJingleChannelProvider.notifier).state =
+            channel == AudioChannel.channel1 ? 1 : 2;
+
+        // Clear tracking when playback completes
+        player.onPlayerComplete.listen((_) {
+          ref.read(currentPlayingJingleProvider.notifier).state = null;
+          ref.read(currentJingleChannelProvider.notifier).state = null;
+          ref.read(lastPressedButtonProvider.notifier).state = null;
+        });
+      }
+
       await player.play(DeviceFileSource(filePath));
 
       if (isBackgroundMusic) {
@@ -178,8 +366,10 @@ class AudioManager {
           await _setChannelVolume(ref, channel, 0.0);
         });
       } else {
-        // Fade in to full volume
-        await _fadeChannel(ref, channel, 1.0, fadeDuration);
+        // Volume is already set correctly - no fade needed when starting playback
+        logger.d(
+          "Channel ${channel.name} volume already set to target - no fade needed",
+        );
       }
     } catch (e) {
       logger.e("Error playing audio file: $e");
@@ -200,18 +390,29 @@ class AudioManager {
   Future<void> _setChannelVolume(
     WidgetRef ref,
     AudioChannel channel,
-    double volume,
-  ) async {
+    double volume, {
+    bool forceProviderUpdate = false,
+  }) async {
     try {
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
+      final provider = channel == AudioChannel.channel1
+          ? c1VolumeProvider
+          : c2VolumeProvider;
+
       logger.d("Setting volume to $volume for channel ${channel.name}");
+
+      // Always set the AudioPlayer volume
       await player.setVolume(volume);
 
-      final provider =
-          channel == AudioChannel.channel1
-              ? c1VolumeProvider
-              : c2VolumeProvider;
-      ref.read(provider.notifier).updateVolume(volume);
+      // Update provider if not Deej-mapped OR if explicitly requested (for playback start)
+      if (!_isChannelMappedToDeej(ref, channel) || forceProviderUpdate) {
+        ref.read(provider.notifier).updateVolume(volume);
+        logger.d("Updated provider for ${channel.name} - volume: $volume");
+      } else {
+        logger.d(
+          "AudioPlayer volume set but provider not updated - ${channel.name} is mapped to Deej",
+        );
+      }
     } catch (e) {
       logger.e("Error setting channel volume: $e");
     }
@@ -226,11 +427,12 @@ class AudioManager {
     bool shortFade = true,
     bool isBackgroundMusic = false,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
-      final categoryInstances =
-          audioInstances
-              .where((instance) => instance.audioCategory == category)
-              .toList();
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
 
       if (categoryInstances.isEmpty) return;
 
@@ -244,20 +446,107 @@ class AudioManager {
         audioFile = categoryInstances[0];
       }
 
-      final channel =
-          isBackgroundMusic ? AudioChannel.channel1 : _getAvailableChannel();
+      final channel = _getChannelForAudioType(
+        category: category,
+        isBackgroundMusic: isBackgroundMusic,
+      );
 
       final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
       logger.d("[playAudio] fadeDuration is $fadeDuration");
       logger.d(
         "[playAudio] Playing ${audioFile.filePath} on channel ${channel.name}",
       );
+
+      // Update progress providers for jingle tracking
+      ref.read(currentPlayingJingleProvider.notifier).state = audioFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+      logger.d(
+        "[playAudio] Updated progress providers for: ${audioFile.displayName}",
+      );
+
       await _playAudioFile(
         ref,
         channel,
         audioFile.filePath,
         fadeDuration: fadeDuration,
         isBackgroundMusic: isBackgroundMusic,
+        audioFile: audioFile,
+      );
+    } catch (e) {
+      logger.e("Error playing audio: $e");
+    }
+  }
+
+  /// Plays audio from a specific category with various playback options
+  Future<void> playAudioFile(
+    AudioFile audiofile,
+    WidgetRef ref, {
+    bool shortFade = true,
+    bool isBackgroundMusic = false,
+  }) async {
+    await _ensureInitialized(ref);
+
+    try {
+      // If this is a category-only audio file, play a random audio from the category
+      if (audiofile.isCategoryOnly) {
+        // Track which button was pressed for category-only buttons
+        ref.read(lastPressedButtonProvider.notifier).state = audiofile;
+
+        // Debug logging
+        logger.d(
+          "[playAudioFile] Category-only button pressed: ${audiofile.displayName}",
+        );
+
+        logger.d(
+          "[playAudioFile] Playing random from category: ${audiofile.audioCategory}",
+        );
+        await playAudio(
+          audiofile.audioCategory,
+          ref,
+          random: true,
+          shortFade: shortFade,
+          isBackgroundMusic: isBackgroundMusic,
+        );
+        return;
+      }
+
+      // For specific file assignments, check if we need to resolve the filename
+      if (!audiofile.filePath.contains('/') &&
+          !audiofile.filePath.contains('\\') &&
+          audiofile.filePath.isNotEmpty) {
+        // This looks like just a filename, not a full path - use playSpecificFile to find it
+        logger.d(
+          "[playAudioFile] Resolving filename ${audiofile.filePath} in category ${audiofile.audioCategory}",
+        );
+        await playSpecificFileWithTracking(
+          audiofile.audioCategory,
+          audiofile.filePath,
+          ref,
+          originalAudioFile:
+              audiofile, // Track the original button for progress
+          shortFade: shortFade,
+        );
+        return;
+      }
+
+      final channel = _getChannelForAudioType(
+        category: audiofile.audioCategory,
+        isBackgroundMusic: isBackgroundMusic,
+      );
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d("[playAudio] fadeDuration is $fadeDuration");
+      logger.d(
+        "[playAudio] Playing ${audiofile.filePath} on channel ${channel.name}",
+      );
+      await _playAudioFile(
+        ref,
+        channel,
+        audiofile.filePath,
+        fadeDuration: fadeDuration,
+        isBackgroundMusic: isBackgroundMusic,
+        audioFile: audiofile,
       );
     } catch (e) {
       logger.e("Error playing audio: $e");
@@ -334,43 +623,238 @@ class AudioManager {
     _recentlyPlayed.remove(category);
   }
 
-  /// Returns the channel that is currently available for playback
-  AudioChannel _getAvailableChannel() {
-    return channel1.state == PlayerState.playing
-        ? AudioChannel.channel2
-        : AudioChannel.channel1;
+  /// Plays a specific file from a category by matching the filename
+  Future<void> playSpecificFile(
+    AudioCategory category,
+    String specificFileName,
+    WidgetRef ref, {
+    bool shortFade = true,
+  }) async {
+    await _ensureInitialized(ref);
+
+    try {
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
+
+      if (categoryInstances.isEmpty) {
+        logger.w(
+          "[playSpecificFile] No audio files found for category $category",
+        );
+        return;
+      }
+
+      // Try to find exact match first
+      AudioFile? targetFile;
+      try {
+        targetFile = categoryInstances.firstWhere(
+          (instance) => instance.filePath.contains(specificFileName),
+        );
+      } catch (e) {
+        // No exact match found, try partial matching
+        final partialMatch = categoryInstances
+            .where(
+              (instance) =>
+                  instance.filePath.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ) ||
+                  instance.displayName.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ),
+            )
+            .toList();
+
+        if (partialMatch.isNotEmpty) {
+          targetFile = partialMatch.first;
+        }
+      }
+
+      // If no match found at all, don't play anything
+      if (targetFile == null) {
+        logger.w(
+          "[playSpecificFile] No match found for filename '$specificFileName' in category $category",
+        );
+        return;
+      }
+
+      final channel = _getChannelForAudioType(category: category);
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d(
+        "[playSpecificFile] Playing ${targetFile.filePath} (requested: $specificFileName) on channel ${channel.name}",
+      );
+
+      // Update progress providers for jingle tracking
+      ref.read(currentPlayingJingleProvider.notifier).state = targetFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+
+      logger.d(
+        "[playSpecificFile] Updated progress providers for: ${targetFile.displayName}",
+      );
+
+      await _playAudioFile(
+        ref,
+        channel,
+        targetFile.filePath,
+        fadeDuration: fadeDuration,
+        audioFile: targetFile,
+      );
+    } catch (e) {
+      logger.d("Error playing specific file: $e");
+    }
+  }
+
+  /// Plays a specific file from a category by matching the filename
+  /// while preserving progress tracking for the original button's AudioFile
+  Future<void> playSpecificFileWithTracking(
+    AudioCategory category,
+    String specificFileName,
+    WidgetRef ref, {
+    required AudioFile originalAudioFile,
+    bool shortFade = true,
+  }) async {
+    await _ensureInitialized(ref);
+
+    try {
+      final categoryInstances = audioInstances
+          .where((instance) => instance.audioCategory == category)
+          .toList();
+
+      if (categoryInstances.isEmpty) {
+        logger.w(
+          "[playSpecificFileWithTracking] No audio files found for category $category",
+        );
+        return;
+      }
+
+      // Try to find exact match first
+      AudioFile? targetFile;
+      try {
+        targetFile = categoryInstances.firstWhere(
+          (instance) => instance.filePath.contains(specificFileName),
+        );
+      } catch (e) {
+        // No exact match found, try partial matching
+        final partialMatch = categoryInstances
+            .where(
+              (instance) =>
+                  instance.filePath.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ) ||
+                  instance.displayName.toLowerCase().contains(
+                    specificFileName.toLowerCase(),
+                  ),
+            )
+            .toList();
+
+        if (partialMatch.isNotEmpty) {
+          targetFile = partialMatch.first;
+        }
+      }
+
+      // If no match found at all, don't play anything
+      if (targetFile == null) {
+        logger.w(
+          "[playSpecificFileWithTracking] No match found for filename '$specificFileName' in category $category",
+        );
+        return;
+      }
+
+      final channel = _getChannelForAudioType(category: category);
+
+      final fadeDuration = shortFade ? _shortFadeDuration : _longFadeDuration;
+      logger.d(
+        "[playSpecificFileWithTracking] Playing ${targetFile.filePath} (requested: $specificFileName) on channel ${channel.name}",
+      );
+
+      // Update progress providers using the original button's AudioFile for progress tracking
+      // This ensures the progress bar and play indicator show correctly on the button
+      ref.read(currentPlayingJingleProvider.notifier).state = originalAudioFile;
+      ref.read(currentJingleChannelProvider.notifier).state =
+          channel == AudioChannel.channel1 ? 1 : 2;
+
+      logger.d(
+        "[playSpecificFileWithTracking] Updated progress providers for: ${originalAudioFile.displayName}",
+      );
+
+      await _playAudioFile(
+        ref,
+        channel,
+        targetFile.filePath,
+        fadeDuration: fadeDuration,
+        audioFile: originalAudioFile, // Use original for tracking
+      );
+    } catch (e) {
+      logger.d("Error playing specific file with tracking: $e");
+    }
+  }
+
+  /// Returns the appropriate channel for the given audio type
+  ///
+  /// Static channel assignment strategy:
+  /// - C1: Background music and regular jingles (goal, clap, generic, etc.)
+  /// - C2: Horn, byte audio (TTS), and special effects (penalty, timeout, powerup)
+  ///
+  /// This replaces the old _getAvailableChannel() which was unreliable and
+  /// caused audio conflicts. Static assignment ensures predictable behavior.
+  AudioChannel _getChannelForAudioType({
+    bool isHorn = false,
+    bool isBackgroundMusic = false,
+    bool isByteAudio = false,
+    AudioCategory? category,
+  }) {
+    // Background music always on C1 (existing behavior)
+    if (isBackgroundMusic) {
+      return AudioChannel.channel1;
+    }
+
+    // C2 for horn, byte audio, and special effects
+    if (isHorn || isByteAudio) {
+      return AudioChannel.channel2;
+    }
+
+    // C2 for special effect categories
+    if (category != null) {
+      switch (category) {
+        case AudioCategory.specialJingle:
+        case AudioCategory.goalHorn:
+          return AudioChannel.channel2;
+        default:
+          return AudioChannel.channel1;
+      }
+    }
+
+    // C1 for everything else (regular jingles)
+    return AudioChannel.channel1;
   }
 
   /// Plays a horn jingle immediately
   Future<void> playHorn(WidgetRef ref) async {
+    await _ensureInitialized(ref);
+
     try {
-      const category = AudioCategory.hornJingle;
-      final categoryInstances =
-          audioInstances
-              .where((instance) => instance.audioCategory == category)
-              .toList();
+      logger.d("[playHorn] Playing goalHorn category");
 
-      if (categoryInstances.isEmpty) return;
-
-      logger.d(
-        "[playHorn] Loading ${categoryInstances[0].filePath} into channel 2",
-      );
-
+      // Stop both channels first for immediate horn playback
       if (channel2.state == PlayerState.playing) {
         logger.d("[playHorn] Stopping Channel 2");
-        await channel2.stop(); // Stop the currently playing instance
+        await channel2.stop();
         logger.d("[playHorn] Channel 2 Stopped");
       }
       if (channel1.state == PlayerState.playing) {
         logger.d("[playHorn] Stopping Channel 1");
-        await channel1.stop(); // Stop the currently playing instance
+        await channel1.stop();
         logger.d("[playHorn] Channel 1 Stopped");
       }
-      logger.d("[playHorn] Channel 2 setVolume 1.0");
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
-      logger.d("[playHorn] Playing horn");
-      await channel2.play(DeviceFileSource(categoryInstances[0].filePath));
+
+      // Use the existing playAudio method with goalHorn category
+      // This ensures consistent behavior with the rest of the audio system
+      await playAudio(
+        AudioCategory.goalHorn,
+        ref,
+        shortFade: true, // Quick fade for immediate horn response
+      );
     } catch (e) {
       logger.e("[playHorn] Error playing horn: $e");
     }
@@ -381,6 +865,8 @@ class AudioManager {
     required Uint8List audio,
     required WidgetRef ref,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       logger.d("Length is ${audio.length}");
 
@@ -388,8 +874,19 @@ class AudioManager {
         await channel2.stop(); // Stop the currently playing instance
       }
 
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+      // Only set volume if channel is not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        final targetVolume = await _getCurrentTargetVolume(
+          ref,
+          AudioChannel.channel2,
+        );
+        await channel2.setVolume(targetVolume);
+        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
+      } else {
+        logger.d(
+          "[playBytes] Skipping volume setting - Channel 2 is mapped to Deej",
+        );
+      }
 
       await channel2.play(BytesSource(audio));
     } catch (e) {
@@ -402,6 +899,8 @@ class AudioManager {
     required Uint8List audio,
     required WidgetRef ref,
   }) async {
+    await _ensureInitialized(ref);
+
     try {
       logger.d("[playBytesAndWait] Length is ${audio.length}");
 
@@ -409,10 +908,21 @@ class AudioManager {
         await channel2.stop(); // Stop the currently playing instance
       }
 
-      logger.d("[playBytesAndWait] Setting volume to 1.0");
+      logger.d("[playBytesAndWait] Setting volume to target");
 
-      await channel2.setVolume(1.0);
-      ref.read(c2VolumeProvider.notifier).updateVolume(1.0);
+      // Only set volume if channel is not mapped to Deej
+      if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
+        final targetVolume = await _getCurrentTargetVolume(
+          ref,
+          AudioChannel.channel2,
+        );
+        await channel2.setVolume(targetVolume);
+        ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
+      } else {
+        logger.d(
+          "[playBytesAndWait] Skipping volume setting - Channel 2 is mapped to Deej",
+        );
+      }
 
       // Create a completer to handle the completion
       final completer = Completer<void>();

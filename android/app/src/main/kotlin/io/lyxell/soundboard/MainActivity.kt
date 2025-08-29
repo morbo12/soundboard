@@ -1,4 +1,4 @@
-package io.lyxell.soundboard
+package eu.fbtools.soundboard
 
 import io.flutter.embedding.android.FlutterActivity
 

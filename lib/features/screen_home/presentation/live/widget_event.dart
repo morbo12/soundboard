@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_match_event_type.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+
 import 'package:soundboard/features/screen_home/presentation/live/events/event_card.dart';
 import 'events/event_period.dart';
 

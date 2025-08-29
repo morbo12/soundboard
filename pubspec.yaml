@@ -16,10 +16,10 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.3.16+15
+version: 0.4.0+22
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.9.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,22 +30,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
+  flutter_localizations: 
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
   audioplayers: ^6.0.0
   gap: ^3.0.1
   dart_random_choice: ^0.2.0
-  # permission_handler: ^11.0.0
-  flex_color_scheme: ^8.1.0
-  intl: ^0.19.0
+  flex_color_scheme: ^8.3.0
+  intl: ^0.20.2
   auto_size_text: ^3.0.0
   url_launcher: ^6.1.8
   http: ^1.1.2
-  overlay_loading_progress: ^1.0.0
   audio_video_progress_bar: ^2.0.0
   path_provider: ^2.0.13
   flutter_download_manager: ^0.5.5
@@ -53,28 +50,44 @@ dependencies:
   easy_hive: ^1.0.1
   google_fonts: ^6.1.0
   flutter_launcher_icons: ^0.14.1
-  syncfusion_flutter_sliders: ^28.1.41
+  syncfusion_flutter_sliders: ^30.1.42
   cloud_text_to_speech:
     git:
       url: https://github.com/morbo12/cloud_text_to_speech_flutter
-  archive: ^4.0.2
   flutter_volume_controller: ^1.3.1
   flutter_toastr: ^1.0.3
   package_info_plus: ^8.0.0
-  syncfusion_flutter_core: ^28.1.41
-  riverpod_annotation: ^2.3.3
-  flutter_riverpod: ^2.4.9
-  file_picker: ^9.0.2
-  animated_introduction: ^1.0.4
+  syncfusion_flutter_core: ^30.1.42
+  riverpod_annotation: ^2.6.1	
+  flutter_riverpod: ^2.6.1	
+  file_picker: ^10.1.2
   shared_preferences: ^2.5.2
-  
+  win32audio: ^1.4.0
+  flutter_libserialport: ^0.6.0
+  serial_port_win32: ^2.1.12
+  audio_metadata_reader: ^1.4.2
+  crypto: ^3.0.6
+
+# dependency_overrides:
+  # because of https://github.com/jpnurmi/flutter_libserialport/issues/128
+  # flutter_libserialport: ^0.6.0
+    # git:
+    #   url: https://github.com/NeariX67/flutter_libserialport
+    #   ref: main
+  # analyzer: ^7.3.0
+  # analyzer_plugin: ^0.12.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
   mockito: ^5.4.5
+  mocktail: ^1.0.0
   build_runner: ^2.4.15
+  riverpod_generator: ^2.6.1	
+  # analyzer: ^7.4.0
+  # analyzer_plugin: ^0.13.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,32 +106,8 @@ flutter:
   assets:
     - assets/translations/
     - assets/intros/
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
-
+    - assets/icon/
+    - assets/icon/fbtools.eu.png
 
 flutter_launcher_icons:
   android: true
@@ -127,18 +116,3 @@ flutter_launcher_icons:
   windows:
     generate: true
     image_path: "assets/icon/icon.jpg"
-  
-# msix_config:
-#   display_name: soundboard
-#   identity_name: io.lyxell.soundboard
-#   # msix_version: 1.0.0.0
-#   languages: sv-se
-#   logo_path: assets/icon/icon.jpg
-#   capabilities: internetClient
-#   certificate_path: C:\users\lars\flutter_code\cert\cert.pfx
-#   certificate_password: Key123
-#   install_certificate: false
-#   sign_msix: true
-#   # signtool_options: /fd SHA256 /f "C:\users\lars\flutter_code\cert.pfx" /p Key123
-#   app_installer:
-#     publish_folder_path: C:\Users\lars\OneDrive\Soundboard\Releases\io.lyxell.soundboard\windows

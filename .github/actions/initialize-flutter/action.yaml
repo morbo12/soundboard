@@ -7,7 +7,7 @@ runs:
     - name: Install Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.4'
+        flutter-version: '3.32.5'
         channel: 'stable'
         architecture: x64
     - name: Generate code

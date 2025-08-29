@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/constants/default_constants.dart';
-import 'package:soundboard/properties.dart';
+import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class MainVolume extends StatefulWidget {
-  const MainVolume({
-    super.key,
-  });
+  const MainVolume({super.key});
 
   @override
   State<MainVolume> createState() => _MainVolumeState();
@@ -25,7 +23,7 @@ class _MainVolumeState extends State<MainVolume> {
         Column(
           children: [
             SizedBox(
-              width: ScreenSizeUtil.getWidth(context),
+              width: ResponsiveUtils.getWidth(context),
               child: Center(
                 child: SfSlider(
                   // Slider properties

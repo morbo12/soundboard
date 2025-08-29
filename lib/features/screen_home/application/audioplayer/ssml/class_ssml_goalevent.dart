@@ -1,8 +1,8 @@
 // ssml_goal_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'class_ssml_base.dart';
 
 class GoalPhrases {
@@ -49,7 +49,7 @@ class SsmlGoalEvent extends BaseSsmlEvent {
     : super(loggerName: 'SsmlGoalEvent');
 
   @override
-  String formatAnnouncement() {
+  String formatContent() {
     return _addProsodyVariation(_formatGoalAnnouncement());
   }
 
@@ -66,7 +66,9 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       $scorer. 
       ${assist.isNotEmpty ? '$assist. ' : ''}
       Tid: $time
-    '''.trim().replaceAll(RegExp(r'\s+'), ' ');
+    '''
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
   }
 
   String _selectGoalPhrase() {
@@ -112,7 +114,8 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       målskytt nummer 
       <say-as interpret-as='cardinal'>${matchEvent.playerShirtNo}</say-as>, 
       <say-as interpret-as='name'>${matchEvent.playerName}</say-as>
-    '''.trim();
+    '''
+        .trim();
   }
 
   String _formatAssist() {
@@ -122,7 +125,8 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       Assist av nummer 
       <say-as interpret-as='cardinal'>${matchEvent.playerAssistShirtNo}</say-as>, 
       <say-as interpret-as='name'>${matchEvent.playerAssistName}</say-as>
-    '''.trim();
+    '''
+        .trim();
   }
 
   String _formatEventTime() {
@@ -136,7 +140,8 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       <mstts:express-as style='${variations[_random.nextInt(variations.length)]}'>
         ${wrapWithProsody(text)}
       </mstts:express-as>
-    '''.trim();
+    '''
+        .trim();
   }
 
   @override

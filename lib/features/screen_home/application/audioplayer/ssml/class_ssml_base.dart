@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/constants/providers.dart';
-import 'package:soundboard/features/cloud_text_to_speech/providers.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/ssml/class_ssml_penaltyevent.dart';
-import 'package:soundboard/properties.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/providers.dart';
+import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
+import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/utils/logger.dart';
+import 'class_ssml_header.dart';
 
 abstract class BaseSsmlEvent {
   final WidgetRef ref;
@@ -23,6 +23,10 @@ abstract class BaseSsmlEvent {
       teamName.replaceAll(RegExp(r' \([A-Z]\)'), '');
 
   /// Wraps text with SSML prosody tags
+  String wrapWithLang(String text, {String lang = 'sv-SE'}) =>
+      "<lang xml:lang='$lang'>$text</lang>";
+
+  /// Wraps text with SSML prosody tags
   String wrapWithProsody(
     String text, {
     String rate = 'medium',
@@ -34,6 +38,16 @@ abstract class BaseSsmlEvent {
       "<say-as interpret-as='time' format='hms'>"
       "${formatter.format(minutes)}:${formatter.format(seconds)}"
       "</say-as>";
+
+  /// Wraps content with complete SSML speak tags
+  String wrapWithSpeakTags(String content, {String language = 'sv-SE'}) =>
+      SSMLHeader.wrapWithSpeakTags(content, language: language);
+
+  /// Wraps content with SSML voice tags using the user's selected voice
+  String wrapWithVoice(String content) {
+    final selectedVoice = SettingsBox().azVoiceName;
+    return "<voice name='$selectedVoice'>$content</voice>";
+  }
 
   /// Shows a toast message
   Future<void> showToast(
@@ -60,6 +74,13 @@ abstract class BaseSsmlEvent {
       final result = await textToSpeechService.getTtsNoFile(text: ssml);
 
       await _updateCharCount(ssml);
+
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      final jingleManager = jingleManagerAsync.maybeWhen(
+        data: (manager) => manager,
+        orElse: () => throw Exception("JingleManager not available"),
+      );
+
       await jingleManager.audioManager.playBytes(
         audio: result.audio.buffer.asUint8List(),
         ref: ref,
@@ -78,6 +99,14 @@ abstract class BaseSsmlEvent {
   }
 
   /// Abstract methods that must be implemented by subclasses
-  String formatAnnouncement();
+  String formatContent();
+
+  /// Returns the complete SSML announcement with voice and speak tags
+  String formatAnnouncement() {
+    final content = formatContent();
+    final voiceWrapped = wrapWithVoice(content);
+    return wrapWithSpeakTags(voiceWrapped);
+  }
+
   Future<bool> getSay(BuildContext context);
 }

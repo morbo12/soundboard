@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/common_widgets/button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
 
 class CleanCacheButton extends StatefulWidget {
@@ -15,21 +14,110 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Button(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            fixedSize: const Size.fromHeight(100),
+    return Card(
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.errorContainer,
+              Theme.of(context).colorScheme.errorContainer.withAlpha(200),
+            ],
           ),
-          noLines: 1,
-          isSelected: true,
-          onTap: _isLoading ? null : () => _handleCacheDeletion(),
-          secondaryText: 'N/A',
-          primaryText: "!!! DANGER - Delete jingle cache - DANGER !!!",
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
+        child: InkWell(
+          onTap: _isLoading ? null : () => _handleCacheDeletion(),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.error.withAlpha(50),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.delete_forever,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'DANGER - Delete Jingle Cache',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onErrorContainer,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'CRITICAL',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onError,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Permanently removes all uploaded jingle files from cache storage',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onErrorContainer.withAlpha(200),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.warning_amber,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 24,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -52,8 +140,10 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
       });
 
       // Now we can safely use context since we're back in sync code
-      final shouldDelete =
-          await _showConfirmationDialog(cacheDir.path, formattedSize);
+      final shouldDelete = await _showConfirmationDialog(
+        cacheDir.path,
+        formattedSize,
+      );
 
       if (shouldDelete == true) {
         _showLoadingIndicator();
@@ -110,9 +200,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
               },
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Delete'),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
@@ -136,7 +224,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 20),
-              const Text("Clearing cache...")
+              const Text("Clearing cache..."),
             ],
           ),
         );
@@ -147,9 +235,11 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   void _showResultFeedback(bool success) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success
-            ? 'Cache successfully cleared'
-            : 'Cache directory not found or already empty'),
+        content: Text(
+          success
+              ? 'Cache successfully cleared'
+              : 'Cache directory not found or already empty',
+        ),
         backgroundColor: success ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 3),
       ),
@@ -166,3 +256,5 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     );
   }
 }
+
+// Contains AI-generated edits.

@@ -1,48 +1,69 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/constants/default_constants.dart';
+import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/volume_system_config_widget.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_serial_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_spotify.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_lineup_jingles.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_music_upload_button.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  SettingsScreenState createState() => SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => SettingsScreenState();
 }
 
-class SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: SizedBox(
-          width: ScreenSizeUtil.getWidth(context),
+          width: ResponsiveUtils.getWidth(context),
           child: ListView(
             children: [
               settingsHeaderText("Färgschema"),
               settingsHeader2Text(
-                  "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown"),
+                "Dessa är rekommenderade: greyLaw, aquaBlue, ebonyClay, outerSpace, blueWhale, sanJuanBlue, blueM3, purpleBrown",
+              ),
               const MyColorScheme(),
-
               const Gap(10),
-              // settingsHeaderText("Default mainvolym"),
-              // // settingsHeader2Text("Sätt volymen för main"),
-              // MainVolume(),
-              // const Gap(2),
-              // settingsHeaderText("Mainvolym för TTS"),
-              // // settingsHeader2Text("Sätt volymen för TTS"),
-              // TtsVolume(),
-              // const Gap(2),
-              settingsHeaderText("Kanalens volym för bakgrund"),
-              // settingsHeader2Text("Sätt volymen för bakgrundsmusik"),
+
+              settingsHeaderText("Bakgrundskanalens volym"),
               const Gap(2),
               const BackgroundVolume(),
-              const Gap(5),
+              const Gap(10),
+
+              settingsHeaderText("Deej Mixer Serial Port Settings"),
+              settingsHeader2Text(
+                "Configure the serial port connection for your Deej hardware mixer",
+              ),
+              const Gap(2),
+              const SerialPortSettingsButton(),
+              const Gap(10),
+              settingsHeaderText("Volume Control & Deej Mappings"),
+              settingsHeader2Text(
+                "Configure volume control behavior and Deej hardware mappings",
+              ),
+              const Gap(2),
+              const VolumeSystemConfigButton(),
+              const Gap(10),
+              settingsHeaderText("Text to Speech Settings"),
+              settingsHeader2Text(
+                "Configure Azure TTS settings for voice synthesis",
+              ),
+              const Gap(2),
+              const TtsSettingsButton(),
+              const Gap(10),
 
               settingsHeaderText("Spotify Configuration"),
               settingsHeader2Text(
@@ -51,32 +72,41 @@ class SettingsScreenState extends State<SettingsScreen> {
               const Gap(2),
               const SettingsSpotify(),
               const Gap(10),
-              settingsHeaderText("Ladda upp jinglar"),
-              settingsHeader2Text(
-                  "Antingen välj en eller flera flac eller mp3-filer."),
-              const Gap(2),
-              JingleSettings(),
-              const Gap(5),
-              settingsHeaderText("Ladda upp enskilda jinglar"),
-              settingsHeader2Text(
-                  "Ladda upp en flac eller mp3-fil som kopplas till funktionen"),
-              const Gap(2),
-              JingleSingleSettings(),
-              const Gap(5),
-              // settingsHeaderText("Ladda upp en komplett struktur"),
-              // settingsHeader2Text(
-              //     "Ladda upp samtliga filer i en och samma zip-fil"),
-              // const Gap(2),
-              // JingleAllSettings(),
-              // const Gap(5),
 
-              settingsHeaderText(
-                  "!!! DANGER - Clean jingle cache - DANGER !!!"),
+              settingsHeaderText("Grid Layout"),
               settingsHeader2Text(
-                "Deletes all uploaded jingles from cache",
+                "Configure the layout and reset jingle assignments",
               ),
               const Gap(2),
+              const GridSettingsSection(),
+              const Gap(5),
+
+              settingsHeaderText("Lineup Jingles"),
+              settingsHeader2Text(
+                "Configure which jingles to use for home and away team lineups",
+              ),
+              const Gap(2),
+              const LineupJingleSettingsButton(),
+              const Gap(10),
+
+              settingsHeaderText("Music Player"),
+              settingsHeader2Text(
+                "Upload and manage music files for the built-in music player",
+              ),
+              const Gap(2),
+              const MusicUploadButton(),
+              const Gap(10),
+              settingsHeaderText("Jinglar"),
+              settingsHeader2Text("Hantera jinglar och ljudfiler"),
+              const Gap(2),
+              const JingleSettings(),
+              const Gap(5),
+
+              settingsHeaderText("Rensa cache"),
+              settingsHeader2Text("Raderar alla uppladdade jinglar från cache"),
+              const Gap(2),
               const CleanCacheButton(),
+              const Gap(10),
             ],
           ),
         ),
@@ -87,22 +117,14 @@ class SettingsScreenState extends State<SettingsScreen> {
   Text settingsHeaderText(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 19,
-        fontWeight: FontWeight.bold,
-        // color: Theme.of(context).colorScheme.onBackground,
-      ),
+      style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
     );
   }
 
   Text settingsHeader2Text(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.normal,
-        // color: Theme.of(context).colorScheme.onBackground,
-      ),
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
     );
   }
 

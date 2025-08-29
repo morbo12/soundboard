@@ -32,3 +32,5 @@ linter:
 analyzer:
   plugins:
     - dart_code_metrics
+  exclude:
+    - test/**

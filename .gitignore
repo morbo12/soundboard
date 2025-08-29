@@ -26,3 +26,7 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 android/app/.cxx/
+
+FEATURES.md
+UTLÅNADE TOKENS.md
+Copilot-Processing.md

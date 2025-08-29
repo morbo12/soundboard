@@ -1,9 +1,8 @@
 // ssml_penalty_event.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:soundboard/features/innebandy_api/data/class_match_event.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
-import 'package:soundboard/properties.dart';
 import 'class_ssml_base.dart';
 
 class PenaltyTemplates {
@@ -19,21 +18,24 @@ class PenaltyTemplates {
   >
   templates = [
     // Standard format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       Nummer $number, $name 
       i $team utvisas $penalty. 
       Tid: <say-as interpret-as='duration' format='ms'>$time</say-as>
     ''',
 
     // Time-first format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       Vid <say-as interpret-as='duration' format='ms'>$time</say-as> i $period
       utvisas nummer $number, $name 
       i $team för $penalty
     ''',
 
     // Team-focused format
-    (time, period, number, name, team, penalty) => '''
+    (time, period, number, name, team, penalty) =>
+        '''
       $team får en utvisning. 
       $penalty på nummer $number, $name.
       Tid: <say-as interpret-as='duration' format='ms'>$time</say-as>
@@ -49,7 +51,7 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
     : super(loggerName: 'SsmlPenaltyEvent');
 
   @override
-  String formatAnnouncement() {
+  String formatContent() {
     _validateEventData();
     return _formatPenaltyAnnouncement();
   }
@@ -83,8 +85,8 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
       penaltyInfo,
     );
 
-    return _addProsodyVariation(
-      _addRandomPauses(announcement.trim().replaceAll(RegExp(r'\s+'), ' ')),
+    return _addRandomPauses(
+      announcement.trim().replaceAll(RegExp(r'\s+'), ' '),
     );
   }
 
@@ -101,17 +103,6 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
       return penaltyInfo['name'] ?? 'okänd utvisning';
     }
     return "${penaltyInfo['time']} för ${penaltyInfo['name']}";
-  }
-
-  String _addProsodyVariation(String text) {
-    final rates = ['slow', 'medium', 'fast'];
-    final pitches = ['low', 'medium', 'high'];
-
-    return wrapWithProsody(
-      text,
-      rate: rates[_random.nextInt(rates.length)],
-      pitch: pitches[_random.nextInt(pitches.length)],
-    );
   }
 
   String _addRandomPauses(String text) {

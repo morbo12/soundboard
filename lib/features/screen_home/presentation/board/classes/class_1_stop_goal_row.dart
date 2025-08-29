@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:soundboard/common_widgets/button.dart';
-import 'package:soundboard/constants/globals.dart';
-import 'package:soundboard/features/screen_home/application/audioplayer/audioplayer_func.dart';
-import 'package:soundboard/utils/logger.dart';
+import 'package:soundboard/common/widgets/class_goal_button.dart';
+import 'package:soundboard/common/widgets/class_stop_button.dart';
+import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 class StopGoalRow extends ConsumerWidget {
   const StopGoalRow({super.key});
@@ -13,30 +13,47 @@ class StopGoalRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Button(
-          noLines: 1,
-          onTap: () {
-            logger.d("STOP was pressed");
-            jingleManager.audioManager.stopAll(ref);
-          },
-          primaryText: 'STOP',
-          secondaryText: 'N/A',
-        ),
-        const Gap(10),
-        // Button to play goal audio
-        Button(
-          noLines: 1,
-          onTap: () {
-            logger.d("GOAL was pressed");
-            playGoal2(ref);
-          },
-          primaryText: 'MÅL',
-          secondaryText: 'N/A',
-        ),
-      ],
+    final jingleManagerAsync = ref.watch(jingleManagerProvider);
+
+    return jingleManagerAsync.when(
+      data: (jingleManager) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            StopButton(),
+            // LargeButton(
+            //   noLines: 1,
+            //   onTap: () {
+            //     logger.d("STOP was pressed");
+            //     jingleManager.audioManager.stopAll(ref);
+            //   },
+            //   primaryText: 'STOP',
+            //   secondaryText: 'N/A',
+            // ),
+            const Gap(10),
+            GoalButton(),
+            // Button to play goal audio
+            // LargeButton(
+            //   noLines: 1,
+            //   audioFile: goalHorn, // Pass the goal horn for progress tracking
+            //   onTap: () {
+            //     logger.d("GOAL was pressed");
+            //     playGoal2(ref);
+            //   },
+            //   primaryText: 'MÅL',
+            //   secondaryText: 'N/A',
+            // ),
+          ],
+        );
+      },
+      loading: () => const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [Expanded(child: Center(child: CircularProgressIndicator()))],
+      ),
+      error: (error, stack) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [Expanded(child: Center(child: Text('Error: $error')))],
+      ),
     );
   }
 }

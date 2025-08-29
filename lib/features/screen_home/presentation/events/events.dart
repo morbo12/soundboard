@@ -20,12 +20,16 @@ class EventsSection extends StatelessWidget {
         children: [
           VerticalDivider(
             thickness: 1.0,
-            width: 0.0,
+            width: 20.0,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          LiveEvents(scrollController: scrollController),
+
+          // Provide proper constraints for LiveEvents
+          Expanded(child: LiveEvents(scrollController: scrollController)),
         ],
       ),
     );
   }
 }
+
+// Contains AI-generated edits.
