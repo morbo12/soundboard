@@ -7,7 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.0-beta6] - 2025-08-23
+## [0.4.0] - 2025-08-29
+
+### Added
+
+- Full music player with mini player widget in bottom bar
+- Manual lineup entry mode for matches not in IBIS system
+- AI-powered sentence generation service (AiSentenceService) for TTS announcements
+- Audio metadata parser for track information display
+- Multi-language TTS voice support with experimental voices
+- Default jingles and AI-generated jingle assets bundled with app
+- Comprehensive documentation updates and architecture diagrams
+- New GitHub Actions workflows for CI/CD and SonarQube analysis
+- Enhanced test coverage with additional unit and widget tests
+
+### Changed
+
+- **Complete UI modernization**: All settings buttons converted to modern Material 3 card design with category-specific theming
+- **Upload interface overhaul**: Removed non-functional drag-and-drop zones, replaced with clean, reliable upload buttons
+- Refactored music player and jingle manager into cleaner service/UI architecture
+- Improved jingle assignment and playback behavior
+- Enhanced volume controller and event card layouts
+- Updated build configurations for Android and Windows platforms
+- Streamlined project structure with better code organization
+
+### Fixed
+
+- Resolved layout and rendering issues (ParentDataWidget misuse, hidden progress bars)
+- Fixed audio metadata parsing edge cases
+- Corrected Deej board output handling and lineup/SSML initialization
+- Improved button name display and category selection functionality
+- Enhanced serial port and volume system configuration reliability
+
+### Other
+
+- Added comprehensive music license and attribution files
+- Project cleanup with dependency updates and code quality improvements
+- New asset files including icons, translations, and documentation
+- Enhanced security configurations and code analysis setup
+
+_This release finalizes the 0.4.0 feature set with complete UI modernization and core functionality enhancements._
 
 ### Fixed
 
