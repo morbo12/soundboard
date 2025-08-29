@@ -31,3 +31,7 @@ final c1VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
 final c2VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
   (ref) => VolumeNotifier(Volume(vol: SettingsBox().c2InitialVolume)),
 );
+
+final musicPlayerVolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
+  (ref) => VolumeNotifier(Volume(vol: SettingsBox().musicPlayerInitialVolume)),
+);

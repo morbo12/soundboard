@@ -13,6 +13,7 @@ enum Settings {
   spotifyUrl,
   c1InitialVolume,
   c2InitialVolume,
+  musicPlayerInitialVolume,
   venueId,
   federationId,
   azVoiceId,
@@ -152,11 +153,18 @@ extension GeneralSettingsExtension on SettingsBox {
     Settings.c2InitialVolume,
     defaultValue: kDebugMode ? 0.10 : AppConstants.defaultC2Volume,
   ); // 0.10 if we are in DebugMode
+
+  double get musicPlayerInitialVolume => get(
+    Settings.musicPlayerInitialVolume,
+    defaultValue: kDebugMode ? 0.10 : AppConstants.defaultMusicPlayerVolume,
+  ); // 0.10 if we are in DebugMode
   set spotifyUrl(String value) => put(Settings.spotifyUrl, value);
   set spotifyUri(String value) => put(Settings.spotifyUri, value);
 
   set c1InitialVolume(double value) => put(Settings.c1InitialVolume, value);
   set c2InitialVolume(double value) => put(Settings.c2InitialVolume, value);
+  set musicPlayerInitialVolume(double value) =>
+      put(Settings.musicPlayerInitialVolume, value);
 
   // Save our favourite Venue
   set venueId(int value) => put(Settings.venueId, value);

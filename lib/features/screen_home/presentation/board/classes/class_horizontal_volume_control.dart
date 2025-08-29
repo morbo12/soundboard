@@ -5,6 +5,7 @@ import 'package:soundboard/core/providers/audioplayers_providers.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/volume_control_service_v2.dart';
+import 'package:soundboard/features/music_player/data/music_player_provider.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -53,9 +54,11 @@ class _HorizontalVolumeControlState
     final c2PlayerState = ref.watch(c2StateProvider);
 
     final mainVolumeValue = ref.watch(mainVolumeProvider);
-    final p1VolumeValue = ref.watch(
-      p1VolumeProvider,
-    ); // Used for External slider
+    final musicPlayerVolumeValue = ref.watch(
+      musicPlayerVolumeProvider,
+    ); // Used for Music Player slider
+
+    final musicPlayerState = ref.watch(musicPlaybackStateProvider);
 
     return Consumer(
       builder: (context, ref, child) {
@@ -70,6 +73,20 @@ class _HorizontalVolumeControlState
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    // Master Volume (Windows Master)
+                    Expanded(
+                      child: _buildVerticalVolumeColumn(
+                        'Master',
+                        PlayerState.stopped,
+                        mainVolumeValue.vol,
+                        (value) {
+                          volumeControlService.updateVolumeFromUI(
+                            0, // Master = index 0
+                            value / 100,
+                          );
+                        },
+                      ),
+                    ),
                     // C1 Volume (AudioPlayer Channel 1)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
@@ -98,29 +115,21 @@ class _HorizontalVolumeControlState
                         },
                       ),
                     ),
-                    // Master Volume (Windows Master)
+                    // Music Player Volume (internal music player)
                     Expanded(
                       child: _buildVerticalVolumeColumn(
-                        'Master',
-                        PlayerState.stopped,
-                        mainVolumeValue.vol,
+                        'Music',
+                        musicPlayerState.when(
+                          data: (state) => state.isPlaying
+                              ? PlayerState.playing
+                              : PlayerState.stopped,
+                          loading: () => PlayerState.stopped,
+                          error: (_, __) => PlayerState.stopped,
+                        ),
+                        musicPlayerVolumeValue.vol,
                         (value) {
                           volumeControlService.updateVolumeFromUI(
-                            0, // Master = index 0
-                            value / 100,
-                          );
-                        },
-                      ),
-                    ),
-                    // External Process Volume (configurable via Deej when connected)
-                    Expanded(
-                      child: _buildVerticalVolumeColumn(
-                        'External',
-                        PlayerState.stopped,
-                        p1VolumeValue.vol, // Use P1 provider for external
-                        (value) {
-                          volumeControlService.updateVolumeFromUI(
-                            1, // External = index 1 (P1)
+                            6, // Music Player = index 6
                             value / 100,
                           );
                         },

@@ -7,6 +7,7 @@ import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/utils/platform_utils.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/features/music_player/data/music_player_provider.dart';
 
 /// New Volume Control Service with separated Deej connected/disconnected logic
 class VolumeControlServiceV2 {
@@ -25,12 +26,32 @@ class VolumeControlServiceV2 {
       final isDeejConnected = _ref.read(deejConnectionStatusProvider);
 
       if (isDeejConnected) {
-        // When Deej is connected, UI sliders should not control anything directly
-        // Only update the provider for visual feedback
+        // When Deej is connected, check if this specific slider should still work
         await _updateUISliderProvider(uiSliderIdx, volumePercent);
-        logger.d(
-          'UI slider $uiSliderIdx updated for visual feedback only (Deej connected)',
-        );
+
+        // Special handling for music player - allow UI control if not mapped to Deej
+        if (uiSliderIdx == 6) {
+          final config = SettingsBox().volumeSystemConfig;
+          final isMusicPlayerMapped = config.deejMappings.any(
+            (m) => m.target == DeejTarget.musicPlayer,
+          );
+
+          if (!isMusicPlayerMapped) {
+            // Music player not mapped to Deej - allow UI control
+            await _updateMusicPlayerVolume(volumePercent);
+            logger.d(
+              'Updated music player volume from UI (not mapped to Deej): ${(volumePercent * 100).toStringAsFixed(0)}%',
+            );
+          } else {
+            logger.d(
+              'Music player UI slider updated for visual feedback only (mapped to Deej)',
+            );
+          }
+        } else {
+          logger.d(
+            'UI slider $uiSliderIdx updated for visual feedback only (Deej connected)',
+          );
+        }
       } else {
         // When Deej is disconnected, use the UI slider configuration
         await _handleUISliderWhenDeejDisconnected(uiSliderIdx, volumePercent);
@@ -96,6 +117,13 @@ class VolumeControlServiceV2 {
           'AudioPlayer channel ${uiSliderIdx == 4 ? 'C1' : 'C2'} slider updated for visualization only',
         );
         break;
+      case 6: // Music Player
+        // When Deej is disconnected, UI should control music player directly
+        await _updateMusicPlayerVolume(volumePercent);
+        logger.d(
+          'Updated music player volume from UI: ${(volumePercent * 100).toStringAsFixed(0)}%',
+        );
+        break;
       default:
         logger.d('UI slider $uiSliderIdx has no action when Deej disconnected');
     }
@@ -134,6 +162,13 @@ class VolumeControlServiceV2 {
         );
         await _updateAudioPlayerChannel(2, volumePercent);
         break;
+
+      case DeejTarget.musicPlayer:
+        logger.d(
+          'Deej mapping: Updating Music Player to ${(volumePercent * 100).toStringAsFixed(0)}%',
+        );
+        await _updateMusicPlayerVolume(volumePercent);
+        break;
     }
   }
 
@@ -154,6 +189,12 @@ class VolumeControlServiceV2 {
       case 5: // AudioPlayer Channel 2
         _ref.read(c2VolumeProvider.notifier).updateVolume(volumePercent);
         SettingsBox().c2InitialVolume = volumePercent;
+        break;
+      case 6: // Music Player
+        _ref
+            .read(musicPlayerVolumeProvider.notifier)
+            .updateVolume(volumePercent);
+        SettingsBox().musicPlayerInitialVolume = volumePercent;
         break;
       default:
         logger.w('Unknown UI slider index: $uiSliderIdx');
@@ -259,9 +300,39 @@ class VolumeControlServiceV2 {
     }
   }
 
+  /// Updates the music player volume
+  Future<void> _updateMusicPlayerVolume(double volumePercent) async {
+    try {
+      // Update the provider for music player volume
+      _ref.read(musicPlayerVolumeProvider.notifier).updateVolume(volumePercent);
+      SettingsBox().musicPlayerInitialVolume = volumePercent;
+
+      // Update the actual music player volume if it's currently playing
+      try {
+        final musicNotifier = _ref.read(musicPlayerNotifierProvider.notifier);
+        await musicNotifier.setVolumeDirectly(volumePercent);
+        logger.d(
+          'Updated music player volume directly to ${(volumePercent * 100).toStringAsFixed(0)}%',
+        );
+      } catch (e) {
+        logger.w(
+          'Could not update live music player volume - will be applied on next playback: $e',
+        );
+      }
+
+      logger.d(
+        'Updated Music Player volume to ${(volumePercent * 100).toStringAsFixed(0)}%',
+      );
+    } catch (e) {
+      logger.e('Error updating music player volume: $e');
+    }
+  }
+
   /// Helper method to find the Deej slider index for a specific target
   int _getDeejSliderForTarget(VolumeSystemConfig config, DeejTarget target) {
-    final mapping = config.deejMappings.where((m) => m.target == target).firstOrNull;
+    final mapping = config.deejMappings
+        .where((m) => m.target == target)
+        .firstOrNull;
     return mapping?.deejSliderIdx ?? -1;
   }
 
@@ -291,9 +362,11 @@ class VolumeControlServiceV2 {
         if (deejSliderIdx != -1) {
           // Get the real Deej slider value from DeejProcessorService
           try {
-            final deejService = await _ref.read(deejProcessorServiceProvider.future);
+            final deejService = await _ref.read(
+              deejProcessorServiceProvider.future,
+            );
             final sliderValues = deejService.sliderValues;
-            
+
             if (deejSliderIdx < sliderValues.length) {
               final actualSliderValue = sliderValues[deejSliderIdx];
               logger.d(
@@ -302,15 +375,69 @@ class VolumeControlServiceV2 {
               return actualSliderValue;
             }
           } catch (e) {
-            logger.w('Failed to get Deej slider value, falling back to provider: $e');
+            logger.w(
+              'Failed to get Deej slider value, falling back to provider: $e',
+            );
           }
         }
-        
+
         // Fallback to provider volume if we can't get Deej slider value
         final provider = channelNumber == 1
             ? c1VolumeProvider
             : c2VolumeProvider;
         return _ref.read(provider).vol;
+      } else {
+        // Use max volume when Deej connected but not mapped
+        return 1.0;
+      }
+    }
+  }
+
+  /// Gets the target volume for the music player
+  /// Returns max volume when Deej disconnected, provider volume when connected and mapped
+  Future<double> getMusicPlayerTargetVolume() async {
+    final isDeejConnected = _ref.read(deejConnectionStatusProvider);
+
+    if (!isDeejConnected) {
+      // When Deej is disconnected, music player uses max volume
+      return 1.0;
+    } else {
+      // When Deej is connected, check if music player is mapped and use provider volume
+      final config = SettingsBox().volumeSystemConfig;
+      final isMapped = config.deejMappings.any(
+        (m) => m.target == DeejTarget.musicPlayer,
+      );
+
+      if (isMapped) {
+        // Get the actual Deej slider position instead of provider volume
+        final deejSliderIdx = _getDeejSliderForTarget(
+          config,
+          DeejTarget.musicPlayer,
+        );
+        if (deejSliderIdx != -1) {
+          // Get the real Deej slider value from DeejProcessorService
+          try {
+            final deejService = await _ref.read(
+              deejProcessorServiceProvider.future,
+            );
+            final sliderValues = deejService.sliderValues;
+
+            if (deejSliderIdx < sliderValues.length) {
+              final actualSliderValue = sliderValues[deejSliderIdx];
+              logger.d(
+                'Music player target volume from actual Deej slider $deejSliderIdx: $actualSliderValue',
+              );
+              return actualSliderValue;
+            }
+          } catch (e) {
+            logger.w(
+              'Failed to get Deej slider value, falling back to provider: $e',
+            );
+          }
+        }
+
+        // Fallback to provider volume if we can't get Deej slider value
+        return _ref.read(musicPlayerVolumeProvider).vol;
       } else {
         // Use max volume when Deej connected but not mapped
         return 1.0;

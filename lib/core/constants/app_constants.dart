@@ -14,6 +14,7 @@ class AppConstants {
   // Audio defaults
   static const double defaultC1Volume = 0.3;
   static const double defaultC2Volume = 0.2;
+  static const double defaultMusicPlayerVolume = 0.8;
 
   // UI defaults
   static const double defaultBorderSize = 20.0;

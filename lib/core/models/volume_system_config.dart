@@ -108,7 +108,8 @@ enum DeejTarget {
   master('Master Volume'),
   externalProcess('External Process'),
   audioPlayerC1('AudioPlayer C1'),
-  audioPlayerC2('AudioPlayer C2');
+  audioPlayerC2('AudioPlayer C2'),
+  musicPlayer('Music Player');
 
   const DeejTarget(this.displayName);
   final String displayName;

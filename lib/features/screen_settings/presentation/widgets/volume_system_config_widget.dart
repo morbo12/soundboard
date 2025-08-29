@@ -479,6 +479,8 @@ class _VolumeSystemConfigDialogState extends State<VolumeSystemConfigDialog> {
       case DeejTarget.audioPlayerC1:
       case DeejTarget.audioPlayerC2:
         return const Icon(Icons.music_note, size: 16, color: Colors.orange);
+      case DeejTarget.musicPlayer:
+        return const Icon(Icons.library_music, size: 16, color: Colors.purple);
     }
   }
 
