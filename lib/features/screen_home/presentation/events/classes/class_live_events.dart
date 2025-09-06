@@ -44,7 +44,7 @@ class MatchEventsStream extends _$MatchEventsStream {
   }
 
   Future<void> startStreaming(int matchId) async {
-    // If already streaming the same match, don't restart
+    // Return early if already streaming the same match
     if ((_timer?.isActive ?? false) && _currentMatchId == matchId) return;
 
     // Stop any existing timer
