@@ -21,6 +21,12 @@ class MatchEventsStream extends _$MatchEventsStream {
   Timer? _timer;
   final _streamController = StreamController<List<IbyMatchEvent>>.broadcast();
   bool _isInitialized = false;
+  int? _currentMatchId;
+  int? _lastKnownStatus;
+
+  // Timer intervals
+  static const Duration _activeDuration = Duration(seconds: 3);
+  static const Duration _pausedDuration = Duration(seconds: 30);
 
   Stream<List<IbyMatchEvent>> build() {
     ref.onDispose(() {
@@ -38,21 +44,51 @@ class MatchEventsStream extends _$MatchEventsStream {
   }
 
   Future<void> startStreaming(int matchId) async {
-    if (_timer?.isActive ?? false) return;
+    // Return early if already streaming the same match
+    if ((_timer?.isActive ?? false) && _currentMatchId == matchId) return;
 
+    // Stop any existing timer
+    stopStreaming();
+
+    _currentMatchId = matchId;
     final apiClient = ref.watch(apiClientProvider);
     final matchService = MatchService(apiClient);
 
     // Clear existing events when starting a new stream
     _streamController.add([]);
 
-    // Initial fetch
+    // Initial fetch to get current match status
     await _fetchAndUpdateMatch(matchId, matchService);
 
-    // Start periodic updates
+    // Get the current match to check status
+    final currentMatch = ref.read(selectedMatchProvider);
+    _lastKnownStatus = currentMatch.matchStatus;
+
+    // Start timer for both active (2) and paused (3) matches
+    // Match statuses: 0=N/A, 1=Ej påbörjad, 2=Spel pågår, 3=Paus, 4=Färdigspelad
+    if (currentMatch.matchStatus == 2 || currentMatch.matchStatus == 3) {
+      _startTimerWithInterval(matchId, matchService, currentMatch.matchStatus);
+    } else {
+      _logger.d(
+        'Not starting periodic updates for match $matchId (status: ${currentMatch.matchStatus} - not active or paused)',
+      );
+    }
+  }
+
+  void _startTimerWithInterval(int matchId, MatchService service, int status) {
+    // Stop existing timer before starting new one
+    _timer?.cancel();
+
+    final interval = status == 2 ? _activeDuration : _pausedDuration;
+
     _timer = Timer.periodic(
-      const Duration(seconds: 3),
-      (_) => _fetchAndUpdateMatch(matchId, matchService),
+      interval,
+      (_) => _fetchAndUpdateMatch(matchId, service),
+    );
+
+    final statusText = status == 2 ? 'active' : 'paused';
+    _logger.d(
+      'Started periodic updates for match $matchId (status: $status - $statusText, interval: ${interval.inSeconds}s)',
     );
   }
 
@@ -61,8 +97,31 @@ class MatchEventsStream extends _$MatchEventsStream {
       final match = await service.getMatch(matchId: matchId);
       ref.read(selectedMatchProvider.notifier).state = match;
       _streamController.add(match.events ?? []);
-      if (match.matchStatus == 4) {
-        stopStreaming();
+
+      // Handle status changes
+      // Match statuses: 0=N/A, 1=Ej påbörjad, 2=Spel pågår, 3=Paus, 4=Färdigspelad
+      if (match.matchStatus != _lastKnownStatus) {
+        _logger.d(
+          'Match $matchId status changed from ${_lastKnownStatus} to ${match.matchStatus}',
+        );
+
+        if (match.matchStatus == 4) {
+          // Match finished - stop streaming
+          _logger.d('Match $matchId finished, stopping streaming');
+          stopStreaming();
+        } else if (match.matchStatus == 2 || match.matchStatus == 3) {
+          // Match is active or paused - adjust timer interval
+          _logger.d('Match $matchId status changed, adjusting timer interval');
+          _startTimerWithInterval(matchId, service, match.matchStatus);
+        } else {
+          // Match is not started or other status - stop streaming
+          _logger.d(
+            'Match $matchId no longer active/paused, stopping streaming',
+          );
+          stopStreaming();
+        }
+
+        _lastKnownStatus = match.matchStatus;
       }
     } catch (e) {
       _logger.e('Error fetching match', e);
@@ -72,6 +131,9 @@ class MatchEventsStream extends _$MatchEventsStream {
   void stopStreaming() {
     _timer?.cancel();
     _timer = null;
+    _currentMatchId = null;
+    _lastKnownStatus = null;
+    _logger.d('Streaming stopped and state cleared');
   }
 }
 
