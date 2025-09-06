@@ -62,7 +62,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     );
   }
 
-  Widget _buildWideLayout(ThemeData theme, dynamic state) {
+  Widget _buildWideLayout(ThemeData theme, MatchSetupState state) {
     final colorScheme = theme.colorScheme;
 
     return Row(
