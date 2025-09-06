@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/date_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/federation_selector.dart';
@@ -105,7 +106,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     );
   }
 
-  Widget _buildNarrowLayout(ThemeData theme, dynamic state) {
+  Widget _buildNarrowLayout(ThemeData theme, MatchSetupState state) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -187,7 +188,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     );
   }
 
-  Widget _buildMatchResults(ThemeData theme, dynamic state) {
+  Widget _buildMatchResults(ThemeData theme, MatchSetupState state) {
     final colorScheme = theme.colorScheme;
 
     return Container(
@@ -237,7 +238,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     );
   }
 
-  Widget _buildMatchContent(ThemeData theme, dynamic state) {
+  Widget _buildMatchContent(ThemeData theme, MatchSetupState state) {
     final colorScheme = theme.colorScheme;
 
     if (state.isLoading) {
@@ -318,9 +319,14 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
       );
     }
 
-    // Show matches or placeholder
+    // Use explicit null checks for clarity and maintainability
+    const invalidFederationId = null;
+    const invalidVenueId = null;
+
     final hasValidSelections =
-        state.selectedFederation > 0 && state.selectedVenue > 0;
+        state.selectedFederation != invalidFederationId &&
+        state.selectedVenue != invalidVenueId;
+    state.selectedFederation > 0 && state.selectedVenue > 0;
 
     if (!hasValidSelections) {
       return Center(
