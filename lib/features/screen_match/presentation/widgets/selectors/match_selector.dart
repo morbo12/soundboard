@@ -9,6 +9,7 @@ import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/s
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
+import 'package:soundboard/features/screen_home/presentation/events/classes/class_live_events.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 
 /// Widget for displaying and selecting matches from a list.
@@ -33,6 +34,9 @@ class MatchSelector extends ConsumerWidget {
   /// [matchID] is the unique identifier of the selected match.
   Future<void> _getMatch(WidgetRef ref, int matchID) async {
     try {
+      // Stop any existing live streaming when switching matches
+      ref.read(matchEventsStreamProvider.notifier).stopStreaming();
+
       final apiClient = ref.watch(apiClientProvider);
       final matchService = MatchService(apiClient);
       final standingsService = StandingsService(apiClient);
@@ -86,7 +90,7 @@ class MatchSelector extends ConsumerWidget {
               ),
             ),
             subtitle: Text(
-              '${DateFormat.yMd(Localizations.localeOf(context).toString()).format(DateTime.parse(match.matchDateTime))} - ${match.venue ?? "Unknown venue"}',
+              '${DateFormat.yMd(Localizations.localeOf(context).toString()).format(DateTime.parse(match.matchDateTime))} at ${DateFormat.Hm(Localizations.localeOf(context).toString()).format(DateTime.parse(match.matchDateTime))} - ${match.venue ?? "Unknown venue"}',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.secondary,
               ),

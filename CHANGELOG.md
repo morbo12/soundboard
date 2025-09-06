@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Match Setup Screen Redesign**: Complete UI overhaul with modern split-screen layout
+  - **Split-screen design**: Left panel for selectors, right panel for match results on wide screens
+  - **Responsive layout**: Automatically switches to single-column layout on mobile devices
+  - **Clean minimalist styling**: Removed heavy cards in favor of subtle borders and clean typography
+  - **Improved visual hierarchy**: Better spacing, consistent iconography, and Material 3 design language
+  - **Enhanced user experience**: Smart placeholder content, professional loading states, and clear error handling
+  - **Better accessibility**: Proper color contrast ratios and semantic color usage throughout
+
+## [0.4.1] - 2025-09-06
+
+### Fixed
+
+- **Live log timer optimization**: Timer now only starts for matches that are actively in progress (status 2 - "Spel pågår") or paused (status 3 - "Paus")
+- **Match switching during live streaming**: Fixed issue where users couldn't change to another match while timer was running reload operations
+- **Improved streaming lifecycle management**: Enhanced status monitoring to automatically stop streaming when match status changes from active to inactive
+- **Better resource cleanup**: Added proper timer cleanup when switching between matches to prevent conflicts
+
+### Changed
+
+- **Intelligent pause handling**: During match pause (status 3), timer interval increases to 30 seconds instead of stopping completely
+- **Dynamic interval adjustment**: Timer automatically switches between 3-second intervals (active) and 30-second intervals (paused) based on match status
+- Enhanced live events streaming with comprehensive match status validation
+- Improved logging for live streaming operations to aid in debugging
+- Optimized API call frequency by preventing unnecessary data reloads for inactive matches
+
 ## [0.4.0] - 2025-08-29
 
 ### Added
