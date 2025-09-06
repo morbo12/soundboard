@@ -55,6 +55,7 @@ Name: "swedish"; MessagesFile: "compiler:Languages\Swedish.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "jinglepack"; Description: "Download and extract Basic Jingle Pack (optional)"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 Source: "build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}";  Flags: ignoreversion 
@@ -64,6 +65,7 @@ Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignorever
 Source: "https://github.com/morbo12/eu.fbtools-BasicJinglePack/releases/download/v1.0.0/eu.fbtools-BasicJinglePack_1.0.0.zip"; \
   DestName:"jingles.zip" ; DestDir: "{localappdata}\eu.fbtools\soundboard"; \
   Flags: external download ignoreversion extractarchive recursesubdirs ; \
+  Tasks: jinglepack ; \
   ExternalSize: 49742474
 
 
