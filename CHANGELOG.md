@@ -7,15 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2025-09-10
+
 ### Changed
 
-- **Match Setup Screen Redesign**: Complete UI overhaul with modern split-screen layout
-  - **Split-screen design**: Left panel for selectors, right panel for match results on wide screens
-  - **Responsive layout**: Automatically switches to single-column layout on mobile devices
-  - **Clean minimalist styling**: Removed heavy cards in favor of subtle borders and clean typography
-  - **Improved visual hierarchy**: Better spacing, consistent iconography, and Material 3 design language
-  - **Enhanced user experience**: Smart placeholder content, professional loading states, and clear error handling
-  - **Better accessibility**: Proper color contrast ratios and semantic color usage throughout
+- **Custom category file upload reactivity**: Fixed issue where newly uploaded files to custom categories were not visible in the upload dialog until app restart
+- **State management optimization**: Improved reactive state management for custom category files by switching from one-time FutureProvider to reactive StateNotifier pattern
+- **Real-time UI updates**: Upload dialog now immediately shows newly added files without requiring manual refresh or app restart
+- **Enhanced user experience**: Custom category file management now provides instant visual feedback when files are added or removed
 
 ## [0.4.1] - 2025-09-06
 
@@ -33,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced live events streaming with comprehensive match status validation
 - Improved logging for live streaming operations to aid in debugging
 - Optimized API call frequency by preventing unnecessary data reloads for inactive matches
+
+- **Match Setup Screen Redesign**: Complete UI overhaul with modern split-screen layout
+- **Split-screen design**: Left panel for selectors, right panel for match results on wide screens
+- **Responsive layout**: Automatically switches to single-column layout on mobile devices
+- **Clean minimalist styling**: Removed heavy cards in favor of subtle borders and clean typography
+- **Improved visual hierarchy**: Better spacing, consistent iconography, and Material 3 design language
+- **Enhanced user experience**: Smart placeholder content, professional loading states, and clear error handling
+- **Better accessibility**: Proper color contrast ratios and semantic color usage throughout
 
 ## [0.4.0] - 2025-08-29
 

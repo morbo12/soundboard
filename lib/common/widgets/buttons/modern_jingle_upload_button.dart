@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soundboard/common/widgets/dialogs/modern_jingle_upload_dialog.dart';
+import 'package:soundboard/common/widgets/dialogs/extended_jingle_upload_dialog.dart';
 
 /// Modern upload button that replaces the 6 individual category buttons
 class ModernJingleUploadButton extends StatelessWidget {
@@ -97,7 +97,7 @@ class ModernJingleUploadButton extends StatelessWidget {
   void _showUploadDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => const ModernJingleUploadDialog(),
+      builder: (context) => const ExtendedJingleUploadDialog(),
     );
   }
 }

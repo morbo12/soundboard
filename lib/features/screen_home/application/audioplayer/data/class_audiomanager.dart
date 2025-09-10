@@ -20,6 +20,9 @@ import 'package:flutter/foundation.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:soundboard/features/screen_home/presentation/board/providers/audio_progress_provider.dart';
+import 'package:soundboard/core/services/custom_category_service.dart';
+import 'package:soundboard/core/models/sound_group.dart';
+import 'package:soundboard/core/services/custom_category_file_service.dart';
 
 /// Enum representing the available audio channels
 enum AudioChannel { channel1, channel2 }
@@ -511,6 +514,36 @@ class AudioManager {
         return;
       }
 
+      // Check if this is a custom sound group
+      if (audiofile.filePath.startsWith('custom_group:')) {
+        final groupId = audiofile.filePath.substring('custom_group:'.length);
+        logger.d("[playAudioFile] Playing from custom sound group: $groupId");
+        await _playFromSoundGroup(
+          groupId,
+          ref,
+          originalAudioFile: audiofile,
+          shortFade: shortFade,
+        );
+        return;
+      }
+
+      // Check if this is a custom category random selection
+      if (audiofile.filePath.startsWith('custom_category:')) {
+        final categoryId = audiofile.filePath.substring(
+          'custom_category:'.length,
+        );
+        logger.d(
+          "[playAudioFile] Playing random from custom category: $categoryId",
+        );
+        await _playFromCustomCategory(
+          categoryId,
+          ref,
+          originalAudioFile: audiofile,
+          shortFade: shortFade,
+        );
+        return;
+      }
+
       // For specific file assignments, check if we need to resolve the filename
       if (!audiofile.filePath.contains('/') &&
           !audiofile.filePath.contains('\\') &&
@@ -949,6 +982,142 @@ class AudioManager {
       logger.e("Error in playBytesAndWait: $e");
       // Re-throw to allow caller to handle
       rethrow;
+    }
+  }
+
+  /// Plays a random sound from a custom sound group
+  Future<void> _playFromSoundGroup(
+    String groupId,
+    WidgetRef ref, {
+    AudioFile? originalAudioFile,
+    bool shortFade = false,
+  }) async {
+    try {
+      logger.d("[_playFromSoundGroup] Loading sound group: $groupId");
+
+      // Get the sound group
+      final customCategoryService = CustomCategoryService();
+      final soundGroup = customCategoryService.getSoundGroupById(groupId);
+
+      if (soundGroup == null) {
+        logger.w("[_playFromSoundGroup] Sound group not found: $groupId");
+        return;
+      }
+
+      if (soundGroup.soundFilePaths.isEmpty) {
+        logger.w("[_playFromSoundGroup] Sound group is empty: $groupId");
+        return;
+      }
+
+      // Get a random sound from the group
+      final randomSoundPath = soundGroup.getRandomSound();
+      if (randomSoundPath == null) {
+        logger.w(
+          "[_playFromSoundGroup] No sound could be selected from group: $groupId",
+        );
+        return;
+      }
+      logger.d("[_playFromSoundGroup] Selected random sound: $randomSoundPath");
+
+      // Create a new AudioFile with the selected sound
+      final audioFile = AudioFile(
+        filePath: randomSoundPath,
+        displayName: soundGroup.name,
+        audioCategory:
+            originalAudioFile?.audioCategory ?? AudioCategory.genericJingle,
+      );
+
+      // Play the selected audio file
+      await playAudioFile(audioFile, ref, shortFade: shortFade);
+    } catch (e) {
+      logger.e(
+        "[_playFromSoundGroup] Error playing from sound group $groupId: $e",
+      );
+    }
+  }
+
+  /// Plays a random sound from a custom category (including both individual files and sound groups)
+  Future<void> _playFromCustomCategory(
+    String customCategoryId,
+    WidgetRef ref, {
+    AudioFile? originalAudioFile,
+    bool shortFade = false,
+  }) async {
+    try {
+      logger.d(
+        "[_playFromCustomCategory] Loading custom category: $customCategoryId",
+      );
+
+      final customCategoryService = CustomCategoryService();
+
+      // Get both sound groups and individual files for this category
+      final soundGroups = customCategoryService.getSoundGroupsForCategory(
+        customCategoryId,
+      );
+      final individualFiles =
+          await CustomCategoryFileService.getFilesForCustomCategory(
+            customCategoryId,
+          );
+
+      // Create a combined list of all possible selections
+      final allSelections = <String>[];
+
+      // Add sound groups (with special prefix)
+      for (final group in soundGroups) {
+        allSelections.add('group:${group.id}');
+      }
+
+      // Add individual files (with their full path)
+      for (final file in individualFiles) {
+        allSelections.add('file:${file.path}');
+      }
+
+      if (allSelections.isEmpty) {
+        logger.w(
+          "[_playFromCustomCategory] No sounds available in custom category: $customCategoryId",
+        );
+        return;
+      }
+
+      // Pick a random selection
+      final random = Random();
+      final randomSelection =
+          allSelections[random.nextInt(allSelections.length)];
+
+      if (randomSelection.startsWith('group:')) {
+        // Play from sound group
+        final groupId = randomSelection.substring('group:'.length);
+        logger.d(
+          "[_playFromCustomCategory] Selected random sound group: $groupId",
+        );
+        await _playFromSoundGroup(
+          groupId,
+          ref,
+          originalAudioFile: originalAudioFile,
+          shortFade: shortFade,
+        );
+      } else if (randomSelection.startsWith('file:')) {
+        // Play individual file
+        final filePath = randomSelection.substring('file:'.length);
+        logger.d(
+          "[_playFromCustomCategory] Selected random individual file: $filePath",
+        );
+
+        // Create a new AudioFile with the selected file
+        final audioFile = AudioFile(
+          filePath: filePath,
+          displayName: originalAudioFile?.displayName ?? 'Custom File',
+          audioCategory:
+              originalAudioFile?.audioCategory ?? AudioCategory.genericJingle,
+        );
+
+        // Play the selected audio file
+        await playAudioFile(audioFile, ref, shortFade: shortFade);
+      }
+    } catch (e) {
+      logger.e(
+        "[_playFromCustomCategory] Error playing from custom category $customCategoryId: $e",
+      );
     }
   }
 }
