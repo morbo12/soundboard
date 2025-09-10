@@ -7,7 +7,7 @@ import 'package:soundboard/features/screen_home/application/audioplayer/data/cla
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
 import 'package:soundboard/common/widgets/class_normal_button.dart';
 import 'package:soundboard/common/widgets/button_with_progress.dart';
-import 'package:soundboard/common/widgets/dialogs/modern_jingle_selection_dialog.dart';
+import 'package:soundboard/common/widgets/dialogs/extended_jingle_selection_dialog.dart';
 
 class DraggableJingleButton extends ConsumerWidget {
   final int index;
@@ -368,7 +368,7 @@ class DraggableJingleButton extends ConsumerWidget {
   ) async {
     final result = await showDialog<dynamic>(
       context: context,
-      builder: (context) => ModernJingleSelectionDialog(
+      builder: (context) => ExtendedJingleSelectionDialog(
         currentButtonName: audioFile?.displayName ?? 'Empty',
         currentAudioFile: audioFile,
       ),
