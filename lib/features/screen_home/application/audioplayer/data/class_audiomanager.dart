@@ -491,30 +491,7 @@ class AudioManager {
     await _ensureInitialized(ref);
 
     try {
-      // If this is a category-only audio file, play a random audio from the category
-      if (audiofile.isCategoryOnly) {
-        // Track which button was pressed for category-only buttons
-        ref.read(lastPressedButtonProvider.notifier).state = audiofile;
-
-        // Debug logging
-        logger.d(
-          "[playAudioFile] Category-only button pressed: ${audiofile.displayName}",
-        );
-
-        logger.d(
-          "[playAudioFile] Playing random from category: ${audiofile.audioCategory}",
-        );
-        await playAudio(
-          audiofile.audioCategory,
-          ref,
-          random: true,
-          shortFade: shortFade,
-          isBackgroundMusic: isBackgroundMusic,
-        );
-        return;
-      }
-
-      // Check if this is a custom sound group
+      // Check if this is a custom sound group first
       if (audiofile.filePath.startsWith('custom_group:')) {
         final groupId = audiofile.filePath.substring('custom_group:'.length);
         logger.d("[playAudioFile] Playing from custom sound group: $groupId");
@@ -540,6 +517,29 @@ class AudioManager {
           ref,
           originalAudioFile: audiofile,
           shortFade: shortFade,
+        );
+        return;
+      }
+
+      // If this is a category-only audio file, play a random audio from the category
+      if (audiofile.isCategoryOnly) {
+        // Track which button was pressed for category-only buttons
+        ref.read(lastPressedButtonProvider.notifier).state = audiofile;
+
+        // Debug logging
+        logger.d(
+          "[playAudioFile] Category-only button pressed: ${audiofile.displayName}",
+        );
+
+        logger.d(
+          "[playAudioFile] Playing random from category: ${audiofile.audioCategory}",
+        );
+        await playAudio(
+          audiofile.audioCategory,
+          ref,
+          random: true,
+          shortFade: shortFade,
+          isBackgroundMusic: isBackgroundMusic,
         );
         return;
       }
