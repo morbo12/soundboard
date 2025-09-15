@@ -413,19 +413,14 @@ class _ExtendedJingleUploadDialogState
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Existing Files (${existingFiles.length})',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
+              _buildFilesHeader(context, category.id, existingFiles.length),
               const SizedBox(height: 8),
               Expanded(
                 child: ListView.builder(
                   itemCount: existingFiles.length,
                   itemBuilder: (context, index) {
                     final file = existingFiles[index];
-                    return _buildFileCard(context, file);
+                    return _buildFileCard(context, file, category);
                   },
                 ),
               ),
@@ -463,12 +458,7 @@ class _ExtendedJingleUploadDialogState
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Existing Files (${customFiles.length})',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
+              _buildFilesHeader(context, category.id, customFiles.length),
               const SizedBox(height: 8),
               Expanded(
                 child: ListView.builder(
@@ -489,6 +479,46 @@ class _ExtendedJingleUploadDialogState
     } else {
       // Fallback for unknown category types
       return _buildEmptyState(context, category);
+    }
+  }
+
+  Widget _buildFilesHeader(
+    BuildContext context,
+    String categoryId,
+    int totalFiles,
+  ) {
+    final theme = Theme.of(context);
+    final isSelectionMode = _isSelectionMode[categoryId] ?? false;
+    final selectedCount = _selectedFiles[categoryId]?.length ?? 0;
+
+    if (isSelectionMode) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer.withAlpha(100),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.checklist, size: 20, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Selection Mode: $selectedCount of $totalFiles selected',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Text(
+        'Existing Files ($totalFiles)',
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      );
     }
   }
 
@@ -523,24 +553,46 @@ class _ExtendedJingleUploadDialogState
     );
   }
 
-  Widget _buildFileCard(BuildContext context, dynamic audioFile) {
+  Widget _buildFileCard(
+    BuildContext context,
+    dynamic audioFile,
+    ExtendedAudioCategory category,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final categoryId = category.id;
+    final isSelectionMode = _isSelectionMode[categoryId] ?? false;
+    final isSelected =
+        _selectedFiles[categoryId]?.contains(audioFile.filePath) ?? false;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
+      color: isSelected ? colorScheme.primaryContainer.withAlpha(100) : null,
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.music_note,
-            color: colorScheme.onPrimaryContainer,
-            size: 20,
-          ),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelectionMode) ...[
+              Checkbox(
+                value: isSelected,
+                onChanged: (value) =>
+                    _toggleFileSelection(categoryId, audioFile.filePath),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.music_note,
+                color: colorScheme.onPrimaryContainer,
+                size: 20,
+              ),
+            ),
+          ],
         ),
         title: Text(audioFile.displayName, style: theme.textTheme.titleSmall),
         subtitle: Text(
@@ -549,25 +601,30 @@ class _ExtendedJingleUploadDialogState
             color: colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'delete') {
-              _showDeleteConfirmation(context, audioFile);
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Delete'),
+        trailing: isSelectionMode
+            ? null
+            : PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    _showDeleteConfirmation(context, audioFile);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
+        onTap: isSelectionMode
+            ? () => _toggleFileSelection(categoryId, audioFile.filePath)
+            : null,
       ),
     );
   }
@@ -579,21 +636,39 @@ class _ExtendedJingleUploadDialogState
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final categoryId = category.id;
+    final isSelectionMode = _isSelectionMode[categoryId] ?? false;
+    final isSelected =
+        _selectedFiles[categoryId]?.contains(file.fileName) ?? false;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
+      color: isSelected ? colorScheme.primaryContainer.withAlpha(100) : null,
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.music_note,
-            color: colorScheme.onPrimaryContainer,
-            size: 20,
-          ),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelectionMode) ...[
+              Checkbox(
+                value: isSelected,
+                onChanged: (value) =>
+                    _toggleFileSelection(categoryId, file.fileName),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.music_note,
+                color: colorScheme.onPrimaryContainer,
+                size: 20,
+              ),
+            ),
+          ],
         ),
         title: Text(
           file.nameWithoutExtension,
@@ -618,25 +693,30 @@ class _ExtendedJingleUploadDialogState
           ],
         ),
         isThreeLine: true,
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'delete') {
-              _showDeleteCustomFileConfirmation(context, file, category);
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Delete'),
+        trailing: isSelectionMode
+            ? null
+            : PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    _showDeleteCustomFileConfirmation(context, file, category);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
+        onTap: isSelectionMode
+            ? () => _toggleFileSelection(categoryId, file.fileName)
+            : null,
       ),
     );
   }
@@ -646,22 +726,89 @@ class _ExtendedJingleUploadDialogState
     ExtendedAudioCategory category,
   ) {
     final isUploading = _isUploading[category.id] ?? false;
+    final isSelectionMode = _isSelectionMode[category.id] ?? false;
+    final selectedCount = _selectedFiles[category.id]?.length ?? 0;
 
-    return Row(
-      children: [
-        OutlinedButton.icon(
-          onPressed: isUploading ? null : () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close),
-          label: const Text('Close'),
-        ),
-        const Spacer(),
-        FilledButton.icon(
-          onPressed: isUploading ? null : () => _handleFileUpload(category),
-          icon: const Icon(Icons.add),
-          label: const Text('Select Files'),
-        ),
-      ],
-    );
+    if (isSelectionMode) {
+      // Get total file count for "Select All" logic
+      int totalFiles = 0;
+
+      if (category is PredefinedAudioCategory) {
+        final jingleManagerAsync = ref.watch(jingleManagerProvider);
+        totalFiles =
+            jingleManagerAsync.whenOrNull(
+              data: (jingleManager) => jingleManager.audioManager.audioInstances
+                  .where((audio) => audio.audioCategory == category.category)
+                  .length,
+            ) ??
+            0;
+      } else if (category is CustomAudioCategory) {
+        final customCategoryFilesNotifier = ref.watch(
+          customCategoryFilesNotifierProvider,
+        );
+        final customCategoryFilesAsync =
+            customCategoryFilesNotifier[category.customId];
+        totalFiles =
+            customCategoryFilesAsync?.whenOrNull(
+              data: (customFiles) => customFiles.length,
+            ) ??
+            0;
+      }
+
+      final allSelected = selectedCount == totalFiles && totalFiles > 0;
+
+      // Selection mode buttons
+      return Row(
+        children: [
+          OutlinedButton.icon(
+            onPressed: () => _exitSelectionMode(category.id),
+            icon: const Icon(Icons.close),
+            label: const Text('Cancel'),
+          ),
+          const SizedBox(width: 8),
+          if (totalFiles > 0) ...[
+            OutlinedButton.icon(
+              onPressed: allSelected
+                  ? () => _deselectAllFiles(category.id)
+                  : () => _selectAllFiles(category),
+              icon: Icon(allSelected ? Icons.deselect : Icons.select_all),
+              label: Text(allSelected ? 'Deselect All' : 'Select All'),
+            ),
+          ],
+          if (selectedCount > 0) ...[
+            const SizedBox(width: 8),
+            FilledButton.icon(
+              onPressed: () => _deleteSelectedFiles(category),
+              icon: const Icon(Icons.delete),
+              label: Text('Delete ($selectedCount)'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ],
+      );
+    } else {
+      // Normal mode buttons
+      return Row(
+        children: [
+          OutlinedButton.icon(
+            onPressed: isUploading ? null : () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+            label: const Text('Close'),
+          ),
+          const Spacer(),
+          OutlinedButton.icon(
+            onPressed: isUploading
+                ? null
+                : () => _enterSelectionMode(category.id),
+            icon: const Icon(Icons.checklist),
+            label: const Text('Select'),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildManagementTab(BuildContext context) {
@@ -1178,6 +1325,145 @@ class _ExtendedJingleUploadDialogState
             ),
           );
         }
+      }
+    }
+  }
+
+  // Bulk selection methods
+  void _enterSelectionMode(String categoryId) {
+    setState(() {
+      _isSelectionMode[categoryId] = true;
+      _selectedFiles[categoryId] = <String>{};
+    });
+  }
+
+  void _exitSelectionMode(String categoryId) {
+    setState(() {
+      _isSelectionMode[categoryId] = false;
+      _selectedFiles[categoryId]?.clear();
+    });
+  }
+
+  void _toggleFileSelection(String categoryId, String fileIdentifier) {
+    setState(() {
+      final selectedFiles = _selectedFiles[categoryId] ??= <String>{};
+      if (selectedFiles.contains(fileIdentifier)) {
+        selectedFiles.remove(fileIdentifier);
+      } else {
+        selectedFiles.add(fileIdentifier);
+      }
+    });
+  }
+
+  void _selectAllFiles(ExtendedAudioCategory category) {
+    if (category is PredefinedAudioCategory) {
+      final jingleManagerAsync = ref.read(jingleManagerProvider);
+      jingleManagerAsync.whenData((jingleManager) {
+        final existingFiles = jingleManager.audioManager.audioInstances
+            .where((audio) => audio.audioCategory == category.category)
+            .toList();
+
+        setState(() {
+          final selectedFiles = _selectedFiles[category.id] ??= <String>{};
+          for (final file in existingFiles) {
+            selectedFiles.add(file.filePath);
+          }
+        });
+      });
+    } else if (category is CustomAudioCategory) {
+      final customCategoryFilesNotifier = ref.read(
+        customCategoryFilesNotifierProvider,
+      );
+      final customCategoryFilesAsync =
+          customCategoryFilesNotifier[category.customId];
+
+      customCategoryFilesAsync?.whenData((customFiles) {
+        setState(() {
+          final selectedFiles = _selectedFiles[category.id] ??= <String>{};
+          for (final file in customFiles) {
+            selectedFiles.add(file.fileName);
+          }
+        });
+      });
+    }
+  }
+
+  void _deselectAllFiles(String categoryId) {
+    setState(() {
+      _selectedFiles[categoryId]?.clear();
+    });
+  }
+
+  Future<void> _deleteSelectedFiles(ExtendedAudioCategory category) async {
+    final selectedFiles = _selectedFiles[category.id];
+    if (selectedFiles == null || selectedFiles.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Selected Files'),
+        content: Text(
+          'Are you sure you want to delete ${selectedFiles.length} selected files?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      int deletedCount = 0;
+
+      if (category is PredefinedAudioCategory) {
+        // Handle predefined category file deletion
+        for (final filePath in selectedFiles) {
+          try {
+            final file = File(filePath);
+            if (await file.exists()) {
+              await file.delete();
+              deletedCount++;
+            }
+          } catch (e) {
+            _logger.e("Error deleting file $filePath: $e");
+          }
+        }
+
+        // Refresh the jingle manager
+        ref.read(jingleManagerProvider.notifier).reinitialize();
+      } else if (category is CustomAudioCategory) {
+        // Handle custom category file deletion
+        for (final fileName in selectedFiles) {
+          try {
+            final success = await ref
+                .read(customCategoryFilesNotifierProvider.notifier)
+                .deleteFile(category.customId, fileName);
+            if (success) {
+              deletedCount++;
+            }
+          } catch (e) {
+            _logger.e("Error deleting file $fileName: $e");
+          }
+        }
+      }
+
+      // Exit selection mode
+      _exitSelectionMode(category.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Deleted $deletedCount files'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     }
   }
