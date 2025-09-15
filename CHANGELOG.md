@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2025-09-15
+
+### Fixed
+
+- File selection in jingle manger was missing
+- Assignable button for custom categories played the wrong category
+
 ## [0.4.2] - 2025-09-10
 
 ### Changed
