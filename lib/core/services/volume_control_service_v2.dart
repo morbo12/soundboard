@@ -184,11 +184,9 @@ class VolumeControlServiceV2 {
         break;
       case 4: // AudioPlayer Channel 1
         _ref.read(c1VolumeProvider.notifier).updateVolume(volumePercent);
-        SettingsBox().c1InitialVolume = volumePercent;
         break;
       case 5: // AudioPlayer Channel 2
         _ref.read(c2VolumeProvider.notifier).updateVolume(volumePercent);
-        SettingsBox().c2InitialVolume = volumePercent;
         break;
       case 6: // Music Player
         _ref
@@ -258,10 +256,8 @@ class VolumeControlServiceV2 {
       // Always update the provider for AudioPlayer channels when controlled by Deej
       if (channelNumber == 1) {
         _ref.read(c1VolumeProvider.notifier).updateVolume(volumePercent);
-        SettingsBox().c1InitialVolume = volumePercent;
       } else if (channelNumber == 2) {
         _ref.read(c2VolumeProvider.notifier).updateVolume(volumePercent);
-        SettingsBox().c2InitialVolume = volumePercent;
       }
 
       // Update the actual AudioPlayer volume for any currently playing audio

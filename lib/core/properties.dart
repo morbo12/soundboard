@@ -11,8 +11,6 @@ enum Settings {
   themeMode,
   spotifyUri,
   spotifyUrl,
-  c1InitialVolume,
-  c2InitialVolume,
   musicPlayerInitialVolume,
   venueId,
   federationId,
@@ -144,16 +142,6 @@ extension GeneralSettingsExtension on SettingsBox {
     defaultValue: AppConstants.defaultSpotifyUrl,
   ); // Defaults to Spotify Top 100 World
 
-  double get c1InitialVolume => get(
-    Settings.c1InitialVolume,
-    defaultValue: kDebugMode ? 0.10 : AppConstants.defaultC1Volume,
-  ); // 0.10 if we are in DebugMode
-
-  double get c2InitialVolume => get(
-    Settings.c2InitialVolume,
-    defaultValue: kDebugMode ? 0.10 : AppConstants.defaultC2Volume,
-  ); // 0.10 if we are in DebugMode
-
   double get musicPlayerInitialVolume => get(
     Settings.musicPlayerInitialVolume,
     defaultValue: kDebugMode ? 0.10 : AppConstants.defaultMusicPlayerVolume,
@@ -161,8 +149,6 @@ extension GeneralSettingsExtension on SettingsBox {
   set spotifyUrl(String value) => put(Settings.spotifyUrl, value);
   set spotifyUri(String value) => put(Settings.spotifyUri, value);
 
-  set c1InitialVolume(double value) => put(Settings.c1InitialVolume, value);
-  set c2InitialVolume(double value) => put(Settings.c2InitialVolume, value);
   set musicPlayerInitialVolume(double value) =>
       put(Settings.musicPlayerInitialVolume, value);
 

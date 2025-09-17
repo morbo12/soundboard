@@ -12,8 +12,8 @@ class AppConstants {
       "https://open.spotify.com/playlist/37i9dQZEVXbNG2KDcFcKOF";
 
   // Audio defaults
-  static const double defaultC1Volume = 0.3;
-  static const double defaultC2Volume = 0.2;
+  static const double defaultC1Volume = 0.0;
+  static const double defaultC2Volume = 0.0;
   static const double defaultMusicPlayerVolume = 0.8;
 
   // UI defaults
