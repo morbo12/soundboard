@@ -1138,17 +1138,9 @@ class _ExtendedJingleUploadDialogState
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              // TODO: Implement deletion for predefined categories
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Deletion for predefined categories not yet implemented',
-                  ),
-                  backgroundColor: Colors.orange,
-                ),
-              );
+              await _deletePredefinedCategoryFile(audioFile);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete'),
@@ -1207,6 +1199,51 @@ class _ExtendedJingleUploadDialogState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deletePredefinedCategoryFile(dynamic audioFile) async {
+    try {
+      final file = File(audioFile.filePath);
+      if (await file.exists()) {
+        await file.delete();
+
+        // Refresh the jingle manager to update the UI
+        ref.read(jingleManagerProvider.notifier).reinitialize();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully deleted "${audioFile.displayName}"'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+
+        _logger.d(
+          "Successfully deleted predefined category file: ${audioFile.filePath}",
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File "${audioFile.displayName}" not found'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        _logger.w("File not found for deletion: ${audioFile.filePath}");
+      }
+    } catch (e) {
+      _logger.e("Error deleting predefined category file: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete "${audioFile.displayName}": $e'),
             backgroundColor: Colors.red,
           ),
         );
