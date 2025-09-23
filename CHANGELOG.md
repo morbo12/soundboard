@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5-beta1] - 2025-09-15
+
+### Fixed
+
+- bug: unable to delete goalhorn
+
 ## [0.4.4] - 2025-09-15
 
 ### Fixed
