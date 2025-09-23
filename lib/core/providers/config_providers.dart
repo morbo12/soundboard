@@ -33,8 +33,6 @@ final spotifyConfigProvider = Provider<SpotifyConfig>((ref) {
 final audioVolumeConfigProvider = Provider<AudioVolumeConfig>((ref) {
   final settings = SettingsBox();
   return AudioVolumeConfig(
-    c1InitialVolume: settings.c1InitialVolume,
-    c2InitialVolume: settings.c2InitialVolume,
     mainVolume: settings.mainVolume,
     ttsVolume: settings.ttsVolume,
     backgroundVolume: settings.backgroundVolumeLevel,
@@ -79,29 +77,21 @@ class SpotifyConfig {
 
 class AudioVolumeConfig {
   const AudioVolumeConfig({
-    required this.c1InitialVolume,
-    required this.c2InitialVolume,
     required this.mainVolume,
     required this.ttsVolume,
     required this.backgroundVolume,
   });
 
-  final double c1InitialVolume;
-  final double c2InitialVolume;
   final double mainVolume;
   final double ttsVolume;
   final double backgroundVolume;
 
   AudioVolumeConfig copyWith({
-    double? c1InitialVolume,
-    double? c2InitialVolume,
     double? mainVolume,
     double? ttsVolume,
     double? backgroundVolume,
   }) {
     return AudioVolumeConfig(
-      c1InitialVolume: c1InitialVolume ?? this.c1InitialVolume,
-      c2InitialVolume: c2InitialVolume ?? this.c2InitialVolume,
       mainVolume: mainVolume ?? this.mainVolume,
       ttsVolume: ttsVolume ?? this.ttsVolume,
       backgroundVolume: backgroundVolume ?? this.backgroundVolume,

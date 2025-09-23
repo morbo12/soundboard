@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2025-09-15
+
+### Fixed
+
+- fade between channels
+- bump libraries
+- cleanup unused settings
+
 ## [0.4.3] - 2025-09-15
 
 ### Fixed

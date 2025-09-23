@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:soundboard/core/constants/globals.dart';
+import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/utils/providers.dart';
@@ -57,7 +58,8 @@ class AudioManager {
   AudioPlayer channel2 = AudioPlayer();
 
   /// Fade duration constants
-  static const int _shortFadeDuration = 10;
+  static const int _shortFadeDuration =
+      100; // Increased from 10ms for better crossfade
   static const int _longFadeDuration = 300;
 
   /// Flag to track if volumes have been initialized
@@ -75,16 +77,16 @@ class AudioManager {
     try {
       // Set C1 volume if not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel1)) {
-        await channel1.setVolume(SettingsBox().c1InitialVolume);
-        logger.d("Initialized C1 volume to ${SettingsBox().c1InitialVolume}");
+        await channel1.setVolume(AppConstants.defaultC1Volume);
+        logger.d("Initialized C1 volume to ${AppConstants.defaultC1Volume}");
       } else {
         logger.d("C1 mapped to Deej - skipping initial volume setting");
       }
 
       // Set C2 volume if not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        await channel2.setVolume(SettingsBox().c2InitialVolume);
-        logger.d("Initialized C2 volume to ${SettingsBox().c2InitialVolume}");
+        await channel2.setVolume(AppConstants.defaultC2Volume);
+        logger.d("Initialized C2 volume to ${AppConstants.defaultC2Volume}");
       } else {
         logger.d("C2 mapped to Deej - skipping initial volume setting");
       }
@@ -314,28 +316,53 @@ class AudioManager {
     required int fadeDuration,
     bool isBackgroundMusic = false,
     AudioFile? audioFile, // Track which jingle is playing
+    bool isGoalHorn = false, // Special flag for goal horn immediate playback
   }) async {
     try {
       final otherChannel = channel == AudioChannel.channel1
           ? AudioChannel.channel2
           : AudioChannel.channel1;
 
-      // Set channel to appropriate target volume immediately (no fade-in needed)
+      // Get target volume for crossfade
       final targetVolume = await _getCurrentTargetVolume(ref, channel);
-      logger.d(
-        "Setting channel ${channel.name} to target volume: $targetVolume",
-      );
-      await _setChannelVolume(
-        ref,
-        channel,
-        targetVolume,
-        forceProviderUpdate:
-            true, // Always update visual sliders when starting playback
-      );
 
-      logger.d("Fading and stopping channel ${otherChannel.name}");
-      _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
-      logger.d("After _fadeAndStop");
+      if (isGoalHorn) {
+        // Goal horn: Start immediately at full volume for maximum impact
+        logger.d(
+          "Goal horn - setting ${channel.name} to target volume immediately: $targetVolume",
+        );
+        await _setChannelVolume(
+          ref,
+          channel,
+          targetVolume,
+          forceProviderUpdate: true,
+        );
+      } else {
+        // Regular audio: Start at volume 0 for crossfade effect
+        logger.d("Starting crossfade - setting ${channel.name} to volume 0");
+        await _setChannelVolume(
+          ref,
+          channel,
+          0.0,
+          forceProviderUpdate:
+              true, // Always update visual sliders when starting playback
+        );
+      }
+
+      logger.d("Starting crossfade - fading out channel ${otherChannel.name}");
+      // Start fade on other channel but don't wait for it to complete (crossfade effect)
+      // Only start fade if the other channel is actually playing
+      final otherPlayer = otherChannel == AudioChannel.channel1
+          ? channel1
+          : channel2;
+      if (otherPlayer.state == PlayerState.playing) {
+        _fadeAndStop(ref, otherChannel, fadeDuration: fadeDuration);
+      } else {
+        logger.d(
+          "Other channel ${otherChannel.name} not playing - skipping fade",
+        );
+      }
+      logger.d("Crossfade started - now starting new audio");
 
       final player = channel == AudioChannel.channel1 ? channel1 : channel2;
 
@@ -368,11 +395,17 @@ class AudioManager {
         player.onPlayerComplete.listen((_) async {
           await _setChannelVolume(ref, channel, 0.0);
         });
-      } else {
-        // Volume is already set correctly - no fade needed when starting playback
+      } else if (isGoalHorn) {
+        // Goal horn: Already at target volume, no fade needed
         logger.d(
-          "Channel ${channel.name} volume already set to target - no fade needed",
+          "Goal horn playing at target volume: $targetVolume - no fade needed",
         );
+      } else {
+        // Regular audio: Fade in the new audio to target volume (crossfade effect)
+        logger.d(
+          "Fading in ${channel.name} to target volume: $targetVolume over ${fadeDuration}ms",
+        );
+        await _fadeChannel(ref, channel, targetVolume, fadeDuration);
       }
     } catch (e) {
       logger.e("Error playing audio file: $e");
@@ -475,6 +508,7 @@ class AudioManager {
         fadeDuration: fadeDuration,
         isBackgroundMusic: isBackgroundMusic,
         audioFile: audioFile,
+        isGoalHorn: category == AudioCategory.goalHorn,
       );
     } catch (e) {
       logger.e("Error playing audio: $e");
@@ -580,6 +614,7 @@ class AudioManager {
         fadeDuration: fadeDuration,
         isBackgroundMusic: isBackgroundMusic,
         audioFile: audiofile,
+        isGoalHorn: audiofile.audioCategory == AudioCategory.goalHorn,
       );
     } catch (e) {
       logger.e("Error playing audio: $e");
@@ -732,6 +767,7 @@ class AudioManager {
         targetFile.filePath,
         fadeDuration: fadeDuration,
         audioFile: targetFile,
+        isGoalHorn: category == AudioCategory.goalHorn,
       );
     } catch (e) {
       logger.d("Error playing specific file: $e");
@@ -817,6 +853,7 @@ class AudioManager {
         targetFile.filePath,
         fadeDuration: fadeDuration,
         audioFile: originalAudioFile, // Use original for tracking
+        isGoalHorn: category == AudioCategory.goalHorn,
       );
     } catch (e) {
       logger.d("Error playing specific file with tracking: $e");
