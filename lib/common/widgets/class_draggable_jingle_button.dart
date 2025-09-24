@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:soundboard/common/widgets/dialogs/hotkey_assignment_dialog.dart';
+import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
@@ -9,7 +11,7 @@ import 'package:soundboard/common/widgets/class_normal_button.dart';
 import 'package:soundboard/common/widgets/button_with_progress.dart';
 import 'package:soundboard/common/widgets/dialogs/extended_jingle_selection_dialog.dart';
 
-class DraggableJingleButton extends ConsumerWidget {
+class DraggableJingleButton extends ConsumerStatefulWidget {
   final int index;
   final AudioFile? audioFile;
   final List<AudioFile> specialJingles;
@@ -20,6 +22,31 @@ class DraggableJingleButton extends ConsumerWidget {
     this.audioFile,
     required this.specialJingles,
   });
+
+  @override
+  ConsumerState<DraggableJingleButton> createState() =>
+      _DraggableJingleButtonState();
+}
+
+class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
+  String get _buttonId => 'jingle_button_${widget.index}';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Register hotkey callback after build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final hotkeyService = ref.read(hotkeyServiceProvider);
+      hotkeyService.registerCallback(_buttonId, _triggerButton);
+    });
+  }
+
+  void _triggerButton() {
+    if (widget.audioFile != null) {
+      _handleTap(context, ref);
+    }
+  }
 
   ButtonStyle _getButtonStyle(
     BuildContext context,
@@ -114,17 +141,20 @@ class DraggableJingleButton extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final hotkeyService = ref.watch(hotkeyServiceProvider);
+    final assignedHotkey = hotkeyService.getHotkey(_buttonId);
+
     final buttonStyle = _getButtonStyle(
       context,
-      audioFile?.audioCategory,
-      isCategoryOnly: audioFile?.isCategoryOnly ?? false,
+      widget.audioFile?.audioCategory,
+      isCategoryOnly: widget.audioFile?.isCategoryOnly ?? false,
     );
-    final displayText = audioFile?.displayName ?? 'Empty';
+    final displayText = widget.audioFile?.displayName ?? 'Empty';
 
     // Add a suffix to indicate category-only mode
     // Handle multi-line display names properly
-    final buttonText = audioFile?.isCategoryOnly ?? false
+    final buttonText = widget.audioFile?.isCategoryOnly ?? false
         ? '${displayText}\n(Random)'
         : displayText;
 
@@ -132,11 +162,11 @@ class DraggableJingleButton extends ConsumerWidget {
       onAcceptWithDetails: (details) {
         ref
             .read(jingleGridConfigProvider.notifier)
-            .swapPositions(details.data, index);
+            .swapPositions(details.data, widget.index);
       },
       builder: (context, candidateData, rejectedData) {
         return Draggable<int>(
-          data: index,
+          data: widget.index,
           feedback: NormalButton(
             primaryText: buttonText,
             onTap: () {}, // Feedback doesn't need tap functionality
@@ -153,9 +183,11 @@ class DraggableJingleButton extends ConsumerWidget {
           child: GestureDetector(
             onLongPress: () => _handleLongPress(context, ref),
             child: ButtonWithProgress(
-              audioFile: audioFile,
+              audioFile: widget.audioFile,
               child: NormalButton(
-                primaryText: buttonText,
+                primaryText: assignedHotkey != null
+                    ? '$buttonText\n[${HotkeyUtils.formatForDisplay(assignedHotkey)}]'
+                    : buttonText,
                 onTap: () => _handleTap(context, ref),
                 style: buttonStyle,
                 isDisabled: false,
@@ -171,16 +203,19 @@ class DraggableJingleButton extends ConsumerWidget {
   Future<void> _handleTap(BuildContext context, WidgetRef ref) async {
     // Check if this is an empty button (has display name but no real audio file)
     final isEmptyButton =
-        audioFile != null &&
-        audioFile!.filePath.isEmpty &&
-        !audioFile!.isCategoryOnly;
+        widget.audioFile != null &&
+        widget.audioFile!.filePath.isEmpty &&
+        !widget.audioFile!.isCategoryOnly;
 
-    if (audioFile != null && !isEmptyButton) {
+    if (widget.audioFile != null && !isEmptyButton) {
       // Use the provider to get jingleManager
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       await jingleManagerAsync.when(
         data: (jingleManager) async {
-          await jingleManager.audioManager.playAudioFile(audioFile!, ref);
+          await jingleManager.audioManager.playAudioFile(
+            widget.audioFile!,
+            ref,
+          );
         },
         loading: () async {
           // Handle loading state - maybe show a loading indicator
@@ -221,9 +256,15 @@ class DraggableJingleButton extends ConsumerWidget {
               title: const Text('Jingle Info'),
               onTap: () => Navigator.of(context).pop('show_info'),
             ),
-            if (audioFile != null &&
-                !(audioFile!.filePath.isEmpty &&
-                    !audioFile!
+            ListTile(
+              leading: const Icon(Icons.keyboard),
+              title: const Text('Assign Hotkey'),
+              onTap: () => Navigator.of(context).pop('assign_hotkey'),
+            ),
+            if (widget.audioFile != null &&
+                !(widget.audioFile!.filePath.isEmpty &&
+                    !widget
+                        .audioFile!
                         .isCategoryOnly)) // Only show delete option if a real jingle is assigned (not empty buttons)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
@@ -247,6 +288,9 @@ class DraggableJingleButton extends ConsumerWidget {
       case 'show_info':
         await _showJingleInfo(context);
         break;
+      case 'assign_hotkey':
+        await _showHotkeyAssignmentDialog(context, ref);
+        break;
       case 'delete_assignment':
         await _deleteJingleAssignment(context, ref);
         break;
@@ -257,7 +301,7 @@ class DraggableJingleButton extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    if (audioFile == null) {
+    if (widget.audioFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No jingle assigned to this button')),
       );
@@ -265,7 +309,7 @@ class DraggableJingleButton extends ConsumerWidget {
     }
 
     final TextEditingController controller = TextEditingController(
-      text: audioFile!.displayName,
+      text: widget.audioFile!.displayName,
     );
     final newName = await showDialog<String>(
       context: context,
@@ -310,18 +354,18 @@ class DraggableJingleButton extends ConsumerWidget {
     if (newName != null && newName.isNotEmpty) {
       final updatedAudioFile = AudioFile(
         displayName: newName,
-        filePath: audioFile!.filePath,
-        audioCategory: audioFile!.audioCategory,
-        isCategoryOnly: audioFile!.isCategoryOnly,
+        filePath: widget.audioFile!.filePath,
+        audioCategory: widget.audioFile!.audioCategory,
+        isCategoryOnly: widget.audioFile!.isCategoryOnly,
       );
       ref
           .read(jingleGridConfigProvider.notifier)
-          .assignJingle(index, updatedAudioFile);
+          .assignJingle(widget.index, updatedAudioFile);
     }
   }
 
   Future<void> _showJingleInfo(BuildContext context) async {
-    if (audioFile == null) {
+    if (widget.audioFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No jingle assigned to this button')),
       );
@@ -336,19 +380,19 @@ class DraggableJingleButton extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Display Name: ${audioFile!.displayName}'),
+            Text('Display Name: ${widget.audioFile!.displayName}'),
             const SizedBox(height: 8),
-            if (!audioFile!.isCategoryOnly)
-              Text('File Path: ${audioFile!.filePath}')
+            if (!widget.audioFile!.isCategoryOnly)
+              Text('File Path: ${widget.audioFile!.filePath}')
             else
               const Text('File Path: [Random from category]'),
             const SizedBox(height: 8),
             Text(
-              'Category: ${audioFile!.audioCategory.toString().split('.').last}',
+              'Category: ${widget.audioFile!.audioCategory.toString().split('.').last}',
             ),
             const SizedBox(height: 8),
             Text(
-              'Mode: ${audioFile!.isCategoryOnly ? "Random from category" : "Specific jingle"}',
+              'Mode: ${widget.audioFile!.isCategoryOnly ? "Random from category" : "Specific jingle"}',
             ),
           ],
         ),
@@ -369,15 +413,15 @@ class DraggableJingleButton extends ConsumerWidget {
     final result = await showDialog<dynamic>(
       context: context,
       builder: (context) => ExtendedJingleSelectionDialog(
-        currentButtonName: audioFile?.displayName ?? 'Empty',
-        currentAudioFile: audioFile,
+        currentButtonName: widget.audioFile?.displayName ?? 'Empty',
+        currentAudioFile: widget.audioFile,
       ),
     );
 
     if (result != null) {
       if (result == 'CLEAR') {
         // Clear the jingle assignment
-        ref.read(jingleGridConfigProvider.notifier).removeJingle(index);
+        ref.read(jingleGridConfigProvider.notifier).removeJingle(widget.index);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Jingle assignment removed')),
@@ -385,7 +429,9 @@ class DraggableJingleButton extends ConsumerWidget {
         }
       } else if (result is AudioFile) {
         // Assign the selected jingle
-        ref.read(jingleGridConfigProvider.notifier).assignJingle(index, result);
+        ref
+            .read(jingleGridConfigProvider.notifier)
+            .assignJingle(widget.index, result);
       }
     }
   }
@@ -418,13 +464,34 @@ class DraggableJingleButton extends ConsumerWidget {
 
     if (confirmed == true) {
       // Remove the jingle assignment by setting it to null
-      ref.read(jingleGridConfigProvider.notifier).removeJingle(index);
+      ref.read(jingleGridConfigProvider.notifier).removeJingle(widget.index);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Jingle assignment removed')),
         );
       }
+    }
+  }
+
+  Future<void> _showHotkeyAssignmentDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final displayName =
+        widget.audioFile?.displayName ?? 'Button ${widget.index + 1}';
+
+    final result = await showHotkeyAssignmentDialog(
+      context: context,
+      buttonId: _buttonId,
+      buttonName: displayName,
+    );
+
+    if (result != null && mounted) {
+      // Assign the hotkey with our callback
+      final hotkeyService = ref.read(hotkeyServiceProvider);
+      await hotkeyService.assignHotkey(_buttonId, result, _triggerButton);
+      setState(() {}); // Trigger rebuild to show hotkey in UI
     }
   }
 }
