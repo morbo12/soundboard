@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.5-beta1] - 2025-09-15
+## [0.4.5-beta2] - 2025-09-24
+
+### Added
+
+- Support to assign hotkeys to buttons
+
+## [0.4.5-beta1] - 2025-09-23
+
+### Added
+
+- Support for propritary Deej protocol
 
 ### Fixed
 
