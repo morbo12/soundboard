@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.5-beta3] - 2025-09-24
 
+### Changed
+
+- Support for Tournaments
+
 ### Fixed
 
 - Date formats are automatically detected and displayed properly
