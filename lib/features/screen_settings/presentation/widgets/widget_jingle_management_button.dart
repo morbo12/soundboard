@@ -39,29 +39,25 @@ class _JingleManagementButtonState
     }
 
     bool hasSuccessfulUploads = false;
+    int successCount = 0;
+    String? lastFileName;
 
     for (var sourceFile in files) {
       final String fileName = Platform.isWindows
           ? sourceFile.path.split('\\').last
           : sourceFile.path.split('/').last;
       final String targetPath = '${targetDir.path}/$fileName';
+      lastFileName = fileName;
 
       try {
         await sourceFile.copy(targetPath);
         logger.d("Jingle file copied to $targetPath");
         hasSuccessfulUploads = true;
-
-        // Show success message
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Jingle file "$fileName" uploaded successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        successCount++;
       } catch (e) {
         logger.e("Failed to copy jingle file: $e");
+
+        // Show individual error notifications
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -71,6 +67,16 @@ class _JingleManagementButtonState
           );
         }
       }
+    }
+
+    // Show success notification after all files processed
+    if (mounted && successCount > 0) {
+      final String message = files.length > 1
+          ? '$successCount file${successCount > 1 ? 's' : ''} uploaded successfully'
+          : 'Jingle file "$lastFileName" uploaded successfully!';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.green),
+      );
     }
 
     // Trigger jingle manager refresh if any files were successfully uploaded

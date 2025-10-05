@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Date formats are automatically detected and displayed properly
+- Jingle upload no longer show all uploaded files individially
 
 ## [0.4.5-beta2] - 2025-09-24
 

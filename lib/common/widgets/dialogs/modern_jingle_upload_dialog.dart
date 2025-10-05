@@ -770,10 +770,13 @@ class _ModernJingleUploadDialogState
   ) async {
     final directoryName = _getCategoryDirectoryName(category);
     bool hasSuccessfulUploads = false;
+    int successCount = 0;
+    String? lastFileName;
 
     for (final file in files) {
       try {
         final fileName = file.path.split('/').last.split('\\').last;
+        lastFileName = fileName;
         final cacheDirectory = await getApplicationCacheDirectory();
         final destinationPath =
             '${cacheDirectory.path}/$directoryName/$fileName';
@@ -786,20 +789,13 @@ class _ModernJingleUploadDialogState
         });
 
         hasSuccessfulUploads = true;
+        successCount++;
         _logger.d("Successfully copied $fileName to $destinationPath");
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Successfully uploaded: $fileName'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
       } catch (e) {
         final fileName = file.path.split('/').last.split('\\').last;
         _logger.e("Failed to copy jingle file: $e");
+
+        // Show individual error notifications
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -809,6 +805,20 @@ class _ModernJingleUploadDialogState
           );
         }
       }
+    }
+
+    // Show success notification after all files processed
+    if (mounted && successCount > 0) {
+      final String message = files.length > 1
+          ? '$successCount file${successCount > 1 ? 's' : ''} uploaded successfully'
+          : 'Successfully uploaded: $lastFileName';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
 
     // Trigger jingle manager refresh if any files were successfully uploaded
