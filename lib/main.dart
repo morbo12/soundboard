@@ -13,6 +13,7 @@ import 'package:soundboard/core/utils/scroll_config.dart';
 import 'package:soundboard/core/properties.dart'; // Local file for handling soundboard properties.
 import 'package:soundboard/app.dart'; // Local main app file.
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings_adapter.dart';
+import 'package:soundboard/core/utils/locale_detector.dart';
 import 'package:hive/hive.dart';
 
 // External Imports (sorted by package name length, shortest first)
@@ -28,10 +29,23 @@ import 'package:soundboard/core/constants/globals.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initializeDateFormatting('sv_SE', null);
-
-  Intl.defaultLocale = 'sv_SE';
   const Logger logger = Logger('Main');
+
+  // Get the system display language locale
+  final String systemLocale = LocaleDetector.getSystemLocale();
+  logger.d("System locale (display language): $systemLocale");
+
+  // Get the Windows regional format locale (for date/time/number formatting)
+  // This may differ from the display language on hybrid setups
+  final String regionalFormatLocale =
+      await LocaleDetector.getRegionalFormatLocale();
+  logger.d("Regional format locale (for dates/times): $regionalFormatLocale");
+
+  // Initialize date formatting for the regional format locale
+  await initializeDateFormatting(regionalFormatLocale, null);
+
+  // Set the default locale for date/time/number formatting to the regional format
+  Intl.defaultLocale = regionalFormatLocale;
 
   Directory settingsDir = await getApplicationSupportDirectory();
   logger.d("AppSupportDir: ${settingsDir.path} ");
@@ -99,11 +113,25 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
           child: child!,
         );
       },
-      locale: const Locale('sv', 'SE'), // Set the Swedish locale
+      // Let Flutter use the system locale (no hardcoded locale)
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
+      ],
+      // Specify supported locales - add all locales you want to support
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('sv', 'SE'),
+        Locale('en', 'GB'),
+        Locale('de', 'DE'),
+        Locale('fr', 'FR'),
+        Locale('es', 'ES'),
+        Locale('it', 'IT'),
+        Locale('nb', 'NO'),
+        Locale('da', 'DK'),
+        Locale('fi', 'FI'),
+        // Add more locales as needed
       ],
       title: 'Soundboard',
       darkTheme: AppTheme.darkTheme(ref),

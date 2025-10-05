@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 
 class DateSelector extends ConsumerWidget {
@@ -24,9 +25,7 @@ class DateSelector extends ConsumerWidget {
           callback();
         }
       },
-      child: Text(
-        '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-      ),
+      child: Text(DateFormat.yMd().format(selectedDate)),
     );
   }
 }
