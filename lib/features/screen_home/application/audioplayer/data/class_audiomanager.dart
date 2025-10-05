@@ -247,6 +247,11 @@ class AudioManager {
       ref.read(currentPlayingJingleProvider.notifier).state = null;
       ref.read(currentJingleChannelProvider.notifier).state = null;
       ref.read(lastPressedButtonProvider.notifier).state = null;
+
+      // Restore volume to Deej slider positions after stopping
+      // This ensures subsequent plays (like TTS) have correct volume
+      await _restoreVolumeAfterStop(ref, AudioChannel.channel1);
+      await _restoreVolumeAfterStop(ref, AudioChannel.channel2);
     } catch (e) {
       logger.e("Error stopping all audio", e.toString());
     }
@@ -319,6 +324,27 @@ class AudioManager {
       await player.release();
     } catch (e) {
       logger.e("Error stopping channel ${channel.name}: $e");
+    }
+  }
+
+  /// Restores channel volume to Deej slider position after stopping
+  /// This ensures subsequent plays have the correct volume set
+  Future<void> _restoreVolumeAfterStop(
+    WidgetRef ref,
+    AudioChannel channel,
+  ) async {
+    try {
+      // Only restore volume if channel is mapped to Deej
+      if (_isChannelMappedToDeej(ref, channel)) {
+        final targetVolume = await _getCurrentTargetVolume(ref, channel);
+        final player = channel == AudioChannel.channel1 ? channel1 : channel2;
+        await player.setVolume(targetVolume);
+        logger.d(
+          "Restored ${channel.name} volume to Deej slider position: $targetVolume",
+        );
+      }
+    } catch (e) {
+      logger.e("Error restoring volume for channel ${channel.name}: $e");
     }
   }
 
@@ -1030,18 +1056,17 @@ class AudioManager {
         await channel2.stop(); // Stop the currently playing instance
       }
 
-      // Only set volume if channel is not mapped to Deej
+      // Always ensure volume is set to current target (Deej slider or default)
+      final targetVolume = await _getCurrentTargetVolume(
+        ref,
+        AudioChannel.channel2,
+      );
+      await channel2.setVolume(targetVolume);
+      logger.d("[playBytes] Set Channel 2 volume to target: $targetVolume");
+
+      // Update provider for UI feedback if not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        final targetVolume = await _getCurrentTargetVolume(
-          ref,
-          AudioChannel.channel2,
-        );
-        await channel2.setVolume(targetVolume);
         ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
-      } else {
-        logger.d(
-          "[playBytes] Skipping volume setting - Channel 2 is mapped to Deej",
-        );
       }
 
       await channel2.play(BytesSource(audio));
@@ -1066,18 +1091,19 @@ class AudioManager {
 
       logger.d("[playBytesAndWait] Setting volume to target");
 
-      // Only set volume if channel is not mapped to Deej
+      // Always ensure volume is set to current target (Deej slider or default)
+      final targetVolume = await _getCurrentTargetVolume(
+        ref,
+        AudioChannel.channel2,
+      );
+      await channel2.setVolume(targetVolume);
+      logger.d(
+        "[playBytesAndWait] Set Channel 2 volume to target: $targetVolume",
+      );
+
+      // Update provider for UI feedback if not mapped to Deej
       if (!_isChannelMappedToDeej(ref, AudioChannel.channel2)) {
-        final targetVolume = await _getCurrentTargetVolume(
-          ref,
-          AudioChannel.channel2,
-        );
-        await channel2.setVolume(targetVolume);
         ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
-      } else {
-        logger.d(
-          "[playBytesAndWait] Skipping volume setting - Channel 2 is mapped to Deej",
-        );
       }
 
       // Create a completer to handle the completion
