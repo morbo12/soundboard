@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:soundboard/core/services/innebandy_api/domain/entities/arena.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/competition_type.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/federation.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_match/application/match_setup_service.dart';
@@ -74,6 +75,30 @@ class MatchSetupStateNotifier extends StateNotifier<MatchSetupState> {
   void setError(String? error) {
     state = state.copyWith(isLoading: false, error: error);
   }
+
+  /// Updates the match fetch mode (venue or competition).
+  void updateMatchFetchMode(MatchFetchMode mode) {
+    state = state.copyWith(matchFetchMode: mode, isLoading: false, error: null);
+  }
+
+  /// Updates the competition type (competition or tournament).
+  void updateCompetitionType(CompetitionType type) {
+    state = state.copyWith(
+      competitionType: type,
+      selectedCompetitionId: null, // Reset selection when type changes
+      isLoading: false,
+      error: null,
+    );
+  }
+
+  /// Updates the selected competition/tournament ID.
+  void updateCompetitionId(int? competitionId) {
+    state = state.copyWith(
+      selectedCompetitionId: competitionId,
+      isLoading: false,
+      error: null,
+    );
+  }
 }
 
 final matchesProvider = StateProvider<List<IbyMatch>>((ref) => []);
@@ -104,4 +129,12 @@ class VenueItem {
   final String name;
 
   VenueItem({required this.id, required this.name});
+}
+
+/// Represents a competition or tournament with its ID and name.
+class CompetitionItem {
+  final int id;
+  final String name;
+
+  CompetitionItem({required this.id, required this.name});
 }

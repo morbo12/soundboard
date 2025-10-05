@@ -13,4 +13,12 @@ class APIConstants {
       "${apiRoot}/competitions/{competitionId}/standings";
   static const String playerStatistics =
       "${apiRoot}/competitions/{competitionId}/playerstatistics";
+  static const String competitions =
+      '${apiRoot}/seasons/{seasonId}/federations/{federationId}/competitions';
+  static const String tournaments =
+      '${apiRoot}/seasons/{seasonId}/federations/{federationId}/tournaments';
+  static const String competitionMatches =
+      '${apiRoot}/competitions/{competitionId}/matches';
+  static const String competitionCategoryWithMatches =
+      '${apiRoot}/seasons/{seasonId}/competitioncategories/{competitionCategoryId}/competitionswithmatchesandstandings';
 }

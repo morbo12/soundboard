@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/competition_type.dart';
 import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
+import 'package:soundboard/features/screen_match/presentation/widgets/selectors/competition_selector.dart';
+import 'package:soundboard/features/screen_match/presentation/widgets/selectors/competition_type_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/date_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/federation_selector.dart';
+import 'package:soundboard/features/screen_match/presentation/widgets/selectors/match_fetch_mode_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/match_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/venue_selector.dart';
 
@@ -24,11 +28,31 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
 
     try {
       notifier.setLoading(true);
-      final matches = await service.getMatches(
-        date: state.selectedDate,
-        venueId: state.selectedVenue,
-      );
-      ref.read(matchesProvider.notifier).state = matches;
+
+      if (state.matchFetchMode == MatchFetchMode.venue) {
+        final matches = await service.getMatches(
+          date: state.selectedDate,
+          venueId: state.selectedVenue,
+        );
+        ref.read(matchesProvider.notifier).state = matches;
+      } else {
+        // Competition/Tournament mode
+        if (state.selectedCompetitionId == null) {
+          throw Exception('Ingen tävling/turnering vald');
+        }
+
+        final matches = state.competitionType == CompetitionType.competition
+            ? await service.getMatchesFromCompetition(
+                competitionId: state.selectedCompetitionId!,
+                date: state.selectedDate,
+              )
+            : await service.getMatchesFromTournament(
+                competitionCategoryId: state.selectedCompetitionId!,
+              );
+
+        ref.read(matchesProvider.notifier).state = matches;
+      }
+
       notifier.setLoading(false);
     } catch (e) {
       notifier.setError(e.toString());
@@ -86,7 +110,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                     ),
                   ),
                   Text(
-                    'Välj förbund, anläggning och datum för att se tillgängliga matcher',
+                    'Välj sökningsläge, förbund och övriga inställningar för att se matcher',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -121,8 +145,18 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
   }
 
   Widget _buildSelectors(ThemeData theme) {
+    final state = ref.watch(matchSetupStateProvider);
+
     return Column(
       children: [
+        _buildSelectorTile(
+          theme: theme,
+          title: 'Matchsökningsläge',
+          icon: Icons.search_outlined,
+          child: const MatchFetchModeSelector(),
+        ),
+        const Gap(20),
+
         _buildSelectorTile(
           theme: theme,
           title: 'Förbund',
@@ -131,20 +165,60 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
         ),
         const Gap(20),
 
-        _buildSelectorTile(
-          theme: theme,
-          title: 'Anläggning',
-          icon: Icons.location_on_outlined,
-          child: const VenueSelector(),
-        ),
-        const Gap(20),
+        if (state.matchFetchMode == MatchFetchMode.venue) ...[
+          _buildSelectorTile(
+            theme: theme,
+            title: 'Anläggning',
+            icon: Icons.location_on_outlined,
+            child: const VenueSelector(),
+          ),
+          const Gap(20),
+        ],
 
-        _buildSelectorTile(
-          theme: theme,
-          title: 'Datum',
-          icon: Icons.calendar_today_outlined,
-          child: DateSelector(callback: _getMatches),
-        ),
+        if (state.matchFetchMode == MatchFetchMode.competition) ...[
+          _buildSelectorTile(
+            theme: theme,
+            title: 'Tävlingstyp',
+            icon: Icons.sports_outlined,
+            child: const CompetitionTypeSelector(),
+          ),
+          const Gap(20),
+          _buildSelectorTile(
+            theme: theme,
+            title: 'Tävling/Turnering',
+            icon: Icons.emoji_events_outlined,
+            child: const CompetitionSelector(),
+          ),
+          const Gap(20),
+        ],
+
+        // Only show date selector for venue mode or competition mode (not tournament)
+        if (state.matchFetchMode == MatchFetchMode.venue ||
+            (state.matchFetchMode == MatchFetchMode.competition &&
+                state.competitionType == CompetitionType.competition)) ...[
+          _buildSelectorTile(
+            theme: theme,
+            title: 'Datum',
+            icon: Icons.calendar_today_outlined,
+            child: DateSelector(callback: _getMatches),
+          ),
+          const Gap(20),
+        ],
+
+        // For tournaments, show a fetch button instead of date selector
+        if (state.matchFetchMode == MatchFetchMode.competition &&
+            state.competitionType == CompetitionType.tournament) ...[
+          ElevatedButton.icon(
+            onPressed: state.isLoading || state.selectedCompetitionId == null
+                ? null
+                : _getMatches,
+            icon: const Icon(Icons.search),
+            label: const Text('Hämta alla matcher'),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+            ),
+          ),
+        ],
       ],
     );
   }
