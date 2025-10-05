@@ -45,11 +45,25 @@ class AudioManager {
   /// Tracks the current play index for sequential playback by category
   final Map<AudioCategory, int> _currentPlayIndex = {};
 
-  /// Number of recently played songs to remember (to avoid repetition)
-  static const int _memorySize = 10;
+  /// Minimum number of jingles to keep available in the selection pool
+  /// This ensures we always have enough variety even with small collections
+  static const int _minAvailableJingles = 3;
 
-  /// Queue of recently played songs by category
+  /// Maximum number of jingles to exclude from random selection
+  /// This prevents the exclusion list from growing too large with huge collections
+  static const int _maxExclusionCount = 15;
+
+  /// Target percentage of collection to keep available for selection
+  /// 0.6 means we aim to keep 60% of jingles available (exclude up to 40%)
+  static const double _targetAvailabilityRatio = 0.6;
+
+  /// Queue of recently played jingles by category
+  /// Used to avoid repetition when selecting random jingles
   final Map<AudioCategory, Queue<String>> _recentlyPlayed = {};
+
+  /// Queue of recently played sounds from custom sound groups
+  /// Key is the sound group ID, value is the queue of recently played file paths
+  final Map<String, Queue<String>> _recentlyPlayedInGroups = {};
 
   /// Primary audio channel
   AudioPlayer channel1 = AudioPlayer();
@@ -621,10 +635,59 @@ class AudioManager {
     }
   }
 
+  /// Calculates the optimal number of jingles to exclude based on collection size
+  ///
+  /// Strategy:
+  /// - Small collections (≤5): Exclude 1-2 to avoid repetition but keep variety
+  /// - Medium collections (6-25): Exclude ~40% to balance variety and non-repetition
+  /// - Large collections (>25): Exclude up to max (15) for best variety
+  /// - Always keep at least 3 jingles available in the pool
+  int _calculateDynamicExclusionCount(int collectionSize) {
+    if (collectionSize <= 2) {
+      return 0; // Too small, no exclusion needed
+    }
+
+    if (collectionSize <= 5) {
+      return 1; // Very small: exclude just the last one
+    }
+
+    // Calculate 40% exclusion (rounded down)
+    final targetExclusion = (collectionSize * (1 - _targetAvailabilityRatio))
+        .floor();
+
+    // Ensure we keep minimum available
+    final maxAllowedExclusion = collectionSize - _minAvailableJingles;
+
+    // Apply all constraints
+    final exclusionCount = targetExclusion
+        .clamp(1, maxAllowedExclusion)
+        .clamp(0, _maxExclusionCount);
+
+    return exclusionCount;
+  }
+
   /// Selects a random audio file while avoiding recently played files
+  /// Uses dynamic exclusion count based on collection size
   AudioFile _selectRandomAudioFile(
     AudioCategory category,
     List<AudioFile> categoryInstances,
+  ) {
+    final exclusionCount = _calculateDynamicExclusionCount(
+      categoryInstances.length,
+    );
+    return _selectRandomAudioFileExcludingRecent(
+      category,
+      categoryInstances,
+      exclusionCount,
+    );
+  }
+
+  /// Selects a random audio file while excluding a specified number of recently played files
+  /// This is the core implementation that prevents jingle repetition
+  AudioFile _selectRandomAudioFileExcludingRecent(
+    AudioCategory category,
+    List<AudioFile> categoryInstances,
+    int exclusionCount,
   ) {
     // Initialize queue for this category if it doesn't exist
     if (!_recentlyPlayed.containsKey(category)) {
@@ -634,7 +697,7 @@ class AudioManager {
     // Get the queue for this category
     final recentQueue = _recentlyPlayed[category]!;
 
-    // Try to find a song that hasn't been played recently
+    // Try to find a jingle that hasn't been played recently
     int attempts = 0;
     const maxAttempts = 50;
     late AudioFile audioFile;
@@ -646,19 +709,36 @@ class AudioManager {
       filePath = audioFile.filePath;
       attempts++;
 
-      // If we've tried too many times, just use the last generated index
-      if (attempts >= maxAttempts) break;
+      // If we've tried too many times or category has fewer files than exclusion count,
+      // just use the last generated index
+      if (attempts >= maxAttempts ||
+          categoryInstances.length <= exclusionCount) {
+        break;
+      }
     } while (recentQueue.contains(filePath));
 
-    // Add to recently played and remove oldest if exceeding memory size
+    // Add to recently played and remove oldest if exceeding exclusion count
     recentQueue.addLast(filePath);
-    if (recentQueue.length > _memorySize) {
+    if (recentQueue.length > exclusionCount) {
       recentQueue.removeFirst();
     }
 
     if (kDebugMode) {
-      logger.d("[playAudio] Playing random file: ${audioFile.filePath}");
-      logger.d("[playAudio] Recent queue size: ${recentQueue.length}");
+      logger.d(
+        "[_selectRandomAudioFileExcludingRecent] Playing random file: ${audioFile.filePath}",
+      );
+      logger.d(
+        "[_selectRandomAudioFileExcludingRecent] Collection size: ${categoryInstances.length}",
+      );
+      logger.d(
+        "[_selectRandomAudioFileExcludingRecent] Exclusion count: $exclusionCount",
+      );
+      logger.d(
+        "[_selectRandomAudioFileExcludingRecent] Available pool: ${categoryInstances.length - recentQueue.length}",
+      );
+      logger.d(
+        "[_selectRandomAudioFileExcludingRecent] Recent queue: ${recentQueue.length}/${recentQueue.length}",
+      );
     }
 
     return audioFile;
@@ -681,14 +761,20 @@ class AudioManager {
     return audioFile;
   }
 
-  /// Clears the play history for all categories
+  /// Clears the play history for all categories and sound groups
   void clearPlayHistory() {
     _recentlyPlayed.clear();
+    _recentlyPlayedInGroups.clear();
   }
 
   /// Clears the play history for a specific category
   void clearPlayHistoryForCategory(AudioCategory category) {
     _recentlyPlayed.remove(category);
+  }
+
+  /// Clears the play history for a specific sound group
+  void clearPlayHistoryForSoundGroup(String groupId) {
+    _recentlyPlayedInGroups.remove(groupId);
   }
 
   /// Plays a specific file from a category by matching the filename
@@ -1023,6 +1109,7 @@ class AudioManager {
   }
 
   /// Plays a random sound from a custom sound group
+  /// Uses dynamic exclusion count based on the group size to prevent repetition
   Future<void> _playFromSoundGroup(
     String groupId,
     WidgetRef ref, {
@@ -1046,15 +1133,41 @@ class AudioManager {
         return;
       }
 
-      // Get a random sound from the group
-      final randomSoundPath = soundGroup.getRandomSound();
+      // Calculate dynamic exclusion count based on group size
+      final exclusionCount = _calculateDynamicExclusionCount(
+        soundGroup.soundFilePaths.length,
+      );
+
+      // Initialize queue for this sound group if it doesn't exist
+      if (!_recentlyPlayedInGroups.containsKey(groupId)) {
+        _recentlyPlayedInGroups[groupId] = Queue<String>();
+      }
+
+      // Get the queue for this sound group
+      final recentQueue = _recentlyPlayedInGroups[groupId]!;
+
+      // Get a random sound from the group, excluding recently played
+      final randomSoundPath = soundGroup.getRandomSound(recentQueue.toList());
       if (randomSoundPath == null) {
         logger.w(
           "[_playFromSoundGroup] No sound could be selected from group: $groupId",
         );
         return;
       }
+
+      // Add to recently played and remove oldest if exceeding exclusion count
+      recentQueue.addLast(randomSoundPath);
+      if (recentQueue.length > exclusionCount) {
+        recentQueue.removeFirst();
+      }
+
       logger.d("[_playFromSoundGroup] Selected random sound: $randomSoundPath");
+      logger.d(
+        "[_playFromSoundGroup] Recent queue size: ${recentQueue.length}",
+      );
+      logger.d(
+        "[_playFromSoundGroup] Exclusion count for group: $exclusionCount",
+      );
 
       // Create a new AudioFile with the selected sound
       final audioFile = AudioFile(
