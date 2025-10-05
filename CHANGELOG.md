@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5-beta3] - 2025-09-24
+
+### Fixed
+
+- Date formats are automatically detected and displayed properly
+
 ## [0.4.5-beta2] - 2025-09-24
 
 ### Added
