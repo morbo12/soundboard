@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5-beta4] - 2025-09-24
+
+### Changed
+
+- Add support for Cloudflare AI (probably target for Freemium in future)
+
 ## [0.4.5-beta3] - 2025-09-24
 
 ### Changed

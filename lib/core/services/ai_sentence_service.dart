@@ -28,8 +28,8 @@ class AiSentenceService {
   Future<List<String>> generateSentences({
     required String prompt,
     int n = 4,
-    double temperature = 1.0,
-    int maxTokens = 64,
+    double temperature = 0.4,
+    int maxTokens = 150,
     String systemPrompt =
         'Du är en lågmäld, professionell svensk sportkommentator i ett sekretariat på en innebandymatch. Ditt enda uppdrag är att sakligt och tydligt annonsera mål, assist eller utvisning, alltid med aktuell matchtid. Använd aldrig slang eller onödiga utrop. Variera formulering och meningsbyggnad mellan varje förslag, så att de skiljer sig tydligt från varandra. Skapa alltid två exampel på mål och två för utvisning. Exempel på rätt stil: "Nummer 10 Pelle Karlsson gör 2-0 till hemmalaget. Tiden 10:45", "Nummer 22 Foo Bar utvisas 2 minuter för slag", "Hemmalaget gör 3-0, mål av nummer 11 Morris F, assist av nummer 6 Charlie L".',
   }) async {
@@ -50,6 +50,7 @@ class AiSentenceService {
           {'role': 'system', 'content': systemPrompt},
           {'role': 'user', 'content': prompt},
         ],
+        'model': '@cf/meta/llama-3.2-3b-instruct',
         'temperature': temperature,
         'maxTokens': maxTokens,
       });
