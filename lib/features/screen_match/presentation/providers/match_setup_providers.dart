@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:soundboard/core/services/innebandy_api/domain/entities/arena.dart';
@@ -6,6 +7,7 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/federatio
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_match/application/match_setup_service.dart';
 import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
+import 'package:soundboard/features/screen_match/data/mockup/match_mockup_data.dart';
 import 'package:soundboard/core/properties.dart';
 
 final matchSetupServiceProvider = Provider((ref) => MatchSetupService(ref));
@@ -101,7 +103,14 @@ class MatchSetupStateNotifier extends StateNotifier<MatchSetupState> {
   }
 }
 
-final matchesProvider = StateProvider<List<IbyMatch>>((ref) => []);
+/// Provider for the list of available matches.
+/// In debug mode, always includes a mockup match at the top of the list for showcase purposes.
+final matchesProvider = StateProvider<List<IbyMatch>>((ref) {
+  if (kDebugMode) {
+    return [MatchMockupData.getMockupMatch()];
+  }
+  return [];
+});
 
 final federationsProvider = Provider<List<FederationItem>>((ref) {
   return Federation.federations.entries

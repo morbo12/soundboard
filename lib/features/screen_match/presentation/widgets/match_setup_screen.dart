@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/competition_type.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/features/screen_match/data/models/match_setup_state.dart';
+import 'package:soundboard/features/screen_match/data/mockup/match_mockup_data.dart';
 import 'package:soundboard/features/screen_match/presentation/providers/match_setup_providers.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/competition_selector.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/selectors/competition_type_selector.dart';
@@ -34,7 +37,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
           date: state.selectedDate,
           venueId: state.selectedVenue,
         );
-        ref.read(matchesProvider.notifier).state = matches;
+        ref.read(matchesProvider.notifier).state = _addMockupIfDebug(matches);
       } else {
         // Competition/Tournament mode
         if (state.selectedCompetitionId == null) {
@@ -50,13 +53,21 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                 competitionCategoryId: state.selectedCompetitionId!,
               );
 
-        ref.read(matchesProvider.notifier).state = matches;
+        ref.read(matchesProvider.notifier).state = _addMockupIfDebug(matches);
       }
 
       notifier.setLoading(false);
     } catch (e) {
       notifier.setError(e.toString());
     }
+  }
+
+  /// Adds the mockup match to the beginning of the list if in debug mode.
+  List<IbyMatch> _addMockupIfDebug(List<IbyMatch> matches) {
+    if (kDebugMode) {
+      return [MatchMockupData.getMockupMatch(), ...matches];
+    }
+    return matches;
   }
 
   @override
