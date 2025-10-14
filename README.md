@@ -12,6 +12,8 @@
 
 Soundboard is a professional audio management application designed to enhance the experience of sports events, particularly Floorball matches in Stockholm, Sweden. It provides a comprehensive solution for managing audio playback, announcements, and live event reporting during matches.
 
+📸 **[View Screenshots](screenshots/SCREENSHOTS.md)** - See the application in action
+
 ## Features
 
 ### Core Features (All Platforms)
@@ -55,7 +57,7 @@ Soundboard is a professional audio management application designed to enhance th
 
 ## Prerequisites
 
-- **Visual C++ Redistributable**: Required for Windows users. Download from [Microsoft's official page](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022)
+- **Visual C++ Redistributable**: Required for Windows 10 users. Download from [Microsoft's official page](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022)
 - **Azure Speech Service**: Required for TTS functionality. You'll need to:
   1. Create an Azure account (Azure provides 500k chars for free per month)
   2. Set up a Speech Service resource
@@ -69,15 +71,33 @@ Soundboard is a professional audio management application designed to enhance th
 4. Import your audio files (jingles, sound effects, etc.)
 5. Configure the hardware mixer if using one (see [Hardware Volume Mixer](#hardware-volume-mixer-deej))
 
+## Freemium Model & Upcoming Features
+
+Soundboard is currently available as a free application with a freemium model in development:
+
+### Current Status
+
+- **Free Version**: Full access to all core soundboard features
+- **TTS (Text-to-Speech)**: Currently requires your own Azure Speech Service subscription
+
+### Under Development
+
+We're working on subscription-based services to enhance your experience:
+
+- **TTS Subscription Backend**: Eliminate the need for your own Azure account. Subscribe to our managed TTS service for hassle-free text-to-speech announcements.
+- **AI-Generated Music Subscription**: Access a library of AI-generated background music and jingles, specifically designed to avoid licensing fees associated with playing copyrighted music in public venues.
+
+These subscription services will provide convenient, cost-effective alternatives while keeping the core soundboard functionality free.
+
 ## Limitations
 
 - No plans exists to build for any Apple device.
 - TTS requires an Azure Speech Service, which you need to provide yourself
-- No jingles included
+- Some AI generated jingles are included (dowloaded through the installer)
 
 ## Hardware Volume Mixer (Deej)
 
-Soundboard now supports hardware volume mixers following the Deej protocol. This allows you to control
+Soundboard supports hardware volume mixers following the Deej protocol. This allows you to control
 various volume levels using physical sliders.
 
 ### Setup
@@ -104,8 +124,8 @@ Soundboard: [stable](https://github.com/morbo12/Soundboard/releases/latest)
 
 ### Thanks to
 
+- Github Copilot
 - ChatGPT, Claude
-- Cursor AI ⭐⭐⭐⭐⭐
 - GitHub for providing the runners to build new images.
 
 ---
