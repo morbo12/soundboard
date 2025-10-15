@@ -13,7 +13,6 @@ class HotkeyService extends ChangeNotifier {
 
   final Map<String, String> _hotkeys = {}; // buttonId -> hotkey combination
   final Map<String, VoidCallback> _callbacks = {}; // buttonId -> callback
-  StreamSubscription<RawKeyEvent>? _keySubscription;
 
   /// Get assigned hotkey for a button
   String? getHotkey(String buttonId) => _hotkeys[buttonId];
@@ -100,24 +99,21 @@ class HotkeyService extends ChangeNotifier {
 
   /// Start listening for keyboard events
   void startListening(BuildContext context) {
-    if (_keySubscription != null) return;
-
     _logger.d('Starting hotkey listener');
 
-    // Use RawKeyboardListener's onKey callback approach
-    // This will be called from the main app's RawKeyboardListener
+    // Keyboard events are handled through KeyboardListener in the main app
+    // This method is kept for compatibility but does nothing
   }
 
   /// Stop listening for keyboard events
   void stopListening() {
-    _keySubscription?.cancel();
-    _keySubscription = null;
     _logger.d('Stopped hotkey listener');
+    // Keyboard events are handled through KeyboardListener in the main app
   }
 
-  /// Handle key event - call this from the main app's RawKeyboardListener
-  bool handleKeyEvent(RawKeyEvent event) {
-    if (event is! RawKeyDownEvent) return false;
+  /// Handle key event - call this from the main app's KeyboardListener
+  bool handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
 
     final hotkey = _formatKeyEvent(event);
     if (hotkey.isEmpty) return false;
@@ -136,14 +132,14 @@ class HotkeyService extends ChangeNotifier {
   }
 
   /// Format key event into hotkey string
-  String _formatKeyEvent(RawKeyEvent event) {
+  String _formatKeyEvent(KeyEvent event) {
     final parts = <String>[];
 
-    // Add modifiers
-    if (event.isControlPressed) parts.add('Ctrl');
-    if (event.isShiftPressed) parts.add('Shift');
-    if (event.isAltPressed) parts.add('Alt');
-    if (event.isMetaPressed) parts.add('Meta');
+    // Add modifiers using HardwareKeyboard for current modifier state
+    if (HardwareKeyboard.instance.isControlPressed) parts.add('Ctrl');
+    if (HardwareKeyboard.instance.isShiftPressed) parts.add('Shift');
+    if (HardwareKeyboard.instance.isAltPressed) parts.add('Alt');
+    if (HardwareKeyboard.instance.isMetaPressed) parts.add('Meta');
 
     // Handle special keys and regular keys
     String keyPart = '';
@@ -229,7 +225,6 @@ class HotkeyService extends ChangeNotifier {
 
   @override
   void dispose() {
-    stopListening();
     super.dispose();
   }
 
