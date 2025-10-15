@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5-beta5] - 2025-10-15
+
+### Fixed
+
+- Migerated to KeyEvent/KeyListener from the deprecated variant
+- HotKeys lost focus when clicking on Lineup or the fields
+
 ## [0.4.5-beta4] - 2025-09-24
 
 ### Changed
