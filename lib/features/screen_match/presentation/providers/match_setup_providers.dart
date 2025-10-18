@@ -57,6 +57,9 @@ class MatchSetupStateNotifier extends StateNotifier<MatchSetupState> {
       isLoading: false,
       error: null,
     );
+    // Persist venue selection to settings
+    final settingsBox = SettingsBox();
+    settingsBox.venueId = venueId;
   }
 
   /// Updates the selected federation and resets loading/error states.

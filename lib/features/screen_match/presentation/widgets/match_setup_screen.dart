@@ -24,6 +24,26 @@ class MatchSetupScreen extends ConsumerStatefulWidget {
 }
 
 class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Auto-load matches if we have valid venue and date
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoLoadMatches();
+    });
+  }
+
+  void _autoLoadMatches() {
+    final state = ref.read(matchSetupStateProvider);
+
+    // Only auto-load in venue mode with valid selections
+    if (state.matchFetchMode == MatchFetchMode.venue &&
+        state.selectedVenue > 0 &&
+        state.selectedFederation > 0) {
+      _getMatches();
+    }
+  }
+
   void _getMatches() async {
     final state = ref.read(matchSetupStateProvider);
     final service = ref.read(matchSetupServiceProvider);
@@ -126,7 +146,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const Gap(40),
+                  const Gap(24),
 
                   Expanded(child: _buildSelectors(theme)),
                 ],
@@ -166,7 +186,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
           icon: Icons.search_outlined,
           child: const MatchFetchModeSelector(),
         ),
-        const Gap(20),
+        const Gap(12),
 
         _buildSelectorTile(
           theme: theme,
@@ -174,16 +194,16 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
           icon: Icons.account_balance_outlined,
           child: const FederationSelector(),
         ),
-        const Gap(20),
+        const Gap(12),
 
         if (state.matchFetchMode == MatchFetchMode.venue) ...[
           _buildSelectorTile(
             theme: theme,
             title: 'Anläggning',
             icon: Icons.location_on_outlined,
-            child: const VenueSelector(),
+            child: VenueSelector(onVenueChanged: _getMatches),
           ),
-          const Gap(20),
+          const Gap(12),
         ],
 
         if (state.matchFetchMode == MatchFetchMode.competition) ...[
@@ -193,14 +213,14 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
             icon: Icons.sports_outlined,
             child: const CompetitionTypeSelector(),
           ),
-          const Gap(20),
+          const Gap(12),
           _buildSelectorTile(
             theme: theme,
             title: 'Tävling/Turnering',
             icon: Icons.emoji_events_outlined,
             child: const CompetitionSelector(),
           ),
-          const Gap(20),
+          const Gap(12),
         ],
 
         // Only show date selector for venue mode or competition mode (not tournament)
@@ -213,7 +233,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
             icon: Icons.calendar_today_outlined,
             child: DateSelector(callback: _getMatches),
           ),
-          const Gap(20),
+          const Gap(12),
         ],
 
         // For tournaments, show a fetch button instead of date selector
@@ -244,7 +264,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
@@ -266,7 +286,7 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
               ),
             ],
           ),
-          const Gap(16),
+          const Gap(12),
           child,
         ],
       ),
