@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5-beta6] - 2025-10-19
+
+### Fixed
+
+- Arena selection is now saved in settingsbox
+- Matches now autoloads
+- Slight change in the gaps on the matchscreen
+
 ## [0.4.5-beta5] - 2025-10-15
 
 ### Fixed
