@@ -130,11 +130,10 @@ class SsmlPenaltyEvent extends BaseSsmlEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process penalty announcement', e, stackTrace);
-      await showToast(
-        context,
-        "Ett fel uppstod vid utvisningsannonsering",
-        isError: true,
-      );
+      final errorMessage = e is AnnouncementException
+          ? e.message
+          : 'Ett fel uppstod vid utvisningsannonsering: ${e.toString()}';
+      await showToast(context, errorMessage, isError: true);
       return false;
     }
   }
