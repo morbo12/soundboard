@@ -14,6 +14,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_tts_service_mode_switch.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_device_info.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_device_id_display.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_api_usage.dart';
 
 class TtsSettingsButton extends ConsumerStatefulWidget {
   const TtsSettingsButton({super.key});
@@ -133,73 +134,115 @@ class TtsSettingsDialog extends ConsumerStatefulWidget {
   ConsumerState<TtsSettingsDialog> createState() => _TtsSettingsDialogState();
 }
 
-class _TtsSettingsDialogState extends ConsumerState<TtsSettingsDialog> {
+class _TtsSettingsDialogState extends ConsumerState<TtsSettingsDialog>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(ttsServiceModeProvider);
 
     return AlertDialog(
-      title: const Text("Text to Speech Settings"),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Service Provider Selection (always shown)
-              _buildSectionHeader(context, "Service Provider"),
-              const Gap(8),
-              const TtsServiceModeSwitch(),
-              const Gap(24),
-
-              // Voice Configuration (context-sensitive)
-              _buildSectionHeader(context, "Voice Configuration"),
-              const Gap(8),
-              if (currentMode == TtsServiceMode.azureDirect) ...[
-                const SettingsTtsVoice(),
-                const Gap(16),
-                _buildSubHeader(context, "Region"),
-                const Gap(8),
-                const SettingsTtsRegion(),
-              ] else ...[
-                const SettingsApiTtsVoice(),
-              ],
-              const Gap(24),
-
-              // API Configuration (context-sensitive)
-              if (currentMode == TtsServiceMode.azureDirect) ...[
-                _buildSectionHeader(context, "Azure Service Key"),
-                const Gap(8),
-                const SettingsTtsServiceKey(),
-                const Gap(24),
-              ] else ...[
-                _buildSectionHeader(context, "Soundboard API Key"),
-                const Gap(8),
-                const SettingsApiProductKey(),
-                const Gap(24),
-
-                // Device Registration (only for Soundboard API)
-                _buildSectionHeader(context, "Device Registration"),
-                const Gap(8),
-                const DeviceIdDisplayWidget(),
-                const Gap(24),
-              ],
-
-              // Testing & Status (always shown)
-              _buildSectionHeader(context, "Testing & Status"),
-              const Gap(8),
-              const ApiTestWidget(),
-
-              // Device Information (always shown, but only general info for Azure)
-              if (currentMode == TtsServiceMode.azureDirect) ...[
-                const Gap(24),
-                _buildSectionHeader(context, "System Information"),
-                const Gap(8),
-                const DeviceInfoWidget(),
-              ],
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Text to Speech Settings"),
+          const Gap(8),
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Configuration'),
+              Tab(text: 'API Usage'),
             ],
           ),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // Configuration Tab
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Service Provider Selection (always shown)
+                  _buildSectionHeader(context, "Service Provider"),
+                  const Gap(8),
+                  const TtsServiceModeSwitch(),
+                  const Gap(24),
+
+                  // Voice Configuration (context-sensitive)
+                  _buildSectionHeader(context, "Voice Configuration"),
+                  const Gap(8),
+                  if (currentMode == TtsServiceMode.azureDirect) ...[
+                    const SettingsTtsVoice(),
+                    const Gap(16),
+                    _buildSubHeader(context, "Region"),
+                    const Gap(8),
+                    const SettingsTtsRegion(),
+                  ] else ...[
+                    const SettingsApiTtsVoice(),
+                  ],
+                  const Gap(24),
+
+                  // API Configuration (context-sensitive)
+                  if (currentMode == TtsServiceMode.azureDirect) ...[
+                    _buildSectionHeader(context, "Azure Service Key"),
+                    const Gap(8),
+                    const SettingsTtsServiceKey(),
+                    const Gap(24),
+                  ] else ...[
+                    _buildSectionHeader(context, "Soundboard API Key"),
+                    const Gap(8),
+                    const SettingsApiProductKey(),
+                    const Gap(24),
+
+                    // Device Registration (only for Soundboard API)
+                    _buildSectionHeader(context, "Device Registration"),
+                    const Gap(8),
+                    const DeviceIdDisplayWidget(),
+                    const Gap(24),
+                  ],
+
+                  // Testing & Status (always shown)
+                  _buildSectionHeader(context, "Testing & Status"),
+                  const Gap(8),
+                  const ApiTestWidget(),
+
+                  // Device Information (always shown, but only general info for Azure)
+                  if (currentMode == TtsServiceMode.azureDirect) ...[
+                    const Gap(24),
+                    _buildSectionHeader(context, "System Information"),
+                    const Gap(8),
+                    const DeviceInfoWidget(),
+                  ],
+                ],
+              ),
+            ),
+            // API Usage Tab
+            const SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: ApiUsageWidget(),
+              ),
+            ),
+          ],
         ),
       ),
       actions: [
