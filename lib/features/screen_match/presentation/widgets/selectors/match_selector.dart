@@ -107,20 +107,26 @@ class MatchSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final matches = ref.watch(matchesProvider);
+    final selectedMatch = ref.watch(selectedMatchProvider);
 
     return ListView.builder(
       itemCount: matches.length,
       itemBuilder: (context, index) {
         final match = matches[index];
+        final isSelected = selectedMatch.matchId == match.matchId;
+
         return Card(
-          elevation: 1,
+          elevation: isSelected ? 4 : 1,
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           child: ListTile(
+            leading: isSelected
+                ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                : null,
             title: Text(
               '${match.homeTeam} vs ${match.awayTeam} (${match.competitionName})',
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
               ),
             ),
             subtitle: Text(
@@ -132,9 +138,14 @@ class MatchSelector extends ConsumerWidget {
             onTap: () {
               _getMatch(ref, match.matchId);
             },
-            tileColor: theme.colorScheme.surfaceContainerHighest.withAlpha(77),
+            tileColor: isSelected
+                ? theme.colorScheme.primaryContainer.withAlpha(128)
+                : theme.colorScheme.surfaceContainerHighest.withAlpha(77),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
+              side: isSelected
+                  ? BorderSide(color: theme.colorScheme.primary, width: 2)
+                  : BorderSide.none,
             ),
           ),
         );
