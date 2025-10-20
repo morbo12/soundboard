@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Jingles and Music are now managed in the same interface (individual buttons removed)
 - Lineup background jingle selection are now in the "Jingle and Music" settings under "Special Jingles"
+- Add visuals to the selected match
 
 ## [0.4.5-beta6] - 2025-10-19
 
