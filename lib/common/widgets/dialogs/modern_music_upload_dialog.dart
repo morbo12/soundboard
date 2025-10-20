@@ -8,7 +8,9 @@ import 'package:soundboard/features/music_player/data/music_player_provider.dart
 
 /// Modern unified music upload dialog with bulk selection and management
 class ModernMusicUploadDialog extends ConsumerStatefulWidget {
-  const ModernMusicUploadDialog({super.key});
+  final bool embedded;
+
+  const ModernMusicUploadDialog({super.key, this.embedded = false});
 
   @override
   ConsumerState<ModernMusicUploadDialog> createState() =>
@@ -35,80 +37,91 @@ class _ModernMusicUploadDialogState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    if (widget.embedded) {
+      return _buildContent(context);
+    }
 
     return Dialog.fullscreen(
       child: Scaffold(
         appBar: AppBar(
           title: Row(
             children: [
-              Icon(Icons.library_music, color: colorScheme.primary),
+              Icon(
+                Icons.library_music,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 12),
               const Text('Music Manager'),
             ],
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Category header with info
-              Card(
-                color: _categoryColor.withAlpha(100),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: _categoryColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.library_music,
-                          color: colorScheme.onPrimaryContainer,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Background Music',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Music files for lineup presentations and background ambiance',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+        body: _buildContent(context),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category header with info
+          Card(
+            color: _categoryColor.withAlpha(100),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _categoryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.library_music,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 32,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Background Music',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Music files for lineup presentations and background ambiance',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
-
-              // Upload area
-              Expanded(child: _buildUploadArea(context)),
-
-              // Action buttons
-              const SizedBox(height: 16),
-              _buildActionButtons(context),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 24),
+
+          // Upload area
+          Expanded(child: _buildUploadArea(context)),
+
+          // Action buttons
+          const SizedBox(height: 16),
+          _buildActionButtons(context),
+        ],
       ),
     );
   }

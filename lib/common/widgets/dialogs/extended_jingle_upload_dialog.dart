@@ -12,6 +12,8 @@ import 'package:soundboard/core/providers/custom_category_providers.dart';
 import 'package:soundboard/common/widgets/dialogs/custom_category_management_dialog.dart';
 import 'package:soundboard/core/providers/custom_category_file_providers.dart';
 import 'package:soundboard/core/models/custom_category_file.dart';
+import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/common/widgets/dialogs/modern_music_upload_dialog.dart';
 
 /// Extended jingle upload dialog that supports both predefined and custom categories
 class ExtendedJingleUploadDialog extends ConsumerStatefulWidget {
@@ -60,7 +62,8 @@ class _ExtendedJingleUploadDialogState
         .toList();
 
     final newCategories = [...predefinedCategories, ...customCategoryExtended];
-    final newTabCount = newCategories.length + 1; // +1 for manage tab
+    final newTabCount =
+        newCategories.length + 2; // +1 for Music, +1 for manage tab
 
     // Check if we need to reinitialize tabs
     bool needsReinit = false;
@@ -241,6 +244,17 @@ class _ExtendedJingleUploadDialogState
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 tabs: [
+                  // Music tab first
+                  const Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.library_music, size: 18),
+                        SizedBox(width: 8),
+                        Text('Music'),
+                      ],
+                    ),
+                  ),
                   // Tabs for all categories
                   ..._allCategories.map(
                     (category) => Tab(
@@ -271,6 +285,8 @@ class _ExtendedJingleUploadDialogState
             body: TabBarView(
               controller: _tabController,
               children: [
+                // Music tab first
+                const ModernMusicUploadDialog(embedded: true),
                 // Category upload tabs
                 ..._allCategories.map(
                   (category) => _buildCategoryUploadTab(context, category),
@@ -299,6 +315,9 @@ class _ExtendedJingleUploadDialogState
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isSpecialJingle =
+        category is PredefinedAudioCategory &&
+        category.category == AudioCategory.specialJingle;
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -351,6 +370,9 @@ class _ExtendedJingleUploadDialogState
             ),
           ),
           const SizedBox(height: 24),
+
+          // Lineup Config section for Special Jingles
+          if (isSpecialJingle) ...[const SizedBox(height: 24)],
 
           // Upload area
           Expanded(child: _buildUploadArea(context, category)),
@@ -565,6 +587,18 @@ class _ExtendedJingleUploadDialogState
     final isSelected =
         _selectedFiles[categoryId]?.contains(audioFile.filePath) ?? false;
 
+    // Check if this is a Special Jingle category
+    final isSpecialJingle =
+        category is PredefinedAudioCategory &&
+        category.category == AudioCategory.specialJingle;
+
+    // Check if this file is selected for lineups
+    final settings = SettingsBox();
+    final isHomeJingle =
+        isSpecialJingle && settings.homeJingleFilePath == audioFile.filePath;
+    final isAwayJingle =
+        isSpecialJingle && settings.awayJingleFilePath == audioFile.filePath;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       color: isSelected ? colorScheme.primaryContainer.withAlpha(100) : null,
@@ -594,7 +628,61 @@ class _ExtendedJingleUploadDialogState
             ),
           ],
         ),
-        title: Text(audioFile.displayName, style: theme.textTheme.titleSmall),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                audioFile.displayName,
+                style: theme.textTheme.titleSmall,
+              ),
+            ),
+            if (isHomeJingle || isAwayJingle) ...[
+              const SizedBox(width: 8),
+              if (isHomeJingle)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'HOME',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              if (isAwayJingle) ...[
+                if (isHomeJingle) const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'AWAY',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ],
+        ),
         subtitle: Text(
           audioFile.filePath.split('/').last.split('\\').last,
           style: theme.textTheme.bodySmall?.copyWith(
@@ -603,22 +691,121 @@ class _ExtendedJingleUploadDialogState
         ),
         trailing: isSelectionMode
             ? null
-            : PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'delete') {
-                    _showDeleteConfirmation(context, audioFile);
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete'),
-                      ],
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isSpecialJingle) ...[
+                    // Home chip
+                    InkWell(
+                      onTap: () {
+                        if (isHomeJingle) {
+                          settings.homeJingleFilePath = "";
+                        } else {
+                          settings.homeJingleFilePath = audioFile.filePath;
+                        }
+                        setState(() {});
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isHomeJingle
+                                  ? 'Removed from Home Team lineup'
+                                  : 'Set as Home Team lineup jingle',
+                            ),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isHomeJingle
+                              ? Colors.orange.shade700
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'HOME',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isHomeJingle
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    // Away chip
+                    InkWell(
+                      onTap: () {
+                        if (isAwayJingle) {
+                          settings.awayJingleFilePath = "";
+                        } else {
+                          settings.awayJingleFilePath = audioFile.filePath;
+                        }
+                        setState(() {});
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isAwayJingle
+                                  ? 'Removed from Away Team lineup'
+                                  : 'Set as Away Team lineup jingle',
+                            ),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isAwayJingle
+                              ? Colors.orange.shade700
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'AWAY',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isAwayJingle
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _showDeleteConfirmation(context, audioFile);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

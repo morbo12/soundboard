@@ -8,12 +8,10 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/volume_system_config_widget.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_serial_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_spotify.dart';
-import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_jingle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_volume.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
-import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_lineup_jingles.dart';
-import 'package:soundboard/features/screen_settings/presentation/widgets/widget_music_upload_button.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_jingles_manager.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -81,26 +79,13 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               const GridSettingsSection(),
               const Gap(5),
 
-              settingsHeaderText("Lineup Jingles"),
+              settingsHeaderText("Jingles Manager"),
               settingsHeader2Text(
-                "Configure which jingles to use for home and away team lineups",
+                "Upload music files, manage jingles, and configure lineup jingles",
               ),
               const Gap(2),
-              const LineupJingleSettingsButton(),
+              const JinglesManagerWidget(),
               const Gap(10),
-
-              settingsHeaderText("Music Player"),
-              settingsHeader2Text(
-                "Upload and manage music files for the built-in music player",
-              ),
-              const Gap(2),
-              const MusicUploadButton(),
-              const Gap(10),
-              settingsHeaderText("Jinglar"),
-              settingsHeader2Text("Hantera jinglar och ljudfiler"),
-              const Gap(2),
-              const JingleSettings(),
-              const Gap(5),
 
               settingsHeaderText("Rensa cache"),
               settingsHeader2Text("Raderar alla uppladdade jinglar från cache"),
