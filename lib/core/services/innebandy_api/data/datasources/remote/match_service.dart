@@ -61,4 +61,36 @@ class MatchService {
       throw Exception("Failed to get match");
     }
   }
+
+  Future<List<IbyMatch>> getMatchesInCompetition({
+    required int competitionId,
+    String? date,
+  }) async {
+    final path = APIConstants.competitionMatches.replaceAll(
+      '{competitionId}',
+      competitionId.toString(),
+    );
+
+    Map<String, dynamic>? queryParameters;
+    if (date != null) {
+      DateTime dt = DateTime.parse(date);
+      queryParameters = {
+        "\$filter": "MatchDateTime eq ${DateFormat('yyyy-MM-dd').format(dt)}",
+        "\$orderby": "MatchDateTime",
+      };
+    }
+
+    final response = await _apiClient.authenticatedGet(
+      path,
+      queryParameters: queryParameters,
+    );
+
+    if (response.statusCode == 200) {
+      return (response.data as List)
+          .map((json) => IbyMatch.fromJson(json))
+          .toList();
+    } else {
+      throw Exception("Failed to get matches in competition");
+    }
+  }
 }

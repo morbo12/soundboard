@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2025-10-20
+
+### Added
+
+- Support to assign hotkeys to buttons
+- Support for Tournaments
+- Support for proprietary Deej protocol
+- Visuals to the selected match
+
+### Changed
+
+- Jingles and Music are now managed in the same interface (individual buttons removed)
+- Lineup background jingle selection are now in the "Jingle and Music" settings under "Special Jingles"
+- Support for Cloudflare AI
+
+### Fixed
+
+- Date formats are automatically detected and displayed properly
+- Jingle upload no longer shows all uploaded files individually
+- Arena selection is now saved in settingsbox
+- Matches now autoload
+- Slight change in the gaps on the matchscreen
+- Migrated to KeyEvent/KeyListener from the deprecated variant
+- HotKeys lost focus when clicking on Lineup or the fields
+- Unable to delete goalhorn
+
 ## [0.4.4] - 2025-09-15
 
 ### Fixed

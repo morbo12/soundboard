@@ -6,7 +6,7 @@ part of 'class_live_events.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$matchEventsStreamHash() => r'ff90b21a5b433656ab55bc25cdccd1d22edbdf8e';
+String _$matchEventsStreamHash() => r'dcbc9176d9dec07197aaaa184d5c9845d1c26578';
 
 /// See also [MatchEventsStream].
 @ProviderFor(MatchEventsStream)

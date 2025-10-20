@@ -34,9 +34,9 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Upgrade InnoSetup
-        run: |
-          winget install --id JRSoftware.InnoSetup -e -s winget -h
+      # - name: Upgrade InnoSetup
+      #   run: |
+      #     winget install --id JRSoftware.InnoSetup -e -s winget -h
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2

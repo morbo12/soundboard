@@ -156,11 +156,10 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process goal announcement', e, stackTrace);
-      await showToast(
-        context,
-        "Ett fel uppstod vid målannonsering",
-        isError: true,
-      );
+      final errorMessage = e is AnnouncementException
+          ? e.message
+          : 'Ett fel uppstod vid målannonsering: ${e.toString()}';
+      await showToast(context, errorMessage, isError: true);
       return false;
     }
   }

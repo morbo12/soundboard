@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundboard/core/constants/message_types.dart';
+import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
@@ -43,6 +44,9 @@ class _PlayerState extends ConsumerState<Player> {
   static const String _introCompletedKey = 'intro_completed';
   bool _isLoading = true;
 
+  // FocusNode for KeyboardListener to maintain keyboard event capture
+  late final FocusNode _keyboardFocusNode;
+
   void launchSpotify() async {
     final Uri url = Uri.parse(SettingsBox().spotifyUri);
     await launchUrl(url);
@@ -51,11 +55,13 @@ class _PlayerState extends ConsumerState<Player> {
   @override
   void initState() {
     super.initState();
+    _keyboardFocusNode = FocusNode();
     _initializeApp();
   }
 
   @override
   void dispose() {
+    _keyboardFocusNode.dispose();
     super.dispose();
   }
 
@@ -239,6 +245,8 @@ class _PlayerState extends ConsumerState<Player> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedIndexProvider);
+    final hotkeyService = ref.watch(hotkeyServiceProvider);
+
     if (_isLoading) {
       return const MaterialApp(
         home: Scaffold(
@@ -249,123 +257,142 @@ class _PlayerState extends ConsumerState<Player> {
       );
     }
 
-    return Scaffold(
-      body: isJingleManagerInitialized
-          ? _buildMainContent(selectedIndex)
-          : const Center(
-              child: CircularProgressIndicator(strokeCap: StrokeCap.round),
-            ),
-      appBar: AppBar(
-        toolbarHeight: 20.0,
-        title: InkWell(
-          onTap: () {
-            showDialog(
-              context: context,
-              useSafeArea: true,
-              barrierDismissible: true,
-              builder: (context) => const AboutDialogWidget(),
-            );
-          },
-          child: Text(
-            'FBTools Soundboard ${_packageInfo.version}',
-            style: const TextStyle(fontSize: 12),
-          ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(
-                context,
-              ).colorScheme.outline.withValues(alpha: 0.2),
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: Row(
-              children: [
-                // Mini Music Player - minimal space
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    child: const MiniMusicPlayer(),
-                  ),
+    return GestureDetector(
+      // Reclaim focus when user clicks on empty areas
+      onTap: () {
+        if (!_keyboardFocusNode.hasFocus) {
+          _keyboardFocusNode.requestFocus();
+        }
+      },
+      child: KeyboardListener(
+        focusNode: _keyboardFocusNode,
+        autofocus: true,
+        onKeyEvent: (KeyEvent event) {
+          // Handle hotkey events
+          hotkeyService.handleKeyEvent(event);
+        },
+        child: Scaffold(
+          body: isJingleManagerInitialized
+              ? _buildMainContent(selectedIndex)
+              : const Center(
+                  child: CircularProgressIndicator(strokeCap: StrokeCap.round),
                 ),
-
-                // Vertical divider
-                Container(
-                  height: 40,
-                  width: 1,
+          appBar: AppBar(
+            toolbarHeight: 20.0,
+            title: InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  useSafeArea: true,
+                  barrierDismissible: true,
+                  builder: (context) => const AboutDialogWidget(),
+                );
+              },
+              child: Text(
+                'FBTools Soundboard ${_packageInfo.version}',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              border: Border(
+                top: BorderSide(
                   color: Theme.of(
                     context,
                   ).colorScheme.outline.withValues(alpha: 0.2),
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 0.5,
                 ),
-
-                // Navigation Controls - most of the space
-                Expanded(
-                  flex: 4,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildNavDestination(
-                        context,
-                        icon: FluentIcons.home_12_regular,
-                        selectedIcon: FluentIcons.home_12_filled,
-                        label: "Home",
-                        index: 0,
-                        selectedIndex: selectedIndex,
-                        onTap: () =>
-                            ref.read(selectedIndexProvider.notifier).state = 0,
-                      ),
-                      _buildNavDestination(
-                        context,
-                        icon: FluentIcons.settings_28_regular,
-                        selectedIcon: FluentIcons.settings_28_filled,
-                        label: "Match",
-                        index: 1,
-                        selectedIndex: selectedIndex,
-                        onTap: () =>
-                            ref.read(selectedIndexProvider.notifier).state = 1,
-                      ),
-                      _buildNavDestination(
-                        context,
-                        icon: FluentIcons.settings_16_regular,
-                        selectedIcon: FluentIcons.settings_16_filled,
-                        label: "Settings",
-                        index: 2,
-                        selectedIndex: selectedIndex,
-                        onTap: () =>
-                            ref.read(selectedIndexProvider.notifier).state = 2,
-                      ),
-                      _buildNavDestination(
-                        context,
-                        icon: FluentIcons.music_note_2_16_regular,
-                        selectedIcon: FluentIcons.music_note_2_16_filled,
-                        label: "Spotify",
-                        index: 3,
-                        selectedIndex: selectedIndex,
-                        onTap: launchSpotify,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                child: Row(
+                  children: [
+                    // Mini Music Player - minimal space
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        child: const MiniMusicPlayer(),
+                      ),
+                    ),
+
+                    // Vertical divider
+                    Container(
+                      height: 40,
+                      width: 1,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.2),
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+
+                    // Navigation Controls - most of the space
+                    Expanded(
+                      flex: 4,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildNavDestination(
+                            context,
+                            icon: FluentIcons.home_12_regular,
+                            selectedIcon: FluentIcons.home_12_filled,
+                            label: "Home",
+                            index: 0,
+                            selectedIndex: selectedIndex,
+                            onTap: () =>
+                                ref.read(selectedIndexProvider.notifier).state =
+                                    0,
+                          ),
+                          _buildNavDestination(
+                            context,
+                            icon: FluentIcons.settings_28_regular,
+                            selectedIcon: FluentIcons.settings_28_filled,
+                            label: "Match",
+                            index: 1,
+                            selectedIndex: selectedIndex,
+                            onTap: () =>
+                                ref.read(selectedIndexProvider.notifier).state =
+                                    1,
+                          ),
+                          _buildNavDestination(
+                            context,
+                            icon: FluentIcons.settings_16_regular,
+                            selectedIcon: FluentIcons.settings_16_filled,
+                            label: "Settings",
+                            index: 2,
+                            selectedIndex: selectedIndex,
+                            onTap: () =>
+                                ref.read(selectedIndexProvider.notifier).state =
+                                    2,
+                          ),
+                          _buildNavDestination(
+                            context,
+                            icon: FluentIcons.music_note_2_16_regular,
+                            selectedIcon: FluentIcons.music_note_2_16_filled,
+                            label: "Spotify",
+                            index: 3,
+                            selectedIndex: selectedIndex,
+                            onTap: launchSpotify,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ), // End bottomNavigationBar
+        ), // End Scaffold (child of KeyboardListener)
+      ), // End KeyboardListener
+    ); // End GestureDetector
+  } // End build method
+} // End _PlayerState class
 
 // Contains AI-generated edits.

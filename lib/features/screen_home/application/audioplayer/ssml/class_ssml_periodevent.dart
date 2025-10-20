@@ -117,11 +117,10 @@ class SsmlPeriodEvent extends BaseSsmlEvent {
       return true;
     } catch (e, stackTrace) {
       logger.e('Failed to process period announcement', e, stackTrace);
-      await showToast(
-        context,
-        "Ett fel uppstod vid periodannonsering",
-        isError: true,
-      );
+      final errorMessage = e is AnnouncementException
+          ? e.message
+          : 'Ett fel uppstod vid periodannonsering: ${e.toString()}';
+      await showToast(context, errorMessage, isError: true);
       return false;
     }
   }

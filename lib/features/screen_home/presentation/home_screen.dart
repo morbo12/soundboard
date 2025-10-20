@@ -49,7 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Define fixed maximum widths for each section
             const maxBoardWidth = 400.0;
             const maxVolumeWidth = 120.0;
-            const maxEventsWidth = 350.0;
+            const maxEventsWidth = 400.0;
 
             // Define minimum widths for each section
             const minBoardWidth = 280.0;

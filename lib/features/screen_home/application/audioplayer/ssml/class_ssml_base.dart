@@ -1,4 +1,5 @@
 // base_ssml_event.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
@@ -60,7 +61,7 @@ abstract class BaseSsmlEvent {
     FlutterToastr.show(
       message,
       context,
-      duration: FlutterToastr.lengthLong,
+      duration: isError ? 8 : FlutterToastr.lengthLong,
       position: FlutterToastr.bottom,
       backgroundColor: isError ? Colors.red : Colors.black,
       textStyle: const TextStyle(color: Colors.white),
@@ -87,8 +88,59 @@ abstract class BaseSsmlEvent {
       );
     } catch (e, stackTrace) {
       logger.e('Failed to play announcement', e, stackTrace);
-      rethrow;
+      throw AnnouncementException(_extractErrorMessage(e));
     }
+  }
+
+  /// Extracts a user-friendly error message from exceptions
+  String _extractErrorMessage(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+
+    // Try to extract JSON error message from TTS API
+    if (errorString.contains('ttsapiexception') ||
+        errorString.contains('status')) {
+      final jsonMatch = RegExp(r'\{.*\}').firstMatch(error.toString());
+      if (jsonMatch != null) {
+        try {
+          final decoded = json.decode(jsonMatch.group(0)!);
+          if (decoded['message'] != null) {
+            final message = decoded['message'] as String;
+            if (decoded['details'] != null) {
+              final details = decoded['details'] as Map;
+              if (details['retryAfter'] != null) {
+                return '$message. Försök igen efter: ${details['retryAfter']}';
+              }
+              if (details['used'] != null && details['limit'] != null) {
+                return '$message (Använt: ${details['used']}/${details['limit']})';
+              }
+            }
+            return message;
+          }
+        } catch (e) {
+          logger.d('Failed to parse API error JSON: $e');
+        }
+      }
+    }
+
+    if (errorString.contains('monthly request quota exceeded') ||
+        errorString.contains('quota exceeded')) {
+      return 'Månadskvoten för TTS är överskriden. Försök igen nästa månad.';
+    } else if (errorString.contains('quota') || errorString.contains('403')) {
+      return 'Kvoten är överskriden. Vänligen kontrollera ditt konto.';
+    } else if (errorString.contains('401') ||
+        errorString.contains('unauthorized')) {
+      return 'Åtkomst nekad. Kontrollera inställningarna.';
+    } else if (errorString.contains('429') ||
+        errorString.contains('rate limit')) {
+      return 'För många förfrågningar. Försök igen om en stund.';
+    } else if (errorString.contains('network') ||
+        errorString.contains('connection')) {
+      return 'Nätverksfel. Kontrollera internetanslutningen.';
+    } else if (errorString.contains('voice not found')) {
+      return 'Vald röst hittades inte. Välj en annan röst i inställningarna.';
+    }
+
+    return error.toString();
   }
 
   /// Updates the Azure character count
@@ -109,4 +161,13 @@ abstract class BaseSsmlEvent {
   }
 
   Future<bool> getSay(BuildContext context);
+}
+
+/// Custom exception for announcement-related errors with user-friendly messages
+class AnnouncementException implements Exception {
+  final String message;
+  AnnouncementException(this.message);
+
+  @override
+  String toString() => message;
 }

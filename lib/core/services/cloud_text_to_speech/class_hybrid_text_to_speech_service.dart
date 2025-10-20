@@ -70,40 +70,21 @@ class HybridTextToSpeechService {
       final soundboardTtsService = ref.read(soundboardTtsServiceProvider);
       final audioData = await soundboardTtsService.generateSpeech(text);
 
-      if (audioData != null) {
-        logger.i(
-          "Successfully generated speech using Soundboard API (${audioData.length} bytes)",
-        );
+      logger.i(
+        "Successfully generated speech using Soundboard API (${audioData.length} bytes)",
+      );
 
-        // Create AudioSuccessMicrosoft with the Soundboard API audio data
-        final audioSuccessMicrosoft = AudioSuccessMicrosoft(audio: audioData);
+      // Create AudioSuccessMicrosoft with the Soundboard API audio data
+      final audioSuccessMicrosoft = AudioSuccessMicrosoft(audio: audioData);
 
-        logger.i(
-          "Successfully created AudioSuccessMicrosoft with Soundboard API data",
-        );
-        return audioSuccessMicrosoft;
-      } else {
-        logger.e(
-          "Failed to generate speech using Soundboard API - null response",
-        );
-        throw Exception(
-          "Failed to generate speech using Soundboard API - null response",
-        );
-      }
+      logger.i(
+        "Successfully created AudioSuccessMicrosoft with Soundboard API data",
+      );
+      return audioSuccessMicrosoft;
     } catch (e, stackTrace) {
       logger.e("Error in Soundboard API TTS: $e", e, stackTrace);
-
-      // Don't fallback to Azure - instead provide helpful error message
-      final settings = SettingsBox();
-      if (settings.apiProductKey.isEmpty) {
-        throw Exception(
-          "Soundboard API failed and no API product key configured. Please configure API settings or switch to Azure Direct mode.",
-        );
-      } else {
-        throw Exception(
-          "Soundboard API authentication failed: $e. Check API settings and try again.",
-        );
-      }
+      // Rethrow to preserve detailed error information
+      rethrow;
     }
   }
 

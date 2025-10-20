@@ -15,13 +15,17 @@ class SoundboardTtsService {
 
   /// Generate speech audio from text using the Soundboard API
   /// Returns binary audio data (MP3/WAV) that can be played directly
-  Future<Uint8List?> generateSpeech(String text) async {
+  /// Throws TtsApiException on error instead of returning null
+  Future<Uint8List> generateSpeech(String text) async {
     try {
       // Get valid JWT token
       final token = await _authService.getValidToken();
       if (token == null) {
         _logger.e('No valid authentication token available');
-        return null;
+        throw TtsApiException(
+          statusCode: 401,
+          message: 'No valid authentication token available',
+        );
       }
 
       final voiceName = _settings.azVoiceName;
@@ -63,7 +67,10 @@ class SoundboardTtsService {
           return response.bodyBytes;
         } else {
           _logger.e('Unexpected content type: $contentType');
-          return null;
+          throw TtsApiException(
+            statusCode: 200,
+            message: 'Unexpected content type: $contentType (expected audio/*)',
+          );
         }
       } else if (response.statusCode == 401) {
         _logger.w('Authentication failed (401). Attempting token refresh...');
@@ -87,16 +94,29 @@ class SoundboardTtsService {
         }
         _logger.w('Token refresh failed or retry unsuccessful. Clearing auth.');
         _authService.clearAuth();
-        return null;
-      } else {
-        _logger.e(
-          'TTS request failed with status ${response.statusCode}: ${response.body}',
+        throw TtsApiException(
+          statusCode: 401,
+          message: 'Authentication failed and token refresh unsuccessful',
         );
-        return null;
+      } else {
+        final errorBody = response.body;
+        _logger.e(
+          'TTS request failed with status ${response.statusCode}: $errorBody',
+        );
+        throw TtsApiException(
+          statusCode: response.statusCode,
+          message: errorBody,
+        );
       }
     } catch (e, stackTrace) {
       _logger.e('Error generating speech: $e', stackTrace);
-      return null;
+      if (e is TtsApiException) {
+        rethrow;
+      }
+      throw TtsApiException(
+        statusCode: 0,
+        message: 'Network or client error: $e',
+      );
     }
   }
 
@@ -201,6 +221,18 @@ class SoundboardTtsService {
       return false;
     }
   }
+}
+
+/// Exception thrown when TTS API returns an error
+class TtsApiException implements Exception {
+  final int statusCode;
+  final String message;
+
+  TtsApiException({required this.statusCode, required this.message});
+
+  @override
+  String toString() =>
+      'TtsApiException(status: $statusCode, message: $message)';
 }
 
 // Contains AI-generated edits.
