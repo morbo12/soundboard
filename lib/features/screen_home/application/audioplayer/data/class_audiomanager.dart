@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -1069,7 +1070,11 @@ class AudioManager {
         ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
       }
 
-      await channel2.play(BytesSource(audio));
+      if (Platform.isMacOS) {
+        await channel2.play(BytesSource(audio, mimeType: 'audio/mpeg3'));
+      } else {
+        await channel2.play(BytesSource(audio));
+      }
     } catch (e) {
       logger.e("Error playing bytes: $e");
     }
@@ -1121,7 +1126,11 @@ class AudioManager {
       logger.d("[playBytesAndWait] Playing audio");
 
       // Play the audio
-      await channel2.play(BytesSource(audio));
+      if (Platform.isMacOS) {
+        await channel2.play(BytesSource(audio, mimeType: 'audio/mpeg3'));
+      } else {
+        await channel2.play(BytesSource(audio));
+      }
 
       logger.d("[playBytesAndWait] Returning completer");
 

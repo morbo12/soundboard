@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_voice.dart';
@@ -109,9 +111,13 @@ class TextToSpeechService {
 
     logger.d("Calling Azure Text2Speech with voice: ${selectedVoice.code}");
 
+    final audioFormat = Platform.isMacOS
+        ? AudioOutputFormatMicrosoft.audio48Khz192kBitrateMonoMp3
+        : AudioOutputFormatMicrosoft.Webm24Khz16Bit24KbpsMonoOpus;
+
     final params = TtsParamsMicrosoft(
       voice: selectedVoice,
-      audioFormat: AudioOutputFormatMicrosoft.Webm24Khz16Bit24KbpsMonoOpus,
+      audioFormat: audioFormat,
       text: text,
       rate: 'default',
       pitch: 'default',
