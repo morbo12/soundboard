@@ -165,8 +165,9 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
             .swapPositions(details.data, widget.index);
       },
       builder: (context, candidateData, rejectedData) {
-        return Draggable<int>(
+        return LongPressDraggable<int>(
           data: widget.index,
+          delay: const Duration(milliseconds: 300),
           feedback: NormalButton(
             primaryText: buttonText,
             onTap: () {}, // Feedback doesn't need tap functionality
