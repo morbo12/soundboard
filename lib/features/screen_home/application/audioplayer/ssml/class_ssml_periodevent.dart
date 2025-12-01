@@ -112,7 +112,7 @@ class SsmlPeriodEvent extends BaseSsmlEvent {
       logger.d("Announcement: $announcement");
 
       await showToast(context, announcement);
-      await playAnnouncement(announcement);
+      await playAnnouncement(announcement, context);
 
       return true;
     } catch (e, stackTrace) {

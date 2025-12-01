@@ -286,7 +286,7 @@ class TtsDialog {
 
                         // Show plain text to user, but send SSML to TTS
                         await ssmlEvent.showToast(context, textController.text);
-                        await ssmlEvent.playAnnouncement(announcement);
+                        await ssmlEvent.playAnnouncement(announcement, context);
 
                         if (context.mounted) {
                           Navigator.of(context).pop();

@@ -48,6 +48,9 @@ enum Settings {
   apiTokenExpiry,
   azVoiceName,
   apiRefreshToken,
+
+  // SSML Preview feature
+  enableSsmlPreview,
 }
 
 class SettingsBox extends EasyBox {
@@ -308,6 +311,11 @@ extension GeneralSettingsExtension on SettingsBox {
   set azVoiceName(String value) => put(Settings.azVoiceName, value);
   String get azVoiceName =>
       get(Settings.azVoiceName, defaultValue: "en-US-AriaNeural");
+
+  // SSML Preview feature setting
+  set enableSsmlPreview(bool value) => put(Settings.enableSsmlPreview, value);
+  bool get enableSsmlPreview =>
+      get(Settings.enableSsmlPreview, defaultValue: false);
 }
 
 // Contains AI-generated edits.

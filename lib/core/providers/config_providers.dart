@@ -62,6 +62,11 @@ final azureTtsConfigProvider = Provider<AzureTtsConfig>((ref) {
   );
 });
 
+/// SSML preview feature enabled state provider
+final ssmlPreviewEnabledProvider = StateProvider<bool>((ref) {
+  return SettingsBox().enableSsmlPreview;
+});
+
 /// Immutable configuration classes
 
 class SpotifyConfig {

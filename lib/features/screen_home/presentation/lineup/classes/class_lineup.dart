@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/widgets/ssml_preview_dialog.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
@@ -205,6 +206,35 @@ class _LineupState extends ConsumerState<Lineup> {
         "[_handlePlayLineup] Away team players count: ${lineupData.awayTeamPlayers.length}",
       );
 
+      final settings = SettingsBox();
+      String introSsml = selectedMatch.introSsml(ref);
+      String homeTeamSsml = selectedMatch.homeTeamSsml(ref);
+      String awayTeamSsml = selectedMatch.awayTeamSsml(ref);
+
+      // Show preview dialog if enabled
+      if (settings.enableSsmlPreview && mounted) {
+        final fullSsml = "$introSsml\n\n$awayTeamSsml\n\n$homeTeamSsml";
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => SsmlPreviewDialog(
+            initialSsml: fullSsml,
+            onCancel: () {},
+            onConfirm: (editedSsml) async {
+              // Split edited SSML back into parts
+              // For simplicity, we'll use the edited version as intro
+              introSsml = editedSsml;
+              homeTeamSsml = "";
+              awayTeamSsml = "";
+            },
+          ),
+        );
+
+        // User cancelled
+        if (confirmed != true) {
+          return;
+        }
+      }
+
       // Get the jingle manager from provider
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       final jingleManager = await jingleManagerAsync.when(
@@ -218,14 +248,14 @@ class _LineupState extends ConsumerState<Lineup> {
       //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
 
       final welcomeTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.introSsml(ref),
+        text: introSsml,
       );
-      final homeTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.homeTeamSsml(ref),
-      );
-      final awayTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.awayTeamSsml(ref),
-      );
+      final homeTeamTTS = homeTeamSsml.isNotEmpty
+          ? await textToSpeechService.getTtsNoFile(text: homeTeamSsml)
+          : null;
+      final awayTeamTTS = awayTeamSsml.isNotEmpty
+          ? await textToSpeechService.getTtsNoFile(text: awayTeamSsml)
+          : null;
 
       ref.read(azCharCountProvider.notifier).state +=
           selectedMatch.generateSsml(ref).length as int;
@@ -291,32 +321,34 @@ class _LineupState extends ConsumerState<Lineup> {
 
       // Play away team lineup with background music
 
-      logger.d("[_handlePlayLineup] Playing Away team background music");
+      if (awayTeamTTS != null) {
+        logger.d("[_handlePlayLineup] Playing Away team background music");
 
-      await jingleManager.audioManager.playBytesAndWait(
-        audio: awayTeamTTS.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+        await jingleManager.audioManager.playBytesAndWait(
+          audio: awayTeamTTS.audio.buffer.asUint8List(),
+          ref: ref,
+        );
 
-      // wait for 10 seconds
+        // wait for 2 seconds
 
-      logger.d("[_handlePlayLineup] Waiting 2 seconds");
+        logger.d("[_handlePlayLineup] Waiting 2 seconds");
 
-      await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
-      // Stop all audio
-      // await jingleManager.audioManager.stopAll(ref);
+        // Stop all audio
+        // await jingleManager.audioManager.stopAll(ref);
 
-      logger.d("[_handlePlayLineup] Fading out background music");
+        logger.d("[_handlePlayLineup] Fading out background music");
 
-      await jingleManager.audioManager.fadeOutNoStop(
-        ref,
-        AudioChannel.channel1,
-      );
+        await jingleManager.audioManager.fadeOutNoStop(
+          ref,
+          AudioChannel.channel1,
+        );
 
-      logger.d("[_handlePlayLineup] Stopping channel2");
+        logger.d("[_handlePlayLineup] Stopping channel2");
 
-      await jingleManager.audioManager.channel2.stop();
+        await jingleManager.audioManager.channel2.stop();
+      }
 
       // Play home team lineup with background music
 
@@ -360,21 +392,23 @@ class _LineupState extends ConsumerState<Lineup> {
         );
       }
 
-      // wait for 10 seconds
-      logger.d("[_handlePlayLineup] Waiting 10 seconds");
+      if (homeTeamTTS != null) {
+        // wait for 10 seconds
+        logger.d("[_handlePlayLineup] Waiting 10 seconds");
 
-      await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 10));
 
-      // Play home team lineup with background music
+        // Play home team lineup with background music
 
-      logger.d("[_handlePlayLineup] Playing Home team lineup");
+        logger.d("[_handlePlayLineup] Playing Home team lineup");
 
-      await jingleManager.audioManager.playBytesAndWait(
-        audio: homeTeamTTS.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+        await jingleManager.audioManager.playBytesAndWait(
+          audio: homeTeamTTS.audio.buffer.asUint8List(),
+          ref: ref,
+        );
+      }
 
-      // wait for 10 seconds
+      // wait for 5 seconds
 
       logger.d("[_handlePlayLineup] Waiting 5 seconds");
 

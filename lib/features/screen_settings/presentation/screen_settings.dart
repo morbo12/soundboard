@@ -12,6 +12,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_tts_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_jingles_manager.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_preview_toggle.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -61,6 +62,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const Gap(2),
               const TtsSettingsButton(),
+              const Gap(10),
+
+              settingsHeaderText("SSML Preview"),
+              settingsHeader2Text(
+                "Enable editing SSML before sending to TTS engine",
+              ),
+              const Gap(2),
+              const SsmlPreviewToggle(),
               const Gap(10),
 
               settingsHeaderText("Spotify Configuration"),
