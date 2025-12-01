@@ -7,6 +7,7 @@ class GridJingleConfig {
   final String? filePath;
   final AudioCategory? category;
   final bool isCategoryOnly;
+  final String? customCategoryId;
 
   GridJingleConfig({
     required this.id,
@@ -14,6 +15,7 @@ class GridJingleConfig {
     this.filePath,
     this.category,
     this.isCategoryOnly = false,
+    this.customCategoryId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -22,6 +24,7 @@ class GridJingleConfig {
     'filePath': filePath,
     'category': category?.toString(),
     'isCategoryOnly': isCategoryOnly,
+    'customCategoryId': customCategoryId,
   };
 
   factory GridJingleConfig.fromJson(Map<String, dynamic> json) {
@@ -36,6 +39,7 @@ class GridJingleConfig {
             )
           : null,
       isCategoryOnly: json['isCategoryOnly'] ?? false,
+      customCategoryId: json['customCategoryId'],
     );
   }
 
@@ -56,8 +60,28 @@ class GridJingleConfig {
 
     if (displayName == null) return null;
 
+    // Check if this is a sound group (has special filePath prefix)
+    if (filePath != null && filePath!.startsWith('custom_group:')) {
+      return AudioFile(
+        displayName: displayName!,
+        filePath: filePath!,
+        audioCategory: category!,
+        isCategoryOnly: true,
+      );
+    }
+
     if (isCategoryOnly) {
-      // For category-only mode, we don't need a specific file path
+      // For category-only mode with custom category, reconstruct the special filePath
+      if (customCategoryId != null) {
+        return AudioFile(
+          displayName: displayName!,
+          filePath: 'custom_category:$customCategoryId',
+          audioCategory: category!,
+          isCategoryOnly: true,
+        );
+      }
+
+      // For predefined category-only mode, we don't need a specific file path
       return AudioFile(
         displayName: displayName!,
         filePath: '', // Empty as we'll use the category for playback
@@ -81,12 +105,28 @@ class GridJingleConfig {
 
   static GridJingleConfig? fromAudioFile(AudioFile? file) {
     if (file == null) return null;
+
+    // Extract custom category ID from special filePath format
+    String? customCategoryId;
+    String? actualFilePath = file.filePath;
+
+    if (file.filePath.startsWith('custom_category:')) {
+      customCategoryId = file.filePath.substring('custom_category:'.length);
+      actualFilePath = null; // Clear the special filePath for storage
+    } else if (file.filePath.startsWith('custom_group:')) {
+      // For sound groups, keep the special filePath as-is
+      actualFilePath = file.filePath;
+    } else if (file.isCategoryOnly) {
+      actualFilePath = null;
+    }
+
     return GridJingleConfig(
       id: file.displayName,
       displayName: file.displayName,
-      filePath: file.isCategoryOnly ? null : file.filePath,
+      filePath: actualFilePath,
       category: file.audioCategory,
       isCategoryOnly: file.isCategoryOnly,
+      customCategoryId: customCategoryId,
     );
   }
 }

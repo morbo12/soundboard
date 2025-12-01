@@ -122,14 +122,9 @@ class JingleGridConfigNotifier extends StateNotifier<Map<int, AudioFile?>> {
     final Map<String, dynamic> jsonMap = {};
     state.forEach((key, value) {
       if (value != null) {
-        final config = GridJingleConfig(
-          id: value.displayName,
-          displayName: value.displayName,
-          filePath: value.filePath,
-          category: value.audioCategory,
-          isCategoryOnly: value.isCategoryOnly,
-        );
-        jsonMap[key.toString()] = config.toJson();
+        // Use the fromAudioFile method to properly extract custom category ID
+        final config = GridJingleConfig.fromAudioFile(value);
+        jsonMap[key.toString()] = config?.toJson();
       } else {
         jsonMap[key.toString()] = null;
       }
