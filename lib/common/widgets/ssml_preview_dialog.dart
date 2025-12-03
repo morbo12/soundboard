@@ -1,51 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/services/ai_sentence_service.dart';
+import 'package:soundboard/core/services/auth_service.dart';
+import 'package:soundboard/core/utils/logger.dart';
 
 /// Dialog to preview and edit SSML before sending to TTS engine
-class SsmlPreviewDialog extends StatefulWidget {
+class SsmlPreviewDialog extends ConsumerStatefulWidget {
   final String initialSsml;
   final VoidCallback onCancel;
   final Future<void> Function(String ssml) onConfirm;
+
+  // Optional: For lineup mode with multiple sections
+  final Map<String, String>? sections;
+  final Future<void> Function(Map<String, String> sections)? onConfirmSections;
 
   const SsmlPreviewDialog({
     super.key,
     required this.initialSsml,
     required this.onCancel,
     required this.onConfirm,
+    this.sections,
+    this.onConfirmSections,
   });
 
   @override
-  State<SsmlPreviewDialog> createState() => _SsmlPreviewDialogState();
+  ConsumerState<SsmlPreviewDialog> createState() => _SsmlPreviewDialogState();
 }
 
-class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
-    with SingleTickerProviderStateMixin {
-  late TextEditingController _controller;
-  late TabController _tabController;
+enum AiEnhanceStyle { wild, balanced, mellow }
+
+class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
+  late TextEditingController _plainTextController;
+  late TextEditingController _ssmlController;
   bool _isProcessing = false;
-  int _currentView = 0; // 0: WYSIWYG, 1: Code, 2: Preview
+  bool _showPlainText = true; // true: Plain Text, false: SSML Code
   List<String> _validationErrors = [];
-  List<SsmlSegment> _segments = [];
+  bool _isEnhancing = false;
+  AiEnhanceStyle _selectedStyle = AiEnhanceStyle.balanced;
+
+  // For multi-section mode (lineup)
+  bool _isMultiSection = false;
+  String _currentSection = 'welcome';
+  Map<String, TextEditingController> _sectionPlainTextControllers = {};
+  Map<String, TextEditingController> _sectionSsmlControllers = {};
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialSsml);
-    _tabController = TabController(length: 3, vsync: this);
-    _parseSSML();
+
+    _isMultiSection = widget.sections != null;
+
+    if (_isMultiSection) {
+      // Initialize controllers for each section
+      for (final entry in widget.sections!.entries) {
+        _sectionSsmlControllers[entry.key] = TextEditingController(
+          text: entry.value,
+        );
+        _sectionPlainTextControllers[entry.key] = TextEditingController(
+          text: _stripSsmlTags(entry.value),
+        );
+      }
+    } else {
+      // Single section mode
+      _ssmlController = TextEditingController(text: widget.initialSsml);
+      _plainTextController = TextEditingController(
+        text: _stripSsmlTags(widget.initialSsml),
+      );
+    }
+
     _validateSsml();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _tabController.dispose();
+    if (_isMultiSection) {
+      for (final controller in _sectionPlainTextControllers.values) {
+        controller.dispose();
+      }
+      for (final controller in _sectionSsmlControllers.values) {
+        controller.dispose();
+      }
+    } else {
+      _plainTextController.dispose();
+      _ssmlController.dispose();
+    }
     super.dispose();
   }
 
   void _validateSsml() {
     final errors = <String>[];
-    final text = _controller.text;
+    final text = _isMultiSection
+        ? (_sectionSsmlControllers[_currentSection]?.text ?? '')
+        : _ssmlController.text;
 
     // Check for basic XML structure
     if (!text.contains('<speak')) {
@@ -75,349 +123,61 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
 
   String _stripSsmlTags(String ssml) {
     return ssml
+        // Convert break tags to newlines
+        .replaceAll(RegExp(r'<break[^>]*/>'), '\n')
+        // Remove all other SSML tags but keep their content
         .replaceAll(RegExp(r'<[^>]*>'), '')
-        .replaceAll(RegExp(r'\s+'), ' ')
+        // Clean up multiple consecutive newlines and whitespace
+        .replaceAll(RegExp(r'\n\s*\n'), '\n')
+        // Trim each line to remove trailing spaces
+        .split('\n')
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .join('\n')
+        // Remove leading/trailing whitespace from entire text
         .trim();
   }
 
-  void _parseSSML() {
-    final segments = <SsmlSegment>[];
-    final text = _controller.text;
-
-    // Extract content between speak tags
-    final speakContent =
-        RegExp(
-          r'<speak[^>]*>(.*?)</speak>',
-          dotAll: true,
-        ).firstMatch(text)?.group(1) ??
-        text;
-
-    _parseSSMLContent(speakContent.trim(), segments);
-
-    setState(() => _segments = segments);
+  String _escapeXml(String text) {
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
   }
 
-  void _parseSSMLContent(String content, List<SsmlSegment> segments) {
-    if (content.isEmpty) return;
-
-    int position = 0;
-
-    while (position < content.length) {
-      // Find the next tag
-      final nextTagStart = content.indexOf('<', position);
-
-      if (nextTagStart == -1) {
-        // No more tags, add remaining text
-        final remainingText = content.substring(position).trim();
-        if (remainingText.isNotEmpty) {
-          segments.add(SsmlSegment(type: SsmlType.text, text: remainingText));
-        }
-        break;
-      }
-
-      // Add any text before the tag
-      if (nextTagStart > position) {
-        final textBeforeTag = content.substring(position, nextTagStart).trim();
-        if (textBeforeTag.isNotEmpty) {
-          segments.add(SsmlSegment(type: SsmlType.text, text: textBeforeTag));
-        }
-      }
-
-      // Find the tag name
-      final tagEnd = content.indexOf('>', nextTagStart);
-      if (tagEnd == -1) break;
-
-      final tagContent = content.substring(nextTagStart, tagEnd + 1);
-
-      // Self-closing break tag
-      if (tagContent.startsWith('<break')) {
-        final timeMatch = RegExp(r'time="(\d+)ms"').firstMatch(tagContent);
-        final strengthMatch = RegExp(
-          r'strength="([^"]+)"',
-        ).firstMatch(tagContent);
-        segments.add(
-          SsmlSegment(
-            type: SsmlType.pause,
-            text: 'Pause',
-            duration: timeMatch != null ? int.parse(timeMatch.group(1)!) : 500,
-            strength: strengthMatch?.group(1),
-          ),
-        );
-        position = tagEnd + 1;
-      }
-      // Say-as tag - parse inline with text
-      else if (tagContent.startsWith('<say-as')) {
-        final closeTag = '</say-as>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex).trim();
-          final interpretAs = RegExp(
-            r'''interpret-as=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          final format = RegExp(
-            r'''format=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          // Validate interpretAs is in allowed list (case-insensitive)
-          const allowedInterpretAs = [
-            'cardinal',
-            'ordinal',
-            'characters',
-            'spell-out',
-            'digits',
-            'fraction',
-            'unit',
-            'date',
-            'time',
-            'telephone',
-            'address',
-            'name',
-          ];
-          final normalizedInterpretAs = interpretAs?.toLowerCase();
-          final validInterpretAs =
-              normalizedInterpretAs != null &&
-                  allowedInterpretAs.contains(normalizedInterpretAs)
-              ? normalizedInterpretAs
-              : 'cardinal';
-          segments.add(
-            SsmlSegment(
-              type: SsmlType.sayAs,
-              text: innerContent,
-              interpretAs: validInterpretAs,
-              format: format,
-            ),
-          );
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Prosody tag - skip the tag itself and parse content
-      else if (tagContent.startsWith('<prosody')) {
-        final closeTag = '</prosody>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex);
-          // Just recursively parse the inner content, ignoring prosody wrapper
-          _parseSSMLContent(innerContent, segments);
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Express-as tag - skip the tag itself and parse content
-      else if (tagContent.startsWith('<mstts:express-as')) {
-        final closeTag = '</mstts:express-as>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex);
-          // Just recursively parse the inner content, ignoring express-as wrapper
-          _parseSSMLContent(innerContent, segments);
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Voice tag - skip the tag itself and parse content
-      else if (tagContent.startsWith('<voice')) {
-        final closeTag = '</voice>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex);
-          // Just recursively parse the inner content, ignoring voice wrapper
-          _parseSSMLContent(innerContent, segments);
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Emphasis tag
-      else if (tagContent.startsWith('<emphasis')) {
-        final closeTag = '</emphasis>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex).trim();
-          final level = RegExp(
-            r'''level=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          // Validate level is in allowed list
-          const allowedLevels = ['strong', 'moderate', 'reduced'];
-          final validLevel = level != null && allowedLevels.contains(level)
-              ? level
-              : 'strong';
-          segments.add(
-            SsmlSegment(
-              type: SsmlType.emphasis,
-              text: innerContent,
-              emphasisLevel: validLevel,
-            ),
-          );
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Phoneme tag
-      else if (tagContent.startsWith('<phoneme')) {
-        final closeTag = '</phoneme>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex).trim();
-          final alphabet = RegExp(
-            r'''alphabet=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          final ph = RegExp(
-            r'''ph=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          // Validate alphabet is in allowed list
-          const allowedAlphabets = ['ipa', 'sapi'];
-          final validAlphabet =
-              alphabet != null && allowedAlphabets.contains(alphabet)
-              ? alphabet
-              : 'ipa';
-          segments.add(
-            SsmlSegment(
-              type: SsmlType.phoneme,
-              text: innerContent,
-              alphabet: validAlphabet,
-              ph: ph,
-            ),
-          );
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Sub tag
-      else if (tagContent.startsWith('<sub')) {
-        final closeTag = '</sub>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex).trim();
-          final alias = RegExp(
-            r'''alias=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          segments.add(
-            SsmlSegment(type: SsmlType.sub, text: innerContent, alias: alias),
-          );
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Lang tag
-      else if (tagContent.startsWith('<lang')) {
-        final closeTag = '</lang>';
-        final closeIndex = content.indexOf(closeTag, tagEnd);
-        if (closeIndex != -1) {
-          final innerContent = content.substring(tagEnd + 1, closeIndex).trim();
-          final lang = RegExp(
-            r'''xml:lang=["']([^"']+)["']''',
-          ).firstMatch(tagContent)?.group(1);
-          segments.add(
-            SsmlSegment(
-              type: SsmlType.lang,
-              text: innerContent,
-              language: lang,
-            ),
-          );
-          position = closeIndex + closeTag.length;
-        } else {
-          position = tagEnd + 1;
-        }
-      }
-      // Skip unknown or closing tags
-      else {
-        position = tagEnd + 1;
-      }
-    }
-  }
-
-  void _rebuildSSML() {
-    final buffer = StringBuffer();
-    buffer.write(
-      '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" ',
-    );
-    buffer.write(
-      'xmlns:mstts="https://azure.microsoft.com/services/cognitive-services/text-to-speech/" ',
-    );
-    buffer.write('xml:lang="sv-SE">');
-
-    for (final segment in _segments) {
-      switch (segment.type) {
-        case SsmlType.text:
-          buffer.write(segment.text);
-          break;
-        case SsmlType.pause:
-          buffer.write('<break');
-          if (segment.strength != null) {
-            buffer.write(' strength="${segment.strength}"');
-          } else {
-            buffer.write(' time="${segment.duration}ms"');
-          }
-          buffer.write('/>');
-          break;
-        case SsmlType.emphasis:
-          buffer.write(
-            '<emphasis level="${segment.emphasisLevel ?? 'strong'}">${segment.text}</emphasis>',
-          );
-          break;
-        case SsmlType.prosody:
-          buffer.write('<prosody');
-          if (segment.rate != null) buffer.write(' rate="${segment.rate}"');
-          if (segment.pitch != null) buffer.write(' pitch="${segment.pitch}"');
-          if (segment.volume != null)
-            buffer.write(' volume="${segment.volume}"');
-          buffer.write('>${segment.text}</prosody>');
-          break;
-        case SsmlType.sayAs:
-          buffer.write(
-            '<say-as interpret-as="${segment.interpretAs ?? 'cardinal'}"',
-          );
-          if (segment.format != null)
-            buffer.write(' format="${segment.format}"');
-          buffer.write('>${segment.text}</say-as>');
-          break;
-        case SsmlType.phoneme:
-          buffer.write(
-            '<phoneme alphabet="${segment.alphabet ?? 'ipa'}" ph="${segment.ph ?? ''}">${segment.text}</phoneme>',
-          );
-          break;
-        case SsmlType.sub:
-          buffer.write(
-            '<sub alias="${segment.alias ?? ''}">${segment.text}</sub>',
-          );
-          break;
-        case SsmlType.lang:
-          buffer.write(
-            '<lang xml:lang="${segment.language ?? 'en-US'}">${segment.text}</lang>',
-          );
-          break;
-        case SsmlType.voice:
-          buffer.write(
-            '<voice name="${segment.voiceName ?? ''}">${segment.text}</voice>',
-          );
-          break;
-        case SsmlType.expressAs:
-          buffer.write('<mstts:express-as');
-          if (segment.style != null) buffer.write(' style="${segment.style}"');
-          if (segment.styleDegree != null) {
-            buffer.write(' styledegree="${segment.styleDegree}"');
-          }
-          if (segment.role != null) buffer.write(' role="${segment.role}"');
-          buffer.write('>${segment.text}</mstts:express-as>');
-          break;
-      }
-    }
-
-    buffer.write('</speak>');
-    _controller.text = buffer.toString();
-    _validateSsml();
+  String _wrapWithSsml(String plainText) {
+    final escapedText = _escapeXml(plainText);
+    final settings = SettingsBox();
+    final voiceName = settings.azVoiceName;
+    return '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" '
+        'xmlns:mstts="https://azure.microsoft.com/services/cognitive-services/text-to-speech/" '
+        'xml:lang="sv-SE">'
+        '<voice name="$voiceName">$escapedText</voice>'
+        '</speak>';
   }
 
   Future<void> _handleConfirm() async {
     setState(() => _isProcessing = true);
     try {
-      await widget.onConfirm(_controller.text);
+      if (_isMultiSection && widget.onConfirmSections != null) {
+        // Multi-section mode: collect all edited sections
+        final editedSections = <String, String>{};
+        for (final key in widget.sections!.keys) {
+          final ssmlText = _showPlainText
+              ? _wrapWithSsml(_sectionPlainTextControllers[key]!.text)
+              : _sectionSsmlControllers[key]!.text;
+          editedSections[key] = ssmlText;
+        }
+        await widget.onConfirmSections!(editedSections);
+      } else {
+        // Single section mode
+        final ssmlToSend = _showPlainText
+            ? _wrapWithSsml(_plainTextController.text)
+            : _ssmlController.text;
+        await widget.onConfirm(ssmlToSend);
+      }
       if (mounted) {
         Navigator.of(context).pop(true);
       }
@@ -439,7 +199,6 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final plainText = _stripSsmlTags(_controller.text);
     final screenSize = MediaQuery.of(context).size;
 
     return Dialog(
@@ -466,13 +225,15 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'SSML Editor',
+                        _isMultiSection ? 'Lineup SSML Editor' : 'SSML Editor',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Edit speech markup before sending to TTS',
+                        _isMultiSection
+                            ? 'Edit lineup sections: Welcome, Away Team, Home Team'
+                            : 'Edit speech markup before sending to TTS',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -481,28 +242,22 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
                   ),
                 ),
                 // View mode toggle
-                SegmentedButton<int>(
+                SegmentedButton<bool>(
                   segments: const [
                     ButtonSegment(
-                      value: 0,
-                      icon: Icon(Icons.edit, size: 18),
-                      label: Text('Visual'),
+                      value: true,
+                      icon: Icon(Icons.text_fields, size: 18),
+                      label: Text('Plain Text'),
                     ),
                     ButtonSegment(
-                      value: 1,
+                      value: false,
                       icon: Icon(Icons.code, size: 18),
-                      label: Text('Code'),
-                    ),
-                    ButtonSegment(
-                      value: 2,
-                      icon: Icon(Icons.preview, size: 18),
-                      label: Text('Preview'),
+                      label: Text('SSML Code'),
                     ),
                   ],
-                  selected: {_currentView},
-                  onSelectionChanged: (Set<int> selection) {
-                    setState(() => _currentView = selection.first);
-                    if (_currentView == 0) _parseSSML();
+                  selected: {_showPlainText},
+                  onSelectionChanged: (Set<bool> selection) {
+                    setState(() => _showPlainText = selection.first);
                   },
                 ),
               ],
@@ -536,6 +291,22 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
                 ),
               ),
 
+            // Section tabs for multi-section mode
+            if (_isMultiSection)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: SegmentedButton<String>(
+                  segments: _buildSectionSegments(),
+                  selected: {_currentSection},
+                  onSelectionChanged: (Set<String> selection) {
+                    setState(() {
+                      _currentSection = selection.first;
+                      _validateSsml();
+                    });
+                  },
+                ),
+              ),
+
             // Quick Actions Bar
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -560,14 +331,93 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
                   ),
                   const SizedBox(width: 8),
                   _buildQuickButton(context, 'Copy', Icons.copy, () {
-                    Clipboard.setData(ClipboardData(text: _controller.text));
+                    final controller = _showPlainText
+                        ? _plainTextController
+                        : _ssmlController;
+                    Clipboard.setData(ClipboardData(text: controller.text));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Copied to clipboard')),
                     );
                   }),
+                  const SizedBox(width: 8),
+                  PopupMenuButton<AiEnhanceStyle>(
+                    icon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.auto_awesome, size: 16),
+                        const SizedBox(width: 4),
+                        Text('AI Enhance', style: theme.textTheme.bodySmall),
+                      ],
+                    ),
+                    tooltip: 'Enhance text with AI',
+                    enabled: !_isEnhancing,
+                    onSelected: (style) {
+                      setState(() => _selectedStyle = style);
+                      _enhanceWithAI();
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: AiEnhanceStyle.wild,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.bolt,
+                              size: 16,
+                              color: _selectedStyle == AiEnhanceStyle.wild
+                                  ? theme.colorScheme.primary
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Wild - Energetic & Exciting'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: AiEnhanceStyle.balanced,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.balance,
+                              size: 16,
+                              color: _selectedStyle == AiEnhanceStyle.balanced
+                                  ? theme.colorScheme.primary
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Balanced - Professional'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: AiEnhanceStyle.mellow,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.spa,
+                              size: 16,
+                              color: _selectedStyle == AiEnhanceStyle.mellow
+                                  ? theme.colorScheme.primary
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Mellow - Calm & Measured'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_isEnhancing)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
                   const Spacer(),
                   Text(
-                    '${_controller.text.length} chars',
+                    '${_getCurrentController().text.length} chars',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -577,29 +427,23 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
             ),
             const SizedBox(height: 12),
 
-            // Editor Area
+            // Editor area
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  border: Border.all(
-                    color: _validationErrors.isEmpty
-                        ? theme.colorScheme.outline.withOpacity(0.5)
-                        : Colors.orange,
-                    width: _validationErrors.isEmpty ? 1 : 2,
-                  ),
+                  border: Border.all(color: theme.colorScheme.outline),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: _buildEditorView(theme),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Common SSML Tags Reference
+            // Quick Reference
             _buildQuickReference(theme),
             const SizedBox(height: 16),
 
-            // Action Buttons
+            // Action buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -608,21 +452,15 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
                   child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
+                FilledButton(
                   onPressed: _isProcessing ? null : _handleConfirm,
-                  icon: _isProcessing
-                      ? SizedBox(
+                  child: _isProcessing
+                      ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              theme.colorScheme.onPrimary,
-                            ),
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.send),
-                  label: Text(_isProcessing ? 'Sending...' : 'Send to TTS'),
+                      : const Text('Confirm'),
                 ),
               ],
             ),
@@ -639,9 +477,9 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
     VoidCallback onPressed,
   ) {
     return TextButton.icon(
-      onPressed: _isProcessing ? null : onPressed,
+      onPressed: onPressed,
       icon: Icon(icon, size: 16),
-      label: Text(label),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: Size.zero,
@@ -651,856 +489,57 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
   }
 
   Widget _buildEditorView(ThemeData theme) {
-    switch (_currentView) {
-      case 0:
-        return _buildWysiwygEditor(theme);
-      case 1:
-        return _buildSsmlCodeEditor(theme);
-      case 2:
-        return _buildPlainTextView(_stripSsmlTags(_controller.text), theme);
-      default:
-        return _buildSsmlCodeEditor(theme);
-    }
+    return _showPlainText
+        ? _buildPlainTextEditor(theme)
+        : _buildSsmlCodeEditor(theme);
   }
 
-  Widget _buildWysiwygEditor(ThemeData theme) {
-    return Column(
-      children: [
-        // Toolbar
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            border: Border(
-              bottom: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.3),
-              ),
-            ),
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildWysiwygButton(
-                  context,
-                  'Text',
-                  Icons.text_fields,
-                  () => _addSegment(
-                    SsmlSegment(type: SsmlType.text, text: 'New text'),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Pause',
-                  Icons.pause_circle,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.pause,
-                      text: 'Pause',
-                      duration: 500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Emphasis',
-                  Icons.format_bold,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.emphasis,
-                      text: 'Emphasized text',
-                      emphasisLevel: 'strong',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Prosody',
-                  Icons.tune,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.prosody,
-                      text: 'Modified speech',
-                      rate: 'medium',
-                      pitch: 'medium',
-                      volume: 'medium',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Say As',
-                  Icons.pin,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.sayAs,
-                      text: '12345',
-                      interpretAs: 'cardinal',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Language',
-                  Icons.language,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.lang,
-                      text: 'Foreign text',
-                      language: 'en-US',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Express-As',
-                  Icons.theater_comedy,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.expressAs,
-                      text: 'Expressive speech',
-                      style: 'cheerful',
-                      styleDegree: '1.0',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildWysiwygButton(
-                  context,
-                  'Substitute',
-                  Icons.swap_horiz,
-                  () => _addSegment(
-                    SsmlSegment(
-                      type: SsmlType.sub,
-                      text: 'SSML',
-                      alias: 'Speech Synthesis Markup Language',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+  Widget _buildPlainTextEditor(ThemeData theme) {
+    final controller = _isMultiSection
+        ? _sectionPlainTextControllers[_currentSection]!
+        : _plainTextController;
+
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: TextField(
+        controller: controller,
+        maxLines: null,
+        expands: true,
+        style: theme.textTheme.bodyLarge,
+        decoration: InputDecoration(
+          hintText: _isMultiSection
+              ? 'Enter text for ${_getSectionDisplayName(_currentSection)}...'
+              : 'Enter text to speak...',
+          border: InputBorder.none,
         ),
-        // Segments list
-        Expanded(
-          child: _segments.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.text_fields,
-                        size: 64,
-                        color: theme.colorScheme.onSurface.withOpacity(0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No content yet',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Add elements using the toolbar above',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.4),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : ReorderableListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _segments.length,
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex--;
-                      final item = _segments.removeAt(oldIndex);
-                      _segments.insert(newIndex, item);
-                      _rebuildSSML();
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    return _buildSegmentCard(_segments[index], index, theme);
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSegmentCard(SsmlSegment segment, int index, ThemeData theme) {
-    return Card(
-      key: ValueKey(index),
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(_getSegmentIcon(segment.type)),
-        title: _buildSegmentEditor(segment, index, theme),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.delete, size: 20),
-              onPressed: () {
-                setState(() {
-                  _segments.removeAt(index);
-                  _rebuildSSML();
-                });
-              },
-            ),
-            const Icon(Icons.drag_handle),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSegmentEditor(SsmlSegment segment, int index, ThemeData theme) {
-    switch (segment.type) {
-      case SsmlType.text:
-        return TextFormField(
-          initialValue: segment.text,
-          decoration: const InputDecoration(
-            hintText: 'Enter text to speak',
-            border: InputBorder.none,
-          ),
-          maxLines: null,
-          onChanged: (value) {
-            segment.text = value;
-            _rebuildSSML();
-          },
-        );
-      case SsmlType.pause:
-        return Row(
-          children: [
-            const Text('Type: ', style: TextStyle(fontSize: 12)),
-            DropdownButton<String?>(
-              value: segment.strength != null ? 'strength' : 'time',
-              isDense: true,
-              items: const [
-                DropdownMenuItem(value: 'time', child: Text('Duration')),
-                DropdownMenuItem(value: 'strength', child: Text('Strength')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  if (value == 'strength') {
-                    segment.strength = 'medium';
-                  } else {
-                    segment.strength = null;
-                  }
-                  _rebuildSSML();
-                });
-              },
-            ),
-            const SizedBox(width: 16),
-            if (segment.strength == null)
-              Expanded(
-                child: Row(
-                  children: [
-                    const Text('Duration: ', style: TextStyle(fontSize: 12)),
-                    SizedBox(
-                      width: 100,
-                      child: TextFormField(
-                        initialValue: segment.duration.toString(),
-                        decoration: const InputDecoration(
-                          suffixText: 'ms',
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          segment.duration = int.tryParse(value) ?? 500;
-                          _rebuildSSML();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Expanded(
-                child: Row(
-                  children: [
-                    const Text('Strength: ', style: TextStyle(fontSize: 12)),
-                    DropdownButton<String>(
-                      value: segment.strength,
-                      isDense: true,
-                      items:
-                          [
-                                'none',
-                                'x-weak',
-                                'weak',
-                                'medium',
-                                'strong',
-                                'x-strong',
-                              ]
-                              .map(
-                                (s) =>
-                                    DropdownMenuItem(value: s, child: Text(s)),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          segment.strength = value;
-                          _rebuildSSML();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        );
-      case SsmlType.emphasis:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Emphasized text',
-                border: InputBorder.none,
-              ),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              maxLines: null,
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Row(
-              children: [
-                const Text('Level: ', style: TextStyle(fontSize: 12)),
-                DropdownButton<String>(
-                  value: segment.emphasisLevel ?? 'strong',
-                  isDense: true,
-                  items: ['strong', 'moderate', 'reduced']
-                      .map((l) => DropdownMenuItem(value: l, child: Text(l)))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      segment.emphasisLevel = value;
-                      _rebuildSSML();
-                    });
-                  },
-                ),
-              ],
-            ),
-          ],
-        );
-      case SsmlType.prosody:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Text with prosody changes',
-                border: InputBorder.none,
-              ),
-              maxLines: null,
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Wrap(
-              spacing: 12,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Rate:', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    DropdownButton<String>(
-                      value: segment.rate ?? 'medium',
-                      isDense: true,
-                      items: ['x-slow', 'slow', 'medium', 'fast', 'x-fast']
-                          .map(
-                            (r) => DropdownMenuItem(
-                              value: r,
-                              child: Text(
-                                r,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          segment.rate = value;
-                          _rebuildSSML();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Pitch:', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    DropdownButton<String>(
-                      value: segment.pitch ?? 'medium',
-                      isDense: true,
-                      items: ['x-low', 'low', 'medium', 'high', 'x-high']
-                          .map(
-                            (p) => DropdownMenuItem(
-                              value: p,
-                              child: Text(
-                                p,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          segment.pitch = value;
-                          _rebuildSSML();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Volume:', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    DropdownButton<String>(
-                      value: segment.volume ?? 'medium',
-                      isDense: true,
-                      items:
-                          [
-                                'silent',
-                                'x-soft',
-                                'soft',
-                                'medium',
-                                'loud',
-                                'x-loud',
-                              ]
-                              .map(
-                                (v) => DropdownMenuItem(
-                                  value: v,
-                                  child: Text(
-                                    v,
-                                    style: const TextStyle(fontSize: 11),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          segment.volume = value;
-                          _rebuildSSML();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        );
-      case SsmlType.sayAs:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Text to interpret',
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Row(
-              children: [
-                const Text('Interpret as:', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: segment.interpretAs ?? 'cardinal',
-                  isDense: true,
-                  items:
-                      [
-                            'cardinal',
-                            'ordinal',
-                            'characters',
-                            'spell-out',
-                            'digits',
-                            'fraction',
-                            'unit',
-                            'date',
-                            'time',
-                            'telephone',
-                            'address',
-                            'name',
-                          ]
-                          .map(
-                            (i) => DropdownMenuItem(
-                              value: i,
-                              child: Text(
-                                i,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      segment.interpretAs = value;
-                      _rebuildSSML();
-                    });
-                  },
-                ),
-              ],
-            ),
-          ],
-        );
-      case SsmlType.phoneme:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Written text',
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Row(
-              children: [
-                const Text('Alphabet:', style: TextStyle(fontSize: 12)),
-                DropdownButton<String>(
-                  value: segment.alphabet ?? 'ipa',
-                  isDense: true,
-                  items: ['ipa', 'sapi']
-                      .map((a) => DropdownMenuItem(value: a, child: Text(a)))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      segment.alphabet = value;
-                      _rebuildSSML();
-                    });
-                  },
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: segment.ph ?? '',
-                    decoration: const InputDecoration(
-                      labelText: 'Phonetic pronunciation',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onChanged: (value) {
-                      segment.ph = value;
-                      _rebuildSSML();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      case SsmlType.sub:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Written text',
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            TextFormField(
-              initialValue: segment.alias ?? '',
-              decoration: const InputDecoration(
-                labelText: 'Spoken as (alias)',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              onChanged: (value) {
-                segment.alias = value;
-                _rebuildSSML();
-              },
-            ),
-          ],
-        );
-      case SsmlType.lang:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Text in foreign language',
-                border: InputBorder.none,
-              ),
-              maxLines: null,
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Row(
-              children: [
-                const Text('Language:', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: segment.language ?? 'en-US',
-                  isDense: true,
-                  items:
-                      [
-                            'en-US',
-                            'en-GB',
-                            'sv-SE',
-                            'de-DE',
-                            'fr-FR',
-                            'es-ES',
-                            'it-IT',
-                            'pt-BR',
-                            'ja-JP',
-                            'zh-CN',
-                          ]
-                          .map(
-                            (l) => DropdownMenuItem(value: l, child: Text(l)),
-                          )
-                          .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      segment.language = value;
-                      _rebuildSSML();
-                    });
-                  },
-                ),
-              ],
-            ),
-          ],
-        );
-      case SsmlType.voice:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Text with different voice',
-                border: InputBorder.none,
-              ),
-              maxLines: null,
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            TextFormField(
-              initialValue: segment.voiceName ?? '',
-              decoration: const InputDecoration(
-                labelText: 'Voice name (e.g., sv-SE-SofieNeural)',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              onChanged: (value) {
-                segment.voiceName = value;
-                _rebuildSSML();
-              },
-            ),
-          ],
-        );
-      case SsmlType.expressAs:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              initialValue: segment.text,
-              decoration: const InputDecoration(
-                hintText: 'Text with speaking style',
-                border: InputBorder.none,
-              ),
-              maxLines: null,
-              onChanged: (value) {
-                segment.text = value;
-                _rebuildSSML();
-              },
-            ),
-            Wrap(
-              spacing: 12,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Style:', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    DropdownButton<String>(
-                      value: segment.style ?? 'cheerful',
-                      isDense: true,
-                      items:
-                          [
-                                'cheerful',
-                                'sad',
-                                'angry',
-                                'excited',
-                                'friendly',
-                                'terrified',
-                                'shouting',
-                                'whispering',
-                                'hopeful',
-                                'calm',
-                                'fearful',
-                                'empathetic',
-                                'newscast',
-                                'customer-service',
-                              ]
-                              .map(
-                                (s) => DropdownMenuItem(
-                                  value: s,
-                                  child: Text(
-                                    s,
-                                    style: const TextStyle(fontSize: 11),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          segment.style = value;
-                          _rebuildSSML();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Degree:', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    SizedBox(
-                      width: 80,
-                      child: TextFormField(
-                        initialValue: segment.styleDegree ?? '1.0',
-                        decoration: const InputDecoration(
-                          hintText: '0.01-2.0',
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          segment.styleDegree = value;
-                          _rebuildSSML();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        );
-    }
-  }
-
-  IconData _getSegmentIcon(SsmlType type) {
-    switch (type) {
-      case SsmlType.text:
-        return Icons.text_fields;
-      case SsmlType.pause:
-        return Icons.pause_circle;
-      case SsmlType.emphasis:
-        return Icons.format_bold;
-      case SsmlType.prosody:
-        return Icons.tune;
-      case SsmlType.sayAs:
-        return Icons.pin;
-      case SsmlType.phoneme:
-        return Icons.record_voice_over;
-      case SsmlType.sub:
-        return Icons.swap_horiz;
-      case SsmlType.lang:
-        return Icons.language;
-      case SsmlType.voice:
-        return Icons.person;
-      case SsmlType.expressAs:
-        return Icons.theater_comedy;
-    }
-  }
-
-  void _addSegment(SsmlSegment segment) {
-    setState(() {
-      _segments.add(segment);
-      _rebuildSSML();
-    });
-  }
-
-  Widget _buildWysiwygButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    VoidCallback onPressed,
-  ) {
-    return OutlinedButton.icon(
-      onPressed: _isProcessing ? null : onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textAlignVertical: TextAlignVertical.top,
       ),
     );
   }
 
   Widget _buildSsmlCodeEditor(ThemeData theme) {
-    return TextField(
-      controller: _controller,
-      maxLines: null,
-      expands: true,
-      onChanged: (_) => _validateSsml(),
-      decoration: const InputDecoration(
-        hintText: 'Edit SSML content here...',
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.all(16),
-      ),
-      style: TextStyle(
-        fontFamily: 'Courier New',
-        fontSize: 13,
-        color: theme.colorScheme.onSurface,
-        height: 1.5,
-      ),
-      enabled: !_isProcessing,
-    );
-  }
+    final controller = _isMultiSection
+        ? _sectionSsmlControllers[_currentSection]!
+        : _ssmlController;
 
-  Widget _buildPlainTextView(String plainText, ThemeData theme) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: SelectableText(
-        plainText,
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: TextField(
+        controller: controller,
+        maxLines: null,
+        expands: true,
+        onChanged: (_) => _validateSsml(),
+        decoration: InputDecoration(
+          hintText: _isMultiSection
+              ? 'Edit SSML for ${_getSectionDisplayName(_currentSection)}...'
+              : 'Edit SSML content here...',
+          border: InputBorder.none,
+        ),
+        textAlignVertical: TextAlignVertical.top,
         style: TextStyle(
+          fontFamily: 'Courier New',
           fontSize: 14,
           color: theme.colorScheme.onSurface,
-          height: 1.6,
         ),
       ),
     );
@@ -1539,26 +578,24 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
     return ActionChip(
       label: Text(label, style: const TextStyle(fontSize: 11)),
       onPressed: () {
-        final selection = _controller.selection;
-        if (selection.isValid && !selection.isCollapsed) {
-          final selectedText = _controller.text.substring(
-            selection.start,
-            selection.end,
-          );
-          final wrappedTag = tag.replaceAll('text', selectedText);
-          _controller.text = _controller.text.replaceRange(
-            selection.start,
-            selection.end,
-            wrappedTag,
-          );
-        }
-        _validateSsml();
+        // Copy tag to clipboard for reference
+        Clipboard.setData(ClipboardData(text: tag));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Copied $label tag to clipboard')),
+        );
       },
     );
   }
 
   void _formatSsml() {
-    String formatted = _controller.text;
+    // Only format in SSML Code mode
+    if (_showPlainText) return;
+
+    final controller = _isMultiSection
+        ? _sectionSsmlControllers[_currentSection]!
+        : _ssmlController;
+
+    String formatted = controller.text;
 
     // Basic XML formatting - add newlines after major tags
     formatted = formatted
@@ -1567,84 +604,213 @@ class _SsmlPreviewDialogState extends State<SsmlPreviewDialog>
         .trim();
 
     setState(() {
-      _controller.text = formatted;
+      if (_isMultiSection) {
+        _sectionSsmlControllers[_currentSection]!.text = formatted;
+      } else {
+        _ssmlController.text = formatted;
+      }
       _validateSsml();
     });
   }
-}
 
-/// SSML segment types based on Azure Speech Service SSML specification
-enum SsmlType {
-  text,
-  pause, // <break>
-  emphasis, // <emphasis>
-  prosody, // <prosody> for rate, pitch, volume
-  sayAs, // <say-as> for dates, numbers, etc.
-  phoneme, // <phoneme> for pronunciation
-  sub, // <sub> for substitution
-  lang, // <lang> for language switching
-  voice, // <voice> for voice changing
-  expressAs, // <mstts:express-as> for speaking style
-}
+  List<ButtonSegment<String>> _buildSectionSegments() {
+    final sections = widget.sections!;
+    return sections.keys.map((key) {
+      IconData icon;
+      switch (key) {
+        case 'welcome':
+          icon = Icons.waving_hand;
+          break;
+        case 'awayTeam':
+          icon = Icons.flight_takeoff;
+          break;
+        case 'homeTeam':
+          icon = Icons.home;
+          break;
+        default:
+          icon = Icons.description;
+      }
+      return ButtonSegment<String>(
+        value: key,
+        label: Text(_getSectionDisplayName(key)),
+        icon: Icon(icon, size: 18),
+      );
+    }).toList();
+  }
 
-/// Represents a segment of SSML content
-class SsmlSegment {
-  SsmlType type;
-  String text;
+  String _getSectionDisplayName(String key) {
+    switch (key) {
+      case 'welcome':
+        return 'Welcome';
+      case 'awayTeam':
+        return 'Away Team';
+      case 'homeTeam':
+        return 'Home Team';
+      default:
+        return key;
+    }
+  }
 
-  // Break attributes
-  int duration; // milliseconds
-  String? strength; // none, x-weak, weak, medium, strong, x-strong
+  TextEditingController _getCurrentController() {
+    if (_isMultiSection) {
+      return _showPlainText
+          ? _sectionPlainTextControllers[_currentSection]!
+          : _sectionSsmlControllers[_currentSection]!;
+    } else {
+      return _showPlainText ? _plainTextController : _ssmlController;
+    }
+  }
 
-  // Prosody attributes
-  String? rate; // x-slow, slow, medium, fast, x-fast, or percentage
-  String? pitch; // x-low, low, medium, high, x-high, or relative values
-  String? volume; // silent, x-soft, soft, medium, loud, x-loud, or percentage
+  Future<void> _enhanceWithAI() async {
+    final controller = _getCurrentController();
+    final currentText = controller.text.trim();
 
-  // Emphasis attributes
-  String? emphasisLevel; // strong, moderate, reduced
+    if (currentText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter some text first to enhance')),
+      );
+      return;
+    }
 
-  // Say-as attributes
-  String?
-  interpretAs; // cardinal, ordinal, characters, date, time, telephone, etc.
-  String? format; // For dates and times
+    setState(() => _isEnhancing = true);
 
-  // Phoneme attributes
-  String? alphabet; // ipa or sapi
-  String? ph; // Phonetic pronunciation
+    try {
+      final authService = ref.read(authServiceProvider);
+      final aiService = AiSentenceService(authService);
 
-  // Substitution
-  String? alias; // Text to speak instead of written text
+      // Strip SSML tags if in SSML mode to get plain text for enhancement
+      final plainText = _showPlainText
+          ? currentText
+          : _stripSsmlTags(currentText);
 
-  // Language
-  String? language; // Language code (e.g., en-US, sv-SE)
+      final systemPrompt = _getSystemPromptForStyle(_selectedStyle);
+      final userPrompt = _buildEnhancePrompt(plainText, _selectedStyle);
 
-  // Voice
-  String? voiceName; // Voice name
+      final suggestions = await aiService.generateSentences(
+        prompt: userPrompt,
+        systemPrompt: systemPrompt,
+        temperature: _getTemperatureForStyle(_selectedStyle),
+        maxTokens: 2000,
+      );
 
-  // Express-as attributes (Azure specific)
-  String? style; // cheerful, sad, angry, excited, friendly, terrified, etc.
-  String? styleDegree; // 0.01 to 2.0
-  String? role; // narrator, character roles
+      if (suggestions.isNotEmpty && mounted) {
+        final enhancedText = suggestions.first.trim();
 
-  SsmlSegment({
-    required this.type,
-    required this.text,
-    this.duration = 500,
-    this.strength,
-    this.rate,
-    this.pitch,
-    this.volume,
-    this.emphasisLevel,
-    this.interpretAs,
-    this.format,
-    this.alphabet,
-    this.ph,
-    this.alias,
-    this.language,
-    this.voiceName,
-    this.style,
-    this.styleDegree,
-    this.role,
-  });
+        // Log the AI-generated text for debugging
+        const Logger('SsmlPreviewDialog').d('AI Enhanced Text: $enhancedText');
+
+        setState(() {
+          if (_isMultiSection) {
+            if (_showPlainText) {
+              _sectionPlainTextControllers[_currentSection]!.text =
+                  enhancedText;
+            } else {
+              final wrappedSsml = _wrapWithSsml(enhancedText);
+              const Logger('SsmlPreviewDialog').d('Wrapped SSML: $wrappedSsml');
+              _sectionSsmlControllers[_currentSection]!.text = wrappedSsml;
+              _validateSsml();
+            }
+          } else {
+            if (_showPlainText) {
+              _plainTextController.text = enhancedText;
+            } else {
+              final wrappedSsml = _wrapWithSsml(enhancedText);
+              const Logger('SsmlPreviewDialog').d('Wrapped SSML: $wrappedSsml');
+              _ssmlController.text = wrappedSsml;
+              _validateSsml();
+            }
+          }
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Enhanced with ${_getStyleName(_selectedStyle)} style',
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('AI enhancement failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isEnhancing = false);
+      }
+    }
+  }
+
+  String _getSystemPromptForStyle(AiEnhanceStyle style) {
+    switch (style) {
+      case AiEnhanceStyle.wild:
+        return 'Du är en energisk och entusiastisk svensk sportkommentator som'
+            ' älskar innebandy. Din uppgift är att ta enkel text och förbättra'
+            ' den till en spännande och fängslande annonsering. Använd kraftfulla'
+            ' verb, utrop och dramatiska beskrivningar. Håll det på svenska och'
+            ' kort (max 2-3 meningar). Lägg till energi, spänning och passion!'
+            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
+            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
+            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
+            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+      case AiEnhanceStyle.balanced:
+        return 'Du är en professionell svensk sportkommentator för innebandy.'
+            ' Din uppgift är att ta enkel text och förbättra den till en tydlig,'
+            ' professionell annonsering. Använd korrekt svensk sportterminologi,'
+            ' var koncis och informativ. Håll tonen professionell men engagerande.'
+            ' Leverera max 2 meningar på klar svenska.'
+            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
+            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
+            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
+            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+      case AiEnhanceStyle.mellow:
+        return 'Du är en lugn och behärskad svensk sportkommentator för innebandy.'
+            ' Din uppgift är att ta enkel text och förbättra den till en avslappnad,'
+            ' mätt annonsering. Använd mild ton, undvik överdriven dramatik. Var'
+            ' saklig och rak. Håll det kort och naturligt på svenska (max 2 meningar).'
+            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
+            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
+            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
+            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+    }
+  }
+
+  String _buildEnhancePrompt(String text, AiEnhanceStyle style) {
+    final styleDesc = _getStyleName(style);
+    return 'Förbättra följande text till en $styleDesc sportkommentator-annonsering'
+        ' för innebandy. Originaltext: "$text"';
+  }
+
+  double _getTemperatureForStyle(AiEnhanceStyle style) {
+    switch (style) {
+      case AiEnhanceStyle.wild:
+        return 0.9; // More creative
+      case AiEnhanceStyle.balanced:
+        return 0.5; // Moderate
+      case AiEnhanceStyle.mellow:
+        return 0.3; // More conservative
+    }
+  }
+
+  String _getStyleName(AiEnhanceStyle style) {
+    switch (style) {
+      case AiEnhanceStyle.wild:
+        return 'energisk';
+      case AiEnhanceStyle.balanced:
+        return 'balanserad';
+      case AiEnhanceStyle.mellow:
+        return 'lugn';
+    }
+  }
 }

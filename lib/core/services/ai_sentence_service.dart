@@ -29,7 +29,7 @@ class AiSentenceService {
     required String prompt,
     int n = 4,
     double temperature = 0.4,
-    int maxTokens = 150,
+    int maxTokens = 2000,
     String systemPrompt =
         'Du är en lågmäld, professionell svensk sportkommentator i ett sekretariat på en innebandymatch. Ditt enda uppdrag är att sakligt och tydligt annonsera mål, assist eller utvisning, alltid med aktuell matchtid. Använd aldrig slang eller onödiga utrop. Variera formulering och meningsbyggnad mellan varje förslag, så att de skiljer sig tydligt från varandra. Skapa alltid två exampel på mål och två för utvisning. Exempel på rätt stil: "Nummer 10 Pelle Karlsson gör 2-0 till hemmalaget. Tiden 10:45", "Nummer 22 Foo Bar utvisas 2 minuter för slag", "Hemmalaget gör 3-0, mål av nummer 11 Morris F, assist av nummer 6 Charlie L".',
   }) async {
@@ -43,6 +43,7 @@ class AiSentenceService {
       final headers = {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       };
 
       final body = jsonEncode({
@@ -50,12 +51,13 @@ class AiSentenceService {
           {'role': 'system', 'content': systemPrompt},
           {'role': 'user', 'content': prompt},
         ],
-        'model': '@cf/meta/llama-3.2-3b-instruct',
+        'model': 'gpt-5.1-chat',
         'temperature': temperature,
         'maxTokens': maxTokens,
       });
 
       _logger.d('Requesting AI chat completion from: $uri');
+      _logger.d('Request body: $body');
 
       http.Response response = await http.post(
         uri,
@@ -104,8 +106,12 @@ class AiSentenceService {
           }
         }
 
+        _logger.e('Unexpected AI response format: ${response.body}');
         throw Exception('Unexpected AI response format: ${response.body}');
       } else {
+        _logger.e(
+          'AI request failed with status ${response.statusCode}: ${response.body}',
+        );
         throw Exception(
           'AI request failed: ${response.statusCode} ${response.body}',
         );
