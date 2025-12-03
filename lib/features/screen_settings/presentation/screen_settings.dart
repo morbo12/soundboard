@@ -13,6 +13,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_grid.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_jingles_manager.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_preview_toggle.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_template_settings_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -70,6 +71,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const Gap(2),
               const SsmlPreviewToggle(),
+              const Gap(10),
+
+              settingsHeaderText("SSML Templates"),
+              settingsHeader2Text(
+                "Customize templates for welcome, lineup, and referee announcements",
+              ),
+              const Gap(2),
+              const SsmlTemplateSettingsButton(),
               const Gap(10),
 
               settingsHeaderText("Spotify Configuration"),

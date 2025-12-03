@@ -4,6 +4,7 @@ import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:easy_hive/easy_hive.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
+import 'package:soundboard/core/models/ssml_template.dart';
 
 enum Settings {
   key, // Use as box key. You can use a String constant instead.
@@ -51,6 +52,11 @@ enum Settings {
 
   // SSML Preview feature
   enableSsmlPreview,
+
+  // SSML Templates
+  ssmlWelcomeTemplate,
+  ssmlLineupTemplate,
+  ssmlRefereeTemplate,
 }
 
 class SettingsBox extends EasyBox {
@@ -316,6 +322,28 @@ extension GeneralSettingsExtension on SettingsBox {
   set enableSsmlPreview(bool value) => put(Settings.enableSsmlPreview, value);
   bool get enableSsmlPreview =>
       get(Settings.enableSsmlPreview, defaultValue: false);
+
+  // SSML Templates
+  String get ssmlWelcomeTemplate => get(
+    Settings.ssmlWelcomeTemplate,
+    defaultValue: DefaultSsmlTemplates.welcomeTemplate.template,
+  );
+  set ssmlWelcomeTemplate(String value) =>
+      put(Settings.ssmlWelcomeTemplate, value);
+
+  String get ssmlLineupTemplate => get(
+    Settings.ssmlLineupTemplate,
+    defaultValue: DefaultSsmlTemplates.lineupTemplate.template,
+  );
+  set ssmlLineupTemplate(String value) =>
+      put(Settings.ssmlLineupTemplate, value);
+
+  String get ssmlRefereeTemplate => get(
+    Settings.ssmlRefereeTemplate,
+    defaultValue: DefaultSsmlTemplates.refereeTemplate.template,
+  );
+  set ssmlRefereeTemplate(String value) =>
+      put(Settings.ssmlRefereeTemplate, value);
 }
 
 // Contains AI-generated edits.

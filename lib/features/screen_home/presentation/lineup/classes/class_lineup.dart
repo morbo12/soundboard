@@ -213,18 +213,24 @@ class _LineupState extends ConsumerState<Lineup> {
 
       // Show preview dialog if enabled
       if (settings.enableSsmlPreview && mounted) {
-        final fullSsml = "$introSsml\n\n$awayTeamSsml\n\n$homeTeamSsml";
+        final sections = <String, String>{
+          'welcome': introSsml,
+          'awayTeam': awayTeamSsml,
+          'homeTeam': homeTeamSsml,
+        };
+
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => SsmlPreviewDialog(
-            initialSsml: fullSsml,
+            initialSsml: '', // Not used in multi-section mode
             onCancel: () {},
-            onConfirm: (editedSsml) async {
-              // Split edited SSML back into parts
-              // For simplicity, we'll use the edited version as intro
-              introSsml = editedSsml;
-              homeTeamSsml = "";
-              awayTeamSsml = "";
+            onConfirm: (_) async {}, // Not used in multi-section mode
+            sections: sections,
+            onConfirmSections: (editedSections) async {
+              // Update the SSML strings with edited versions
+              introSsml = editedSections['welcome'] ?? introSsml;
+              awayTeamSsml = editedSections['awayTeam'] ?? awayTeamSsml;
+              homeTeamSsml = editedSections['homeTeam'] ?? homeTeamSsml;
             },
           ),
         );
@@ -304,7 +310,7 @@ class _LineupState extends ConsumerState<Lineup> {
         );
       }
 
-      // wait for 10 seconds
+      // wait for 7 seconds
 
       logger.d("[_handlePlayLineup] Waiting 7 seconds");
 
@@ -322,7 +328,7 @@ class _LineupState extends ConsumerState<Lineup> {
       // Play away team lineup with background music
 
       if (awayTeamTTS != null) {
-        logger.d("[_handlePlayLineup] Playing Away team background music");
+        logger.d("[_handlePlayLineup] Playing Away team lineup");
 
         await jingleManager.audioManager.playBytesAndWait(
           audio: awayTeamTTS.audio.buffer.asUint8List(),
@@ -393,10 +399,10 @@ class _LineupState extends ConsumerState<Lineup> {
       }
 
       if (homeTeamTTS != null) {
-        // wait for 10 seconds
-        logger.d("[_handlePlayLineup] Waiting 10 seconds");
+        // wait for 7 seconds
+        logger.d("[_handlePlayLineup] Waiting 7 seconds");
 
-        await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 7));
 
         // Play home team lineup with background music
 

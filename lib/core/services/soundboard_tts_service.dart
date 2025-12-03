@@ -33,6 +33,9 @@ class SoundboardTtsService {
         'Generating speech for text: "${text.substring(0, text.length.clamp(0, 50))}", voice: $voiceName',
       );
 
+      // Log full SSML for debugging TTS issues
+      _logger.d('Full SSML text to be sent:\n$text');
+
       // Prepare request
       final uri = Uri.parse('${_settings.apiBaseUrl}/api/tts/synthesize');
       final headers = {
@@ -49,6 +52,7 @@ class SoundboardTtsService {
       });
 
       _logger.d('Making TTS request to: $uri');
+      _logger.d('Request body: $body');
 
       // Make HTTP request
       http.Response response = await http.post(
