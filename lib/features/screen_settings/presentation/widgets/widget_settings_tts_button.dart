@@ -32,88 +32,123 @@ class _TtsSettingsButtonState extends ConsumerState<TtsSettingsButton> {
       SettingsBox().azRegionId,
     );
     final hasKey = SettingsBox().azTtsKey.isNotEmpty;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      elevation: 2,
+    return InkWell(
+      onTap: () => _showSettingsBottomSheet(context),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.indigo.shade100, Colors.indigo.shade50],
-          ),
+          color: colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
-        child: InkWell(
-          onTap: () => _showSettingsBottomSheet(context),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.withAlpha(100),
-                    borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.record_voice_over,
+                color: colorScheme.onPrimaryContainer,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Azure TTS Service',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.primary,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.record_voice_over,
-                    color: Colors.indigo.shade700,
-                    size: 28,
+                  const SizedBox(height: 4),
+                  Text(
+                    voiceName,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'TTS Voice: $voiceName',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.indigo.shade800,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: hasKey ? Colors.green : Colors.orange,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              hasKey ? 'CONFIGURED' : 'SETUP',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        Icons.public,
+                        size: 14,
+                        color: colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'Region: $regionName | Key: ${hasKey ? "Configured" : "Not configured"}',
+                        regionName,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.indigo.shade600,
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: hasKey
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: hasKey
+                                ? Colors.green.withOpacity(0.5)
+                                : Colors.orange.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              hasKey ? Icons.check_circle : Icons.warning,
+                              size: 12,
+                              color: hasKey ? Colors.green : Colors.orange,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              hasKey ? 'READY' : 'SETUP REQUIRED',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: hasKey ? Colors.green : Colors.orange,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                Icon(Icons.settings, color: Colors.indigo.shade700, size: 24),
-              ],
+                ],
+              ),
             ),
-          ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+          ],
         ),
       ),
     );

@@ -23,101 +23,94 @@ class _VolumeSystemConfigButtonState extends State<VolumeSystemConfigButton> {
       builder: (context, ref, child) {
         final isDeejConnected = ref.watch(deejConnectionStatusProvider);
         final config = SettingsBox().volumeSystemConfig;
+        final colorScheme = Theme.of(context).colorScheme;
 
         // Debug: Log connection status
         _logger.d('Deej Connected: $isDeejConnected');
 
-        return Card(
-          elevation: 2,
+        return InkWell(
+          onTap: () => _showConfigDialog(context, isDeejConnected),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.deepPurple.shade100, Colors.deepPurple.shade50],
-              ),
+              color: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
-            child: InkWell(
-              onTap: () => _showConfigDialog(context, isDeejConnected),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple.withAlpha(100),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        isDeejConnected ? Icons.settings_remote : Icons.tune,
-                        color: Colors.deepPurple.shade700,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    isDeejConnected ? Icons.settings_remote : Icons.tune,
+                    color: colorScheme.onPrimaryContainer,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                isDeejConnected
-                                    ? 'Volume Control: Deej Hardware Mode'
-                                    : 'Volume Control: UI Only Mode',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple.shade800,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDeejConnected
-                                      ? Colors.green
-                                      : Colors.blue,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  isDeejConnected ? 'HARDWARE' : 'SOFTWARE',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
                           Text(
                             isDeejConnected
-                                ? '${config.deejMappings.length} Deej mappings active'
-                                : 'Master: Windows audio, C1/C2: Max volume',
+                                ? 'Volume Control: Deej Hardware Mode'
+                                : 'Volume Control: UI Only Mode',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.deepPurple.shade600,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDeejConnected
+                                  ? Colors.green
+                                  : Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              isDeejConnected ? 'HARDWARE' : 'SOFTWARE',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    Icon(
-                      Icons.settings,
-                      color: Colors.deepPurple.shade700,
-                      size: 24,
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        isDeejConnected
+                            ? '${config.deejMappings.length} Deej mappings active'
+                            : 'Master: Windows audio, C1/C2: Max volume',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: colorScheme.primary,
+                  size: 16,
+                ),
+              ],
             ),
           ),
         );
