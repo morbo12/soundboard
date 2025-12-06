@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Swedish numbers mapping and integration into SSML template service
+- Right-click menu for jingle button options (change jingle, rename, hotkey assignment, info)
 - SSML template management and rendering service
 - Possibility to edit SSML before sending to Azure TTS
 - AI-Enhanced Announced Text support
@@ -25,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING CHANGE**: Long-press menu moved to right-click for jingle buttons
+  - Long-press now triggers drag-to-reorder with 500ms delay to prevent accidental drags
+  - Right-click opens button options menu (change jingle, rename, hotkey assignment, info)
+  - Left-click still plays jingles as before
 - UI components for improved layout and styling in Home, Board, Events, and Lineup sections
 - API base URL resolution
 - Settings screen updates

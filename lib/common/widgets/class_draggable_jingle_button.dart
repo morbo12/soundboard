@@ -30,6 +30,10 @@ class DraggableJingleButton extends ConsumerStatefulWidget {
 
 class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
   String get _buttonId => 'jingle_button_${widget.index}';
+  final GlobalKey _buttonKey = GlobalKey();
+  Size? _buttonSize;
+  // Scale factor for drag preview; slightly larger than the original
+  static const double _dragScale = 1.08;
 
   @override
   void initState() {
@@ -165,34 +169,75 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
             .swapPositions(details.data, widget.index);
       },
       builder: (context, candidateData, rejectedData) {
+        // Measure the button size once it is laid out so we can keep
+        // the drag feedback and placeholder consistent with the button
+        // size and avoid visual shrinking when dragging.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final contextForSize = _buttonKey.currentContext;
+          if (contextForSize != null) {
+            final renderBox = contextForSize.findRenderObject() as RenderBox?;
+            if (renderBox != null) {
+              final newSize = renderBox.size;
+              if (_buttonSize == null || _buttonSize != newSize) {
+                setState(() {
+                  _buttonSize = newSize;
+                });
+              }
+            }
+          }
+        });
         return LongPressDraggable<int>(
           data: widget.index,
-          delay: const Duration(milliseconds: 300),
-          feedback: NormalButton(
-            primaryText: buttonText,
-            onTap: () {}, // Feedback doesn't need tap functionality
-            style: buttonStyle,
-            // If NormalButton relies on Material (e.g., for InkWell),
-            // this might affect its appearance, but should fix the error.
-            // We might need to wrap it in a specific Material type later if needed.
+          delay: const Duration(milliseconds: 500),
+          feedback: SizedBox(
+            width: (_buttonSize?.width ?? 100) * _dragScale,
+            height: (_buttonSize?.height ?? 100) * _dragScale,
+            child: Material(
+              elevation: 8,
+              shadowColor: Colors.black.withOpacity(0.45),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: NormalButton(
+                  primaryText: buttonText,
+                  onTap: () {}, // Feedback doesn't need tap functionality
+                  style: buttonStyle,
+                ),
+              ),
+            ),
           ),
-          childWhenDragging: NormalButton(
-            primaryText: '',
-            onTap: () {},
-            isDisabled: false,
-          ),
-          child: GestureDetector(
-            onLongPress: () => _handleLongPress(context, ref),
-            child: ButtonWithProgress(
-              audioFile: widget.audioFile,
+          childWhenDragging: SizedBox(
+            width: _buttonSize?.width,
+            height: _buttonSize?.height ?? 100,
+            child: Opacity(
+              opacity: 0.0,
               child: NormalButton(
                 primaryText: assignedHotkey != null
                     ? '$buttonText\n[${HotkeyUtils.formatForDisplay(assignedHotkey)}]'
                     : buttonText,
-                onTap: () => _handleTap(context, ref),
+                onTap: () {},
                 style: buttonStyle,
-                isDisabled: false,
-                isSelected: candidateData.isNotEmpty,
+                isDisabled: true,
+              ),
+            ),
+          ),
+          child: GestureDetector(
+            onSecondaryTap: () => _handleLongPress(context, ref),
+            child: ButtonWithProgress(
+              audioFile: widget.audioFile,
+              child: Container(
+                key: _buttonKey,
+                child: NormalButton(
+                  primaryText: assignedHotkey != null
+                      ? '$buttonText\n[${HotkeyUtils.formatForDisplay(assignedHotkey)}]'
+                      : buttonText,
+                  onTap: () => _handleTap(context, ref),
+                  style: buttonStyle,
+                  isDisabled: false,
+                  isSelected: candidateData.isNotEmpty,
+                ),
               ),
             ),
           ),
