@@ -14,6 +14,8 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_preview_toggle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_template_settings_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ai_model_selector.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_api_features_overview.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_premium_badge.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -45,6 +47,11 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
       title: 'Content & Media',
       icon: Icons.library_music_outlined,
       selectedIcon: Icons.library_music,
+    ),
+    _SettingsSection(
+      title: 'API & Premium',
+      icon: Icons.workspace_premium_outlined,
+      selectedIcon: Icons.workspace_premium,
     ),
     _SettingsSection(
       title: 'System',
@@ -165,11 +172,13 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const TtsSettingsButton(),
           ),
           const Gap(20),
-          _buildSettingItem(
+          buildPremiumSettingItem(
+            context: context,
             title: "AI Model",
             description:
                 "Select the AI model to use for generating sports announcements. Requires API product key.",
             child: AiModelSelector(),
+            isPremium: true,
           ),
           const Gap(20),
           _buildSettingItem(
@@ -207,7 +216,16 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const JinglesManagerWidget(),
           ),
         ];
-      case 4: // System
+      case 4: // API & Premium
+        return [
+          _buildSettingItem(
+            title: "API & Premium Features",
+            description:
+                "Manage your API configuration and explore premium features.",
+            child: ApiFeaturesSectionWidget(),
+          ),
+        ];
+      case 5: // System
         return [
           _buildSettingItem(
             title: "Clear Cache",

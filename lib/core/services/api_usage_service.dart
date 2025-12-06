@@ -64,20 +64,31 @@ class ApiUsageService {
 
   /// Check if a specific limit is approaching (>80% usage)
   bool isApproachingLimit(ApiUsageData usage) {
-    final ttsPercentage =
-        (usage.usage.ttsRequests / usage.limits.ttsRequestsPerMonth) * 100;
-    final aiPercentage =
-        (usage.usage.aiRequests / usage.limits.aiRequestsPerMonth) * 100;
-    final audioPercentage =
-        (usage.usage.audioMinutes / usage.limits.audioMinutesPerMonth) * 100;
+    final ttsLimit = usage.limits.ttsRequestsPerMonth;
+    final aiLimit = usage.limits.aiRequestsPerMonth;
+    final audioLimit = usage.limits.audioMinutesPerMonth;
+
+    final ttsPercentage = ttsLimit != null && ttsLimit > 0
+        ? (usage.usage.ttsRequests / ttsLimit) * 100
+        : 0.0;
+    final aiPercentage = aiLimit != null && aiLimit > 0
+        ? (usage.usage.aiRequests / aiLimit) * 100
+        : 0.0;
+    final audioPercentage = audioLimit != null && audioLimit > 0
+        ? (usage.usage.audioMinutes / audioLimit) * 100
+        : 0.0;
 
     return ttsPercentage > 80 || aiPercentage > 80 || audioPercentage > 80;
   }
 
   /// Check if any limit has been exceeded
   bool hasExceededLimit(ApiUsageData usage) {
-    return usage.remaining.ttsRequests <= 0 ||
-        usage.remaining.aiRequests <= 0 ||
-        usage.remaining.audioMinutes <= 0;
+    final ttsRemaining = usage.remaining.ttsRequests;
+    final aiRemaining = usage.remaining.aiRequests;
+    final audioRemaining = usage.remaining.audioMinutes;
+
+    return (ttsRemaining != null && ttsRemaining <= 0) ||
+        (aiRemaining != null && aiRemaining <= 0) ||
+        (audioRemaining != null && audioRemaining <= 0);
   }
 }

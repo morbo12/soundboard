@@ -200,14 +200,15 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
     BuildContext context,
     String label,
     num used,
-    num limit,
-    num remaining,
+    num? limit,
+    num? remaining,
     IconData icon, {
     bool isMinutes = false,
   }) {
     final theme = Theme.of(context);
-    final percentage = (used / limit * 100).clamp(0.0, 100.0);
-    final isExceeded = remaining <= 0;
+    final hasLimit = limit != null && limit > 0;
+    final percentage = hasLimit ? (used / limit * 100).clamp(0.0, 100.0) : 0.0;
+    final isExceeded = remaining != null && remaining <= 0;
     final isWarning = percentage > 80;
 
     Color getProgressColor() {
@@ -264,16 +265,25 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                     : 'Used: $used',
                 style: theme.textTheme.bodySmall,
               ),
-              Text(
-                isMinutes
-                    ? 'Remaining: ${remaining.toStringAsFixed(1)} min'
-                    : 'Remaining: $remaining',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isExceeded
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.onSurfaceVariant,
+              if (hasLimit)
+                Text(
+                  isMinutes
+                      ? 'Remaining: ${(remaining ?? 0).toStringAsFixed(1)} min'
+                      : 'Remaining: ${remaining ?? 0}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isExceeded
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                Text(
+                  'Unlimited',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
             ],
           ),
         ],
