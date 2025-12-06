@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6-beta1] - 2025-12-06
+
+### Added
+
+- Swedish numbers mapping and integration into SSML template service
+- SSML template management and rendering service
+- Possibility to edit SSML before sending to Azure TTS
+- AI-Enhanced Announced Text support
+- AI model selection and management widget
+- AI model selection to Settings screen
+- API and Premium Features integration in Settings screen
+- JSON schema for Usage API response
+- Funding on GitHub
+- macOS support
+
+### Changed
+
+- UI components for improved layout and styling in Home, Board, Events, and Lineup sections
+- API base URL resolution
+- Settings screen updates
+- Flutter version bump
+- Updated SonarQube scan action to version 6
+
+### Fixed
+
+- Custom categories buttons on random play not being persisted
+- Button move threshold adjustment
+- PowerShell cmdlet error handling
+
 ## [0.4.5] - 2025-10-20
 
 ### Added
