@@ -13,6 +13,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_jingles_manager.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_preview_toggle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_template_settings_button.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ai_model_selector.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -162,6 +163,13 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: "TTS Settings",
             description: "Configure Azure TTS settings for voice synthesis.",
             child: const TtsSettingsButton(),
+          ),
+          const Gap(20),
+          _buildSettingItem(
+            title: "AI Model",
+            description:
+                "Select the AI model to use for generating sports announcements. Requires API product key.",
+            child: AiModelSelector(),
           ),
           const Gap(20),
           _buildSettingItem(
