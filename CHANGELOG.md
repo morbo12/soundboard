@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AI-Enhanced Announced Text support
 - AI model selection and management widget
 - AI model selection to Settings screen
+- Pregame stats integration (fetch + UI indicator) and AI-enhanced welcome SSML now enriched with form/head-to-head context
 - API and Premium Features integration in Settings screen
 - JSON schema for Usage API response
 - Funding on GitHub
