@@ -1,0 +1,136 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AI API Response",
+    "type": "object",
+    "required": [
+        "success"
+    ],
+    "properties": {
+        "success": {
+            "type": "boolean",
+            "description": "Indicates if the request was successful"
+        },
+        "choices": {
+            "type": "array",
+            "description": "Array of completion choices (present on success)",
+            "items": {
+                "type": "object",
+                "required": [
+                    "index",
+                    "message",
+                    "finish_reason"
+                ],
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "Choice index (usually 0)"
+                    },
+                    "message": {
+                        "type": "object",
+                        "required": [
+                            "role",
+                            "content"
+                        ],
+                        "properties": {
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "assistant"
+                                ],
+                                "description": "Role of the message sender"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The actual response text"
+                            }
+                        }
+                    },
+                    "finish_reason": {
+                        "type": "string",
+                        "enum": [
+                            "stop",
+                            "length",
+                            "content_filter"
+                        ],
+                        "description": "Reason the generation stopped"
+                    }
+                }
+            }
+        },
+        "usage": {
+            "type": "object",
+            "description": "Token usage statistics (present on success)",
+            "required": [
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens"
+            ],
+            "properties": {
+                "prompt_tokens": {
+                    "type": "integer",
+                    "description": "Number of tokens in the prompt"
+                },
+                "completion_tokens": {
+                    "type": "integer",
+                    "description": "Number of tokens in the completion"
+                },
+                "total_tokens": {
+                    "type": "integer",
+                    "description": "Total tokens used (prompt + completion)"
+                }
+            }
+        },
+        "model": {
+            "type": "string",
+            "description": "The model used for generation (present on success)"
+        },
+        "message": {
+            "type": "string",
+            "description": "Error message (present on failure)"
+        },
+        "error": {
+            "type": "string",
+            "description": "Detailed error information (only in development mode)"
+        },
+        "status": {
+            "type": "integer",
+            "description": "HTTP status code (present on Azure API failures)"
+        },
+        "details": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Error details string"
+                },
+                {
+                    "type": "object",
+                    "description": "Quota exceeded details",
+                    "properties": {
+                        "category": {
+                            "type": "string",
+                            "enum": [
+                                "ai"
+                            ]
+                        },
+                        "limitType": {
+                            "type": "string",
+                            "enum": [
+                                "requests"
+                            ]
+                        },
+                        "used": {
+                            "type": "integer"
+                        },
+                        "limit": {
+                            "type": "integer"
+                        },
+                        "retryAfter": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
