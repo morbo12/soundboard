@@ -16,17 +16,34 @@ class EventsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Row(
-        children: [
-          VerticalDivider(
-            thickness: 1.0,
-            width: 20.0,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-
-          // Provide proper constraints for LiveEvents
-          Expanded(child: LiveEvents(scrollController: scrollController)),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(
+                  Icons.history,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Live Feed',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(child: LiveEvents(scrollController: scrollController)),
+          ],
+        ),
       ),
     );
   }

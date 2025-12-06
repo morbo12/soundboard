@@ -17,21 +17,29 @@ class BoardSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: width,
-      child: const Padding(
-        padding: EdgeInsets.all(5.0),
-        child: Align(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: const Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             child: Column(
               children: [
-                HorizontalVolumeControl(),
-                Gap(10),
-                PlayerProgressBar(),
-                Gap(10),
-                StopGoalRow(),
-                Gap(10),
-                // RowPlayerPresentation(),
-                // const Gap(10),
+                // Controls Group
+                Column(
+                  children: [
+                    HorizontalVolumeControl(),
+                    Gap(10),
+                    PlayerProgressBar(),
+                    Gap(10),
+                    StopGoalRow(),
+                  ],
+                ),
+                Gap(20),
+                // Jingle Grid
                 JingleGridSection(),
               ],
             ),

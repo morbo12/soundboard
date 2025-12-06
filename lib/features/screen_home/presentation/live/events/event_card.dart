@@ -56,39 +56,50 @@ class EventCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = MatchEventColors(data.matchEventTypeId);
+    final backgroundColor = colors.getTileColor(context);
+    final textColor = colors.getTextColor(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: ListTile(
-        isThreeLine: true,
-        // dense: true,
-        visualDensity: VisualDensity.compact,
-        onTap: () {
-          EventCardSsml(ref: ref, data: data).getEventText(context);
-          logger.d("Button pressed");
-        },
-        onLongPress: () {
-          final text = _getEventText(context, ref);
-          _showTextDialog(context, text);
-        },
-        leading: Icon(
-          _getEventIcon(data.matchEventTypeId),
-          color: Theme.of(context).colorScheme.onPrimary,
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Card(
+        elevation: 2,
+        color: backgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          isThreeLine: true,
+          visualDensity: VisualDensity.compact,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 4.0,
+          ),
+          onTap: () {
+            EventCardSsml(ref: ref, data: data).getEventText(context);
+            logger.d("Button pressed");
+          },
+          onLongPress: () {
+            final text = _getEventText(context, ref);
+            _showTextDialog(context, text);
+          },
+          leading: Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: textColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _getEventIcon(data.matchEventTypeId),
+              color: textColor,
+              size: 20,
+            ),
+          ),
+          textColor: textColor,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_buildEventHeader()],
+          ),
+          subtitle: _buildEventDetails(),
         ),
-        textColor: MatchEventColors(
-          data.matchEventTypeId,
-        ).getTextColor(context),
-        tileColor: MatchEventColors(
-          data.matchEventTypeId,
-        ).getTileColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildEventHeader(),
-            // _buildEventDetails(),
-          ],
-        ),
-        subtitle: _buildEventDetails(),
       ),
     );
   }

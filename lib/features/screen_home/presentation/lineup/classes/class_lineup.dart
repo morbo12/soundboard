@@ -41,35 +41,42 @@ class _LineupState extends ConsumerState<Lineup> {
     return SizedBox(
       width: widget.availableWidth,
       height: widget.availableHeight,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Mode Toggle Switch
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 4.0,
-              ),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Manual Mode'),
-                  Switch(
-                    value: isManualMode,
-                    onChanged: (value) {
-                      ref.read(isManualLineupModeProvider.notifier).state =
-                          value;
-                    },
+            // Header with Toggle
+            Row(
+              children: [
+                Icon(Icons.people, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Text(
+                  'Lineup',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                Text(
+                  'Manual',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: isManualMode,
+                  onChanged: (value) {
+                    ref.read(isManualLineupModeProvider.notifier).state = value;
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // Only show header section in API mode (not manual mode)
             if (!isManualMode) ...[
@@ -85,11 +92,11 @@ class _LineupState extends ConsumerState<Lineup> {
               flex: 3,
               child: isManualMode
                   ? ManualLineupEntryWidget(
-                      availableWidth: widget.availableWidth,
+                      availableWidth: widget.availableWidth - 32,
                       availableHeight: widget.availableHeight * 0.6,
                     )
                   : LineupData(
-                      availableWidth: widget.availableWidth,
+                      availableWidth: widget.availableWidth - 32,
                       availableHeight: widget.availableHeight,
                     ),
             ),
@@ -100,7 +107,7 @@ class _LineupState extends ConsumerState<Lineup> {
               Expanded(
                 flex: 2,
                 child: ManualEventGeneratorWidget(
-                  availableWidth: widget.availableWidth,
+                  availableWidth: widget.availableWidth - 32,
                   availableHeight: widget.availableHeight * 0.4,
                 ),
               ),

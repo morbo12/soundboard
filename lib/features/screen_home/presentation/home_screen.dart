@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:soundboard/features/screen_home/presentation/board/board.dart';
 import 'package:soundboard/features/screen_home/presentation/events/events.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/lineup.dart';
@@ -78,22 +79,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
 
             // Calculate remaining width for lineup section
-            final usedWidth = boardWidth + volumeWidth + eventsWidth;
+            const double gap = 16.0;
+            const double padding = 16.0;
+            // We exclude volumeWidth as it is not currently rendered in the row
+            // We must also account for the outer padding (left + right)
+            final usedWidth =
+                boardWidth + eventsWidth + (gap * 2) + (padding * 2);
             final lineupWidth = (totalWidth - usedWidth).clamp(
               minLineupWidth,
               double.infinity,
             );
 
-            return Row(
-              children: [
-                BoardSection(width: boardWidth),
-                // VolumeSection(width: volumeWidth),
-                EventsSection(
-                  scrollController: scrollController,
-                  width: eventsWidth,
-                ),
-                LineupSection(width: lineupWidth),
-              ],
+            return Padding(
+              padding: const EdgeInsets.all(padding),
+              child: Row(
+                children: [
+                  BoardSection(width: boardWidth),
+                  const Gap(gap),
+                  // VolumeSection(width: volumeWidth),
+                  EventsSection(
+                    scrollController: scrollController,
+                    width: eventsWidth,
+                  ),
+                  const Gap(gap),
+                  LineupSection(width: lineupWidth),
+                ],
+              ),
             );
           },
         ),

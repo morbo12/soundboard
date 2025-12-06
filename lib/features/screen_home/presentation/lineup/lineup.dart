@@ -11,24 +11,13 @@ class LineupSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Row(
-        children: [
-          VerticalDivider(
-            thickness: 1.0,
-            width: 20.0,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Lineup(
-                  availableWidth: constraints.maxWidth,
-                  availableHeight: constraints.maxHeight,
-                );
-              },
-            ),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Lineup(
+            availableWidth: constraints.maxWidth,
+            availableHeight: constraints.maxHeight,
+          );
+        },
       ),
     );
   }
