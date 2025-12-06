@@ -332,6 +332,12 @@ class _LineupState extends ConsumerState<Lineup> {
         ref: ref,
       );
 
+      // wait for 7 seconds
+
+      logger.d("[_handlePlayLineup] Waiting 3 seconds");
+
+      await Future.delayed(const Duration(seconds: 3));
+
       // Play away team lineup with background music
 
       if (awayTeamTTS != null) {

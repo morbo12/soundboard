@@ -2,6 +2,7 @@ import 'package:mustache_template/mustache_template.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/constants/swedish_numbers.dart';
 
 /// Service for rendering SSML templates with data
 class SsmlTemplateService {
@@ -94,9 +95,20 @@ $content
         final isGoalkeeper = player.position == "Målvakt";
         final hasShirtNo = player.shirtNo != null;
 
+        // Convert shirt number to Swedish words
+        String? shirtNoText;
+        if (hasShirtNo && player.shirtNo != null) {
+          try {
+            shirtNoText = swedishNumberToWords(player.shirtNo!);
+          } catch (e) {
+            // If number is out of range, fall back to digit
+            shirtNoText = player.shirtNo.toString();
+          }
+        }
+
         return {
           'name': player.name ?? 'Unknown',
-          'shirtNo': player.shirtNo,
+          'shirtNo': shirtNoText,
           'isGoalkeeper': isGoalkeeper,
           'hasShirtNo': hasShirtNo && !isGoalkeeper,
         };
@@ -184,9 +196,21 @@ $homeTeam hälsar motståndarna, domarna och publiken hjärtligt välkomna till 
         goalie =
             "Dagens målvakt är <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"500ms\"/>\n";
       } else {
-        ssml += player.shirtNo == null
-            ? "<say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n"
-            : "Nummer ${player.shirtNo}, <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n";
+        if (player.shirtNo == null) {
+          ssml +=
+              "<say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n";
+        } else {
+          // Convert shirt number to Swedish words
+          String shirtNoText;
+          try {
+            shirtNoText = swedishNumberToWords(player.shirtNo!);
+          } catch (e) {
+            // If number is out of range, fall back to digit
+            shirtNoText = player.shirtNo.toString();
+          }
+          ssml +=
+              "Nummer $shirtNoText, <say-as interpret-as=\"name\">${player.name}</say-as><break time=\"750ms\"/>\n";
+        }
       }
     }
 
