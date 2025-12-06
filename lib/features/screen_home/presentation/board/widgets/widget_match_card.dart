@@ -5,6 +5,7 @@ import 'package:soundboard/features/screen_home/presentation/board/widgets/match
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'standings_dialog.dart';
 
@@ -81,6 +82,12 @@ class MatchCard extends ConsumerWidget {
   /// Checks if match has events data
   bool _hasEventsData() {
     return match.events != null && match.events!.isNotEmpty;
+  }
+
+  /// Checks if pregame statistics data is available
+  bool _hasPregameStats(WidgetRef ref) {
+    final pregameStats = ref.watch(pregameStatsProvider);
+    return pregameStats != null;
   }
 
   /// Builds stats availability indicators
@@ -166,6 +173,27 @@ class MatchCard extends ConsumerWidget {
               Icons.event_note,
               size: 12,
               color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Pregame stats indicator
+    if (_hasPregameStats(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Pregame statistics available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.tertiaryContainer.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.analytics,
+              size: 12,
+              color: theme.colorScheme.onTertiaryContainer,
             ),
           ),
         ),

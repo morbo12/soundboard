@@ -6,10 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/player_statistics_service.dart';
+import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/pregame_stats_service.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/standings_service.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_live_events.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
@@ -51,6 +53,7 @@ class MatchSelector extends ConsumerWidget {
       final matchService = MatchService(apiClient);
       final standingsService = StandingsService(apiClient);
       final playerStatisticsService = PlayerStatisticsService(apiClient);
+      final pregameStatsService = PregameStatsService(apiClient);
 
       // Fetch the complete match details
       final match = await matchService.getMatch(matchId: matchID);
@@ -72,6 +75,16 @@ class MatchSelector extends ConsumerWidget {
         match,
         ref,
       );
+
+      // Fetch pregame statistics for the given match
+      try {
+        ref.read(pregameStatsProvider.notifier).state =
+            await pregameStatsService.getPregameStatsFromMatch(match, ref);
+      } catch (e) {
+        // Pregame stats may not be available for all matches
+        debugPrint('Pregame stats not available: $e');
+        ref.read(pregameStatsProvider.notifier).state = null;
+      }
     } catch (e) {
       // Handle errors appropriately - you might want to show a snackbar or error dialog
       debugPrint('Error fetching match data: $e');
@@ -95,9 +108,10 @@ class MatchSelector extends ConsumerWidget {
     // This makes them immediately visible without needing to start streaming
     ref.read(manualEventsProvider.notifier).state = mockupMatch.events ?? [];
 
-    // Clear standings and player statistics (mockup doesn't include these)
+    // Clear standings, player statistics, and pregame stats (mockup doesn't include these)
     ref.read(standingsProvider.notifier).state = null;
     ref.read(playerStatisticsProvider.notifier).state = null;
+    ref.read(pregameStatsProvider.notifier).state = null;
 
     debugPrint('🎭 Loaded mockup match data for showcase');
     debugPrint('🎭 Mockup events count: ${mockupMatch.events?.length ?? 0}');

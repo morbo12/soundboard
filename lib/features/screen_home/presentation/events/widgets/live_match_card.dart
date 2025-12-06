@@ -5,8 +5,10 @@ import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dar
 import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/standings_dialog.dart';
+import 'package:soundboard/features/screen_home/presentation/board/widgets/pregame_stats_dialog.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_live_events.dart';
@@ -99,49 +101,162 @@ class _LiveMatchControls extends ConsumerWidget {
     }
   }
 
+  /// Checks if standings data is available
+  bool _hasStandingsData(WidgetRef ref) {
+    final standings = ref.watch(standingsProvider);
+    return standings != null && standings.standingsRows.isNotEmpty;
+  }
+
+  /// Checks if player statistics data is available
+  bool _hasPlayerStatistics(WidgetRef ref) {
+    final playerStats = ref.watch(playerStatisticsProvider);
+    return playerStats != null && playerStats.playerStatisticsRows.isNotEmpty;
+  }
+
+  /// Checks if pregame statistics data is available
+  bool _hasPregameStats(WidgetRef ref) {
+    final pregameStats = ref.watch(pregameStatsProvider);
+    return pregameStats != null;
+  }
+
+  void _showStandings(BuildContext context, WidgetRef ref) {
+    final standings = ref.read(standingsProvider);
+    if (standings != null) {
+      showDialog(
+        context: context,
+        builder: (context) =>
+            StandingsDialog(competitionName: match.competitionName),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No standings data available'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   Widget _buildControlsRow(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
       children: [
-        // Play streaming button
-        InkWell(
-          onTap: () => _handlePlayButton(ref),
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              Icons.play_arrow,
-              color: theme.colorScheme.primary,
-              size: 32,
-            ),
-          ),
-        ),
-        // Custom TTS button
-        TextButton(
-          onPressed: () => TtsDialog.show(context, ref),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.record_voice_over,
-                color: theme.colorScheme.secondary,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Custom TTS',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.secondary,
-                  fontWeight: FontWeight.w500,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Play streaming button
+            InkWell(
+              onTap: () => _handlePlayButton(ref),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.play_arrow,
+                  color: theme.colorScheme.primary,
+                  size: 32,
                 ),
               ),
-            ],
-          ),
+            ),
+            // Custom TTS button
+            TextButton(
+              onPressed: () => TtsDialog.show(context, ref),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.record_voice_over,
+                    color: theme.colorScheme.secondary,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Custom TTS',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        // Stats buttons row
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          alignment: WrapAlignment.center,
+          children: [
+            if (_hasStandingsData(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Tabell',
+                Icons.leaderboard,
+                () => _showStandings(context, ref),
+              ),
+            if (_hasPlayerStatistics(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Spelstat',
+                Icons.bar_chart,
+                () => _showStandings(context, ref),
+              ),
+            if (_hasPregameStats(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Förhandsstats',
+                Icons.analytics,
+                () => _showPregameStats(context, ref),
+              ),
+          ],
         ),
       ],
     );
+  }
+
+  Widget _buildStatButton(
+    BuildContext context,
+    WidgetRef ref,
+    String label,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
+    final theme = Theme.of(context);
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 14),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        minimumSize: const Size(0, 32),
+        textStyle: theme.textTheme.labelSmall,
+      ),
+    );
+  }
+
+  void _showPregameStats(BuildContext context, WidgetRef ref) {
+    final pregameStats = ref.read(pregameStatsProvider);
+    if (pregameStats != null) {
+      showDialog(
+        context: context,
+        builder: (context) => PregameStatsDialog(
+          homeTeam: match.homeTeam,
+          awayTeam: match.awayTeam,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No pregame statistics available'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildDivider(BuildContext context) {
@@ -420,6 +535,12 @@ class _MatchCardContent extends ConsumerWidget {
     return match.events != null && match.events!.isNotEmpty;
   }
 
+  /// Checks if pregame statistics data is available
+  bool _hasPregameStats(WidgetRef ref) {
+    final pregameStats = ref.watch(pregameStatsProvider);
+    return pregameStats != null;
+  }
+
   /// Builds stats availability indicators
   Widget _buildStatsIndicators(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -503,6 +624,27 @@ class _MatchCardContent extends ConsumerWidget {
               Icons.event_note,
               size: 12,
               color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Pregame stats indicator
+    if (_hasPregameStats(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Pregame statistics available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.tertiaryContainer.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.analytics,
+              size: 12,
+              color: theme.colorScheme.onTertiaryContainer,
             ),
           ),
         ),

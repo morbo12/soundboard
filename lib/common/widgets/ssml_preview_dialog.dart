@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/services/ai_sentence_service.dart';
 import 'package:soundboard/core/services/auth_service.dart';
+import 'package:soundboard/core/services/innebandy_api/domain/entities/pregame_stats.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 /// Dialog to preview and edit SSML before sending to TTS engine
@@ -661,6 +663,64 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
     }
   }
 
+  bool _shouldUsePregameContext() =>
+      _isMultiSection && _currentSection == 'welcome';
+
+  String _mapResultSymbol(int value) {
+    switch (value) {
+      case 6:
+        return 'V';
+      case 4:
+        return 'O';
+      default:
+        return 'F';
+    }
+  }
+
+  String _formatLastGames(List<int> games) {
+    if (games.isEmpty) return 'saknas';
+    return games.map(_mapResultSymbol).join('');
+  }
+
+  String _formatTrend(int? trend) {
+    if (trend == null || trend == 0) return '0';
+    return trend > 0 ? '+$trend' : '$trend';
+  }
+
+  String? _buildPregameContext(PregameStats? stats) {
+    if (stats == null) return null;
+
+    final homeName = stats.homeTeam.trim();
+    final awayName = stats.awayTeam.trim();
+    final hRank = stats.homeTeamRanking != null
+        ? '#${stats.homeTeamRanking}'
+        : 'okänd plats';
+    final aRank = stats.awayTeamRanking != null
+        ? '#${stats.awayTeamRanking}'
+        : 'okänd plats';
+    final lastMeeting =
+        (stats.homeTeamGoalsLastMeeting != null &&
+            stats.awayTeamGoalsLastMeeting != null)
+        ? 'Senaste mötet ${stats.homeTeamGoalsLastMeeting}-${stats.awayTeamGoalsLastMeeting}'
+        : null;
+    final h2h =
+        'Inbördes ${stats.homeTeamMeetingWins}-${stats.meetingDraws}-${stats.awayTeamMeetingWins} (H-O-B)';
+    final homeForm =
+        'Form $homeName: ${_formatLastGames(stats.homeTeamLastGames)} (trend ${_formatTrend(stats.homeTeamTrend)})';
+    final awayForm =
+        'Form $awayName: ${_formatLastGames(stats.awayTeamLastGames)} (trend ${_formatTrend(stats.awayTeamTrend)})';
+
+    final parts = [
+      'Match: $homeName mot $awayName',
+      'Tabell: $hRank vs $aRank',
+      h2h,
+      if (lastMeeting != null) lastMeeting,
+      homeForm,
+      awayForm,
+    ];
+    return parts.join('. ');
+  }
+
   Future<void> _enhanceWithAI() async {
     final controller = _getCurrentController();
     final currentText = controller.text.trim();
@@ -683,8 +743,16 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
           ? currentText
           : _stripSsmlTags(currentText);
 
+      final pregameContext = _shouldUsePregameContext()
+          ? _buildPregameContext(ref.read(pregameStatsProvider))
+          : null;
+
       final systemPrompt = _getSystemPromptForStyle(_selectedStyle);
-      final userPrompt = _buildEnhancePrompt(plainText, _selectedStyle);
+      final userPrompt = _buildEnhancePrompt(
+        plainText,
+        _selectedStyle,
+        pregameContext: pregameContext,
+      );
 
       final suggestions = await aiService.generateSentences(
         prompt: userPrompt,
@@ -761,7 +829,8 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
             ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
             ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
             ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
+            ' Om du får pregame-info, baka in högst en kort rad om form eller inbördes möten när det passar.';
       case AiEnhanceStyle.balanced:
         return 'Du är en professionell svensk sportkommentator för innebandy.'
             ' Din uppgift är att ta enkel text och förbättra den till en tydlig,'
@@ -772,7 +841,8 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
             ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
             ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
             ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
+            ' Om du får pregame-info, lägg till en kort rad om form/inbördes möten när det är relevant.';
       case AiEnhanceStyle.mellow:
         return 'Du är en lugn och behärskad svensk sportkommentator för innebandy.'
             ' Din uppgift är att ta enkel text och förbättra den till en avslappnad,'
@@ -782,14 +852,27 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
             ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
             ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
             ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.';
+            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
+            ' Om du får pregame-info, nämn form/inbördes möten kort och sakligt bara om det passar.';
     }
   }
 
-  String _buildEnhancePrompt(String text, AiEnhanceStyle style) {
+  String _buildEnhancePrompt(
+    String text,
+    AiEnhanceStyle style, {
+    String? pregameContext,
+  }) {
     final styleDesc = _getStyleName(style);
-    return 'Förbättra följande text till en $styleDesc sportkommentator-annonsering'
-        ' för innebandy. Originaltext: "$text"';
+    final buffer = StringBuffer(
+      'Förbättra följande text till en $styleDesc sportkommentator-annonsering'
+      ' för innebandy. Originaltext: "$text".',
+    );
+    if (pregameContext != null && pregameContext.isNotEmpty) {
+      buffer.write(
+        ' Pregame-info (använd max en kort rad om form/inbördes): $pregameContext.',
+      );
+    }
+    return buffer.toString();
   }
 
   double _getTemperatureForStyle(AiEnhanceStyle style) {
