@@ -51,7 +51,7 @@ class AiSentenceService {
           {'role': 'system', 'content': systemPrompt},
           {'role': 'user', 'content': prompt},
         ],
-        'model': 'gpt-5.1-chat',
+        'model': _settings.aiModel,
         'temperature': temperature,
         'maxTokens': maxTokens,
       });
@@ -81,40 +81,61 @@ class AiSentenceService {
         }
       }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      _logger.d('AI response: $data');
 
-        // Handle OpenAI Chat Completions format as documented
-        if (data['choices'] != null && data['choices'] is List) {
-          final choices = data['choices'] as List;
-          if (choices.isNotEmpty) {
-            final firstChoice = choices[0];
-            final message = firstChoice['message'];
+      if (response.statusCode == 200) {
+        if (data['success'] == true) {
+          final choices = data['choices'] as List?;
+          if (choices != null && choices.isNotEmpty) {
+            final firstChoice = choices[0] as Map<String, dynamic>;
+            final message = firstChoice['message'] as Map<String, dynamic>?;
             if (message != null && message['content'] != null) {
-              return [message['content'] as String];
+              final content = message['content'];
+
+              // Handle string content
+              if (content is String) {
+                return [content];
+              }
+
+              // Handle list of output objects with 'text' field
+              if (content is List) {
+                final texts = <String>[];
+                for (final item in content) {
+                  if (item is Map && item['text'] != null) {
+                    texts.add(item['text'].toString());
+                  } else if (item is String) {
+                    texts.add(item);
+                  }
+                }
+                if (texts.isNotEmpty) {
+                  return texts;
+                }
+              }
+
+              // Handle single output object with 'text' field
+              if (content is Map && content['text'] != null) {
+                return [content['text'].toString()];
+              }
             }
           }
+          _logger.e(
+            'AI response missing expected choices/message: ${response.body}',
+          );
+          throw Exception('AI response missing expected choices/message');
+        } else {
+          final errorMessage = data['message'] as String? ?? 'Unknown error';
+          final errorDetails = data['details'];
+          _logger.e(
+            'AI request failed: $errorMessage (details: $errorDetails)',
+          );
+          throw Exception('AI request failed: $errorMessage');
         }
-
-        // Fallback for legacy format
-        if (data['result'] != null) {
-          final result = data['result'];
-          final resp = result['response'];
-          if (resp is String) return [resp];
-          if (resp is Map && resp.containsKey('content')) {
-            return [resp['content'] as String];
-          }
-        }
-
-        _logger.e('Unexpected AI response format: ${response.body}');
-        throw Exception('Unexpected AI response format: ${response.body}');
       } else {
-        _logger.e(
-          'AI request failed with status ${response.statusCode}: ${response.body}',
-        );
-        throw Exception(
-          'AI request failed: ${response.statusCode} ${response.body}',
-        );
+        final errorMessage = data['message'] as String? ?? 'Unknown error';
+        final status = data['status'] as int? ?? response.statusCode;
+        _logger.e('AI request failed with status $status: $errorMessage');
+        throw Exception('AI request failed: $status $errorMessage');
       }
     } catch (e, st) {
       _logger.e('Error generating AI suggestions: $e', st);

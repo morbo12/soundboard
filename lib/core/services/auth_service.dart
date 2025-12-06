@@ -19,17 +19,19 @@ class AuthService {
 
   String get baseUrl {
     final settings = SettingsBox();
-    return settings.apiBaseUrl;
+    return _resolveBaseUrlFromKey(settings.apiProductKey);
   }
 
   // Determine API base URL from the product key format.
-  // Convention: Keys starting with "SOUND-DEV-" use the DEV API, otherwise PROD.
+  // Convention: Keys starting with "SOUND-DEV-" use DEV API, "SOUND-STG-" use STG API, otherwise PRD.
   String _resolveBaseUrlFromKey(String productKey) {
     final key = productKey.trim().toUpperCase();
-    const prodUrl = 'https://soundboard-api.fbtoolseu.workers.dev';
+    const prdUrl = 'https://soundboard-api.fbtoolseu.workers.dev';
+    const stgUrl = 'https://soundboard-api-stg.fbtoolseu.workers.dev';
     const devUrl = 'https://soundboard-api-dev.fbtoolseu.workers.dev';
     if (key.startsWith('SOUND-DEV-')) return devUrl;
-    return prodUrl;
+    if (key.startsWith('SOUND-STG-')) return stgUrl;
+    return prdUrl;
   }
 
   Future<bool> authenticate() async {
@@ -65,8 +67,6 @@ class AuthService {
           // Store token and expiry
           if (accessToken != null) settings.apiToken = accessToken;
           if (refreshToken != null) settings.apiRefreshToken = refreshToken;
-          // Persist the effective base URL so other services use the correct API
-          settings.apiBaseUrl = effectiveBaseUrl;
           settings.apiTokenExpiry = DateTime.now().add(
             Duration(
               seconds: expiresIn - 300,

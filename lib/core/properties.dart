@@ -57,6 +57,9 @@ enum Settings {
   ssmlWelcomeTemplate,
   ssmlLineupTemplate,
   ssmlRefereeTemplate,
+
+  // AI Model selection
+  aiModel,
 }
 
 class SettingsBox extends EasyBox {
@@ -295,13 +298,18 @@ extension GeneralSettingsExtension on SettingsBox {
   set apiDeviceId(String value) => put(Settings.apiDeviceId, value);
   String get apiDeviceId => get(Settings.apiDeviceId, defaultValue: "");
 
-  set apiBaseUrl(String value) => put(Settings.apiBaseUrl, value);
-  String get apiBaseUrl => get(
-    Settings.apiBaseUrl,
-    defaultValue: kDebugMode
-        ? "https://soundboard-api-dev.fbtoolseu.workers.dev"
-        : "https://soundboard-api.fbtoolseu.workers.dev",
-  );
+  String get apiBaseUrl => _resolveBaseUrlFromProductKey();
+
+  String _resolveBaseUrlFromProductKey() {
+    final productKey = apiProductKey.trim().toUpperCase();
+    if (productKey.startsWith('SOUND-DEV-')) {
+      return 'https://soundboard-api-dev.fbtoolseu.workers.dev';
+    }
+    if (productKey.startsWith('SOUND-STG-')) {
+      return 'https://soundboard-api-stg.fbtoolseu.workers.dev';
+    }
+    return 'https://soundboard-api.fbtoolseu.workers.dev';
+  }
 
   set apiToken(String value) => put(Settings.apiToken, value);
   String get apiToken => get(Settings.apiToken, defaultValue: "");
@@ -344,6 +352,10 @@ extension GeneralSettingsExtension on SettingsBox {
   );
   set ssmlRefereeTemplate(String value) =>
       put(Settings.ssmlRefereeTemplate, value);
+
+  // AI Model selection
+  set aiModel(String value) => put(Settings.aiModel, value);
+  String get aiModel => get(Settings.aiModel, defaultValue: "gpt-4.1-nano");
 }
 
 // Contains AI-generated edits.
