@@ -31,7 +31,7 @@ class SsmlPreviewDialog extends ConsumerStatefulWidget {
   ConsumerState<SsmlPreviewDialog> createState() => _SsmlPreviewDialogState();
 }
 
-enum AiEnhanceStyle { wild, balanced, mellow }
+// AI Enhance now supports only a single balanced style; enum removed.
 
 class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
   late TextEditingController _plainTextController;
@@ -40,7 +40,7 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
   bool _showPlainText = true; // true: Plain Text, false: SSML Code
   List<String> _validationErrors = [];
   bool _isEnhancing = false;
-  AiEnhanceStyle _selectedStyle = AiEnhanceStyle.balanced;
+  // No per-style selection; only balanced mode is supported
 
   // For multi-section mode (lineup)
   bool _isMultiSection = false;
@@ -342,71 +342,11 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
                     );
                   }),
                   const SizedBox(width: 8),
-                  PopupMenuButton<AiEnhanceStyle>(
-                    icon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.auto_awesome, size: 16),
-                        const SizedBox(width: 4),
-                        Text('AI Enhance', style: theme.textTheme.bodySmall),
-                      ],
-                    ),
-                    tooltip: 'Enhance text with AI',
-                    enabled: !_isEnhancing,
-                    onSelected: (style) {
-                      setState(() => _selectedStyle = style);
-                      _enhanceWithAI();
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: AiEnhanceStyle.wild,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.bolt,
-                              size: 16,
-                              color: _selectedStyle == AiEnhanceStyle.wild
-                                  ? theme.colorScheme.primary
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Wild - Energetic & Exciting'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: AiEnhanceStyle.balanced,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.balance,
-                              size: 16,
-                              color: _selectedStyle == AiEnhanceStyle.balanced
-                                  ? theme.colorScheme.primary
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Balanced - Professional'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: AiEnhanceStyle.mellow,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.spa,
-                              size: 16,
-                              color: _selectedStyle == AiEnhanceStyle.mellow
-                                  ? theme.colorScheme.primary
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Mellow - Calm & Measured'),
-                          ],
-                        ),
-                      ),
-                    ],
+                  // Single AI enhance button (balanced style only)
+                  TextButton.icon(
+                    onPressed: _isEnhancing ? null : _enhanceWithAI,
+                    icon: const Icon(Icons.auto_awesome, size: 16),
+                    label: Text('AI Enhance', style: theme.textTheme.bodySmall),
                   ),
                   if (_isEnhancing)
                     const Padding(
@@ -706,9 +646,9 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
     final h2h =
         'Inbördes ${stats.homeTeamMeetingWins}-${stats.meetingDraws}-${stats.awayTeamMeetingWins} (H-O-B)';
     final homeForm =
-        'Form $homeName: ${_formatLastGames(stats.homeTeamLastGames)} (trend ${_formatTrend(stats.homeTeamTrend)})';
+        'Form $homeName: ${_formatLastGames(stats.homeTeamLastGames)}';
     final awayForm =
-        'Form $awayName: ${_formatLastGames(stats.awayTeamLastGames)} (trend ${_formatTrend(stats.awayTeamTrend)})';
+        'Form $awayName: ${_formatLastGames(stats.awayTeamLastGames)}';
 
     final parts = [
       'Match: $homeName mot $awayName',
@@ -747,18 +687,17 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
           ? _buildPregameContext(ref.read(pregameStatsProvider))
           : null;
 
-      final systemPrompt = _getSystemPromptForStyle(_selectedStyle);
+      final systemPrompt = _getSystemPrompt();
       final userPrompt = _buildEnhancePrompt(
         plainText,
-        _selectedStyle,
         pregameContext: pregameContext,
       );
 
       final suggestions = await aiService.generateSentences(
         prompt: userPrompt,
         systemPrompt: systemPrompt,
-        temperature: _getTemperatureForStyle(_selectedStyle),
-        maxTokens: 2000,
+        temperature: _getTemperature(),
+        maxTokens: 5000,
       );
 
       if (suggestions.isNotEmpty && mounted) {
@@ -792,11 +731,9 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Enhanced with ${_getStyleName(_selectedStyle)} style',
-              ),
-              duration: const Duration(seconds: 2),
+            const SnackBar(
+              content: Text('Enhanced'),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -817,83 +754,59 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
     }
   }
 
-  String _getSystemPromptForStyle(AiEnhanceStyle style) {
-    switch (style) {
-      case AiEnhanceStyle.wild:
-        return 'Du är en energisk och entusiastisk svensk sportkommentator som'
-            ' älskar innebandy. Din uppgift är att ta enkel text och förbättra'
-            ' den till en spännande och fängslande annonsering. Använd kraftfulla'
-            ' verb, utrop och dramatiska beskrivningar. Håll det på svenska och'
-            ' kort (max 2-3 meningar). Lägg till energi, spänning och passion!'
-            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
-            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
-            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
-            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
-            ' Om du får pregame-info, baka in högst en kort rad om form eller inbördes möten när det passar.';
-      case AiEnhanceStyle.balanced:
-        return 'Du är en professionell svensk sportkommentator för innebandy.'
-            ' Din uppgift är att ta enkel text och förbättra den till en tydlig,'
-            ' professionell annonsering. Använd korrekt svensk sportterminologi,'
-            ' var koncis och informativ. Håll tonen professionell men engagerande.'
-            ' Leverera max 2 meningar på klar svenska.'
-            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
-            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
-            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
-            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
-            ' Om du får pregame-info, lägg till en kort rad om form/inbördes möten när det är relevant.';
-      case AiEnhanceStyle.mellow:
-        return 'Du är en lugn och behärskad svensk sportkommentator för innebandy.'
-            ' Din uppgift är att ta enkel text och förbättra den till en avslappnad,'
-            ' mätt annonsering. Använd mild ton, undvik överdriven dramatik. Var'
-            ' saklig och rak. Håll det kort och naturligt på svenska (max 2 meningar).'
-            ' VIKTIGA REGLER: Skriv resultat som svenska ord med kommatecken efter för naturlig paus.'
-            ' Exempel: "1-1" blir "ett ett," | "2-2" blir "två två," | "3-1" blir "tre ett,"'
-            ' Dela upp i korta meningar med punkt där meningen naturligt slutar.'
-            ' EXEMPEL PÅ BRA FORMAT: "IFK Haninge minskar till ett två, målskytt nummer 9, Helmer Forsgren. Assist av nummer 22, Morris Fernqvist. Tid: 12:34"'
-            ' Använd kommatecken för pauser och punkt för meningsslut. Skriv ENDAST ren text utan SSML-taggar. Undvik bindestreck.'
-            ' Om du får pregame-info, nämn form/inbördes möten kort och sakligt bara om det passar.';
-    }
+  String _getSystemPrompt() {
+    // New balanced system prompt (Swedish) - follow user's instructions exactly
+    return '''
+Du är en energisk och entusiastisk svensk sportkommentator för innebandy.
+Din uppgift är att förbättra given text till en engagerande annonsering.
+
+OBLIGATORISKA REGLER (får aldrig brytas):
+- Max 2-5 meningar.
+- Välkomsttexter ska vara inbjudande och uppmuntrande till motståndarlaget, domarna och publiken.
+- Aldrig ändra siffror, tid, namn, tröjnummer eller resultat.
+- Resultat måste alltid skrivas med svenska ord och kommatecken:
+1-0 → ett, noll, | 2-1 → två, ett, | 3-3 → tre, tre,
+- Använd kommatecken för pauser och punkt för meningsslut.
+- Undvik bindestreck.
+- Skriv endast ren text, inga SSML-taggar.
+- Lägg aldrig till information som inte finns i input.
+- Skriv alltid numret på spelaren före namnet och med ett kommatecken emellan.
+- Använd alltid "nummer X" för tröjnummer (inte bara "X").
+- Använd Pregame-info endast om det är relevant för texten.
+- Analysera och använd Pregame-info för att lägga till kontext om lagens form, tabellposition eller inbördes möten.
+- Analysera och presenterna Form: V för vinst, O för oavgjort, F för förlust .
+- Analysera och presentera Inbördes möten: H-O-B (Vinst för Hemmalaget-Oavgjort-Bortalaget).
+- Tabellposition: Använd "placerade X i tabellen" för att ange lagens nuvarande position. Aldrig t.ex. Nummer X , Lag X etc.
+- derby-matcher: Betona extra mycket vid derbymatcher mellan rivaliserande lag.
+- Använd lagets fullständiga namn vid presentation av Inbördes möten och tabellposition.
+- Anpassa tonen efter matchens betydelse (t.ex. final vs. vanlig match).
+- Lag och spelarpresentation: Använd alltid fullständiga namn och tröjnummer vid presentation av lag och spelare.
+- Lag och spelarpresentation: Enast laginformation, ingen välkomstfras.
+
+STIL:
+- Energi, tempo och passion.
+- Mediumlånga, tydliga meningar.
+- Kraftfulla verb, men inga överdrivna metaforer.
+- Anoonering av händelser ska vara snabba och spännande.
+- Undvik klichéer och överanvända fraser.
+''';
   }
 
-  String _buildEnhancePrompt(
-    String text,
-    AiEnhanceStyle style, {
-    String? pregameContext,
-  }) {
-    final styleDesc = _getStyleName(style);
+  String _buildEnhancePrompt(String text, {String? pregameContext}) {
     final buffer = StringBuffer(
-      'Förbättra följande text till en $styleDesc sportkommentator-annonsering'
-      ' för innebandy. Originaltext: "$text".',
+      'Förbättra följande text enligt systemreglerna: Originaltext: "$text".',
     );
     if (pregameContext != null && pregameContext.isNotEmpty) {
       buffer.write(
-        ' Pregame-info (använd max en kort rad om form/inbördes): $pregameContext.',
+        ' Pregame-info (använd max en kort rad om tabellplats/form/inbördes mötes): $pregameContext.',
       );
     }
     return buffer.toString();
   }
 
-  double _getTemperatureForStyle(AiEnhanceStyle style) {
-    switch (style) {
-      case AiEnhanceStyle.wild:
-        return 0.9; // More creative
-      case AiEnhanceStyle.balanced:
-        return 0.5; // Moderate
-      case AiEnhanceStyle.mellow:
-        return 0.3; // More conservative
-    }
+  double _getTemperature() {
+    return 0.5;
   }
 
-  String _getStyleName(AiEnhanceStyle style) {
-    switch (style) {
-      case AiEnhanceStyle.wild:
-        return 'energisk';
-      case AiEnhanceStyle.balanced:
-        return 'balanserad';
-      case AiEnhanceStyle.mellow:
-        return 'lugn';
-    }
-  }
+  // Removed multiple style names; only balanced supported.
 }
