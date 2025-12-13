@@ -107,7 +107,6 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/translations/
-    - assets/intros/
     - assets/icon/
     - assets/icon/fbtools.eu.png
 
