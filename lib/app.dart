@@ -4,8 +4,9 @@ import 'package:soundboard/about/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
@@ -40,8 +41,7 @@ class _PlayerState extends ConsumerState<Player> {
     installerStore: 'Unknown',
   );
   bool isJingleManagerInitialized = false;
-  bool _isIntroCompleted = false;
-  static const String _introCompletedKey = 'intro_completed';
+
   bool _isLoading = true;
 
   // FocusNode for KeyboardListener to maintain keyboard event capture
@@ -67,11 +67,7 @@ class _PlayerState extends ConsumerState<Player> {
 
   Future<void> _initializeApp() async {
     try {
-      await Future.wait([
-        _initPackageInfo(),
-        _loadIntroState(),
-        _initJingleManager(),
-      ]);
+      await Future.wait([_initPackageInfo(), _initJingleManager()]);
     } catch (e) {
       // Only show error message if we're past the loading phase to prevent snackbar flashing
       if (mounted && !_isLoading) {
@@ -221,25 +217,6 @@ class _PlayerState extends ConsumerState<Player> {
         ),
       ],
     );
-  }
-
-  Future<void> _loadIntroState() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        _isIntroCompleted = prefs.getBool(_introCompletedKey) ?? false;
-      });
-    }
-  }
-
-  Future<void> _setIntroCompleted() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_introCompletedKey, true);
-    if (mounted) {
-      setState(() {
-        _isIntroCompleted = true;
-      });
-    }
   }
 
   @override

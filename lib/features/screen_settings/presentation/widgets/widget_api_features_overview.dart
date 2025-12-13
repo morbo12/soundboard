@@ -140,7 +140,7 @@ class _PremiumFeaturesOverview extends StatelessWidget {
           // Could navigate to TTS section in future
         },
       ),
-      _FeatureCard(
+      const _FeatureCard(
         icon: Icons.upcoming_outlined,
         title: 'Future Premium Features',
         description: 'More API-powered features coming soon',

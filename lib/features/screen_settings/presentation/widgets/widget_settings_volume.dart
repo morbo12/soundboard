@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:soundboard/core/properties.dart';
-import 'package:soundboard/core/utils/responsive_utils.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class BackgroundVolume extends StatefulWidget {

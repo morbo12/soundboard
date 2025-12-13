@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/match_service.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';

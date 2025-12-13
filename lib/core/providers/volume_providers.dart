@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_mainvolume.dart';
@@ -26,11 +26,11 @@ final p3VolumeProvider =
     );
 
 final c1VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
-  (ref) => VolumeNotifier(Volume(vol: AppConstants.defaultC1Volume)),
+  (ref) => VolumeNotifier(const Volume(vol: AppConstants.defaultC1Volume)),
 );
 
 final c2VolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(
-  (ref) => VolumeNotifier(Volume(vol: AppConstants.defaultC2Volume)),
+  (ref) => VolumeNotifier(const Volume(vol: AppConstants.defaultC2Volume)),
 );
 
 final musicPlayerVolumeProvider = StateNotifierProvider<VolumeNotifier, Volume>(

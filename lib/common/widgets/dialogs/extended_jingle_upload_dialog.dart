@@ -648,7 +648,7 @@ class _ExtendedJingleUploadDialogState
                     color: Colors.orange.shade700,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'HOME',
                     style: TextStyle(
                       fontSize: 9,
@@ -669,7 +669,7 @@ class _ExtendedJingleUploadDialogState
                     color: Colors.orange.shade700,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'AWAY',
                     style: TextStyle(
                       fontSize: 9,
@@ -711,7 +711,7 @@ class _ExtendedJingleUploadDialogState
                                   ? 'Removed from Home Team lineup'
                                   : 'Set as Home Team lineup jingle',
                             ),
-                            duration: Duration(seconds: 2),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       },
@@ -757,7 +757,7 @@ class _ExtendedJingleUploadDialogState
                                   ? 'Removed from Away Team lineup'
                                   : 'Set as Away Team lineup jingle',
                             ),
-                            duration: Duration(seconds: 2),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       },

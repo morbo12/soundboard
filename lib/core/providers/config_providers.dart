@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:soundboard/core/properties.dart';
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/models/custom_category.dart';
 import 'package:soundboard/core/models/sound_group.dart';
 import 'package:soundboard/core/services/custom_category_service.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:soundboard/core/services/innebandy_api/domain/entities/arena.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/competition_type.dart';

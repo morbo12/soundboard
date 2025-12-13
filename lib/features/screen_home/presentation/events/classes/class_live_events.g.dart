@@ -6,24 +6,52 @@ part of 'class_live_events.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(MatchEventsStream)
+const matchEventsStreamProvider = MatchEventsStreamProvider._();
+
+final class MatchEventsStreamProvider
+    extends $StreamNotifierProvider<MatchEventsStream, List<IbyMatchEvent>> {
+  const MatchEventsStreamProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'matchEventsStreamProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$matchEventsStreamHash();
+
+  @$internal
+  @override
+  MatchEventsStream create() => MatchEventsStream();
+}
+
 String _$matchEventsStreamHash() => r'dcbc9176d9dec07197aaaa184d5c9845d1c26578';
 
-/// See also [MatchEventsStream].
-@ProviderFor(MatchEventsStream)
-final matchEventsStreamProvider =
-    AutoDisposeStreamNotifierProvider<
-      MatchEventsStream,
-      List<IbyMatchEvent>
-    >.internal(
-      MatchEventsStream.new,
-      name: r'matchEventsStreamProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$matchEventsStreamHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$MatchEventsStream = AutoDisposeStreamNotifier<List<IbyMatchEvent>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$MatchEventsStream
+    extends $StreamNotifier<List<IbyMatchEvent>> {
+  Stream<List<IbyMatchEvent>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AsyncValue<List<IbyMatchEvent>>, List<IbyMatchEvent>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<IbyMatchEvent>>, List<IbyMatchEvent>>,
+              AsyncValue<List<IbyMatchEvent>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

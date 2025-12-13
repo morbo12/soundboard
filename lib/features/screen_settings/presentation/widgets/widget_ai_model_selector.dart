@@ -88,7 +88,7 @@ class _ModelDropdown extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String>(
-          value: selectedModelId,
+          initialValue: selectedModelId,
           decoration: InputDecoration(
             labelText: 'AI Model',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

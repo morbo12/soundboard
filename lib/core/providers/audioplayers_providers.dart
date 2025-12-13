@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 final maxdurationProviderC1 = StateProvider<Duration>((ref) {
   return const Duration(seconds: 0);

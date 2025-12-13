@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/features/screen_home/application/serialport_manager/class_serialport_provider_win32.dart';
 
 /// StateNotifier that tracks the Deej analog board connection status

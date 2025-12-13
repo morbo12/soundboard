@@ -187,9 +187,9 @@ class _TtsSettingsDialogState extends ConsumerState<TtsSettingsDialog>
     final currentMode = ref.watch(ttsServiceModeProvider);
 
     return AlertDialog(
-      title: Column(
+      title: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [const Text("Text to Speech Settings")],
+        children: [Text("Text to Speech Settings")],
       ),
       content: SizedBox(
         width: double.maxFinite,

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/common/models/enum_goaltypes.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
