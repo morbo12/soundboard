@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgraded Riverpod to 3.0.3
 
+### Fixed
+
+- Updates to system prompt for AI-Enhanced Announced Text
 
 ## [0.4.6-beta1] - 2025-12-06
 

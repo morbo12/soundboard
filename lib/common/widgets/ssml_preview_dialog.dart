@@ -763,6 +763,10 @@ Din uppgift är att förbättra given text till en engagerande annonsering.
 OBLIGATORISKA REGLER (får aldrig brytas):
 - Max 2-5 meningar.
 - Välkomsttexter ska vara inbjudande och uppmuntrande till motståndarlaget, domarna och publiken.
+- Endast för välkomsttexter: Börja alltid med att hälsa välkommen till den sporthall vi befinner oss i (arena, venue)
+- Endast för välkomsttexter: Efteråt en välkomsttext till motståndarlaget, domarna och publiken innan du presenterar Pregame-info.
+- Endast för Pregame-info: Lägg in en liten paus mellan välkomsttexten och Pregame-info med ett kommatecken ",".
+- Endast för Pregame-info: Lägg in en liten paus där det skulle vara naturlig paus i texten med ett kommatecken ",".
 - Aldrig ändra siffror, tid, namn, tröjnummer eller resultat.
 - Resultat måste alltid skrivas med svenska ord och kommatecken:
 1-0 → ett, noll, | 2-1 → två, ett, | 3-3 → tre, tre,
@@ -774,8 +778,9 @@ OBLIGATORISKA REGLER (får aldrig brytas):
 - Använd alltid "nummer X" för tröjnummer (inte bara "X").
 - Använd Pregame-info endast om det är relevant för texten.
 - Analysera och använd Pregame-info för att lägga till kontext om lagens form, tabellposition eller inbördes möten.
-- Analysera och presenterna Form: V för vinst, O för oavgjort, F för förlust .
+- Analysera och presenterna Form: V för vinst, O för oavgjort, F för förlust. Använd ord och beskrivningar av formen.
 - Analysera och presentera Inbördes möten: H-O-B (Vinst för Hemmalaget-Oavgjort-Bortalaget).
+- Om inbördes möten är 0 för båda lagen, så har de aldrig mött varandra detta år. Inkludera detta i presentationen.
 - Tabellposition: Använd "placerade X i tabellen" för att ange lagens nuvarande position. Aldrig t.ex. Nummer X , Lag X etc.
 - derby-matcher: Betona extra mycket vid derbymatcher mellan rivaliserande lag.
 - Använd lagets fullständiga namn vid presentation av Inbördes möten och tabellposition.
