@@ -40,7 +40,6 @@ class UsageStatsService {
       'Starting UsageStats flush timer: every ${flushInterval.inSeconds}s',
     );
     _flushTimer = Timer.periodic(flushInterval, (_) {
-      logger.d('UsageStats flush tick; buffer=${_buffer.length}');
       _flushEvents();
     });
   }
