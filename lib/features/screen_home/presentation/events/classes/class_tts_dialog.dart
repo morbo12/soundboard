@@ -110,13 +110,15 @@ class TtsDialog {
                 aiError = null;
               });
               try {
-                final prompt = _buildAIPrompt(
+                final input = _buildAIPrompt(
                   goalPlayer,
                   assistPlayer,
                   penaltyPlayer,
                 );
                 final suggestions = await aiService.generateSentences(
-                  prompt: prompt,
+                  input: input,
+                  type: 'Event',
+                  temperature: 'high',
                 );
                 // Defensive: filter out nulls and non-strings
                 setState(() {
@@ -324,13 +326,13 @@ class TtsDialog {
     String? penaltyPlayer,
   ) {
     if (goalPlayer != null && assistPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för ett mål av $goalPlayer, assisterad av $assistPlayer.';
+      return 'Goal by $goalPlayer, assist by $assistPlayer';
     } else if (goalPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för ett mål av $goalPlayer.';
+      return 'Goal by $goalPlayer';
     } else if (penaltyPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för en utvisning på $penaltyPlayer.';
+      return 'Penalty $penaltyPlayer';
     } else {
-      return 'Skriv en svensk sportkommentator-mening för en innebandymatch.';
+      return 'Floorball match event';
     }
   }
 }

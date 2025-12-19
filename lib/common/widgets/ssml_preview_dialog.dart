@@ -687,16 +687,29 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
           ? _buildPregameContext(ref.read(pregameStatsProvider))
           : null;
 
-      final systemPrompt = _getSystemPrompt();
-      final userPrompt = _buildEnhancePrompt(
-        plainText,
-        pregameContext: pregameContext,
-      );
+      // Determine type based on section
+      // Default to Event for single-mode or unknown sections
+      String type = 'Event';
+
+      if (_isMultiSection) {
+        if (_currentSection == 'welcome') {
+          type = 'WelcomeMessage';
+        } else if (_currentSection == 'homeTeam' ||
+            _currentSection == 'awayTeam') {
+          type = 'Lineup';
+        }
+      }
+
+      // Combine text and context for input
+      final input = StringBuffer(plainText);
+      if (pregameContext != null && pregameContext.isNotEmpty) {
+        input.write('\nContext: $pregameContext');
+      }
 
       final suggestions = await aiService.generateSentences(
-        prompt: userPrompt,
-        systemPrompt: systemPrompt,
-        temperature: _getTemperature(),
+        input: input.toString(),
+        type: type,
+        temperature: 'medium',
         maxTokens: 5000,
       );
 
@@ -752,65 +765,6 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
         setState(() => _isEnhancing = false);
       }
     }
-  }
-
-  String _getSystemPrompt() {
-    // New balanced system prompt (Swedish) - follow user's instructions exactly
-    return '''
-Du är en energisk och entusiastisk svensk sportkommentator för innebandy.
-Din uppgift är att förbättra given text till en engagerande annonsering.
-
-OBLIGATORISKA REGLER (får aldrig brytas):
-- Max 2-5 meningar.
-- Välkomsttexter ska vara inbjudande och uppmuntrande till motståndarlaget, domarna och publiken.
-- Endast för välkomsttexter: Börja alltid med att hälsa välkommen till den sporthall vi befinner oss i (arena, venue)
-- Endast för välkomsttexter: Efteråt en välkomsttext till motståndarlaget, domarna och publiken innan du presenterar Pregame-info.
-- Endast för Pregame-info: Lägg in en liten paus mellan välkomsttexten och Pregame-info med ett kommatecken ",".
-- Endast för Pregame-info: Lägg in en liten paus där det skulle vara naturlig paus i texten med ett kommatecken ",".
-- Aldrig ändra siffror, tid, namn, tröjnummer eller resultat.
-- Resultat måste alltid skrivas med svenska ord och kommatecken:
-1-0 → ett, noll, | 2-1 → två, ett, | 3-3 → tre, tre,
-- Använd kommatecken för pauser och punkt för meningsslut.
-- Undvik bindestreck.
-- Skriv endast ren text, inga SSML-taggar.
-- Lägg aldrig till information som inte finns i input.
-- Skriv alltid numret på spelaren före namnet och med ett kommatecken emellan.
-- Använd alltid "nummer X" för tröjnummer (inte bara "X").
-- Använd Pregame-info endast om det är relevant för texten.
-- Analysera och använd Pregame-info för att lägga till kontext om lagens form, tabellposition eller inbördes möten.
-- Analysera och presenterna Form: V för vinst, O för oavgjort, F för förlust. Använd ord och beskrivningar av formen.
-- Analysera och presentera Inbördes möten: H-O-B (Vinst för Hemmalaget-Oavgjort-Bortalaget).
-- Om inbördes möten är 0 för båda lagen, så har de aldrig mött varandra detta år. Inkludera detta i presentationen.
-- Tabellposition: Använd "placerade X i tabellen" för att ange lagens nuvarande position. Aldrig t.ex. Nummer X , Lag X etc.
-- derby-matcher: Betona extra mycket vid derbymatcher mellan rivaliserande lag.
-- Använd lagets fullständiga namn vid presentation av Inbördes möten och tabellposition.
-- Anpassa tonen efter matchens betydelse (t.ex. final vs. vanlig match).
-- Lag och spelarpresentation: Använd alltid fullständiga namn och tröjnummer vid presentation av lag och spelare.
-- Lag och spelarpresentation: Enast laginformation, ingen välkomstfras.
-
-STIL:
-- Energi, tempo och passion.
-- Mediumlånga, tydliga meningar.
-- Kraftfulla verb, men inga överdrivna metaforer.
-- Anoonering av händelser ska vara snabba och spännande.
-- Undvik klichéer och överanvända fraser.
-''';
-  }
-
-  String _buildEnhancePrompt(String text, {String? pregameContext}) {
-    final buffer = StringBuffer(
-      'Förbättra följande text enligt systemreglerna: Originaltext: "$text".',
-    );
-    if (pregameContext != null && pregameContext.isNotEmpty) {
-      buffer.write(
-        ' Pregame-info (använd max en kort rad om tabellplats/form/inbördes mötes): $pregameContext.',
-      );
-    }
-    return buffer.toString();
-  }
-
-  double _getTemperature() {
-    return 0.5;
   }
 
   // Removed multiple style names; only balanced supported.
