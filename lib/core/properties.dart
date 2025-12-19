@@ -60,6 +60,9 @@ enum Settings {
 
   // AI Model selection
   aiModel,
+
+  // Usage stats tracking opt-out
+  usageStatsEnabled,
 }
 
 class SettingsBox extends EasyBox {
@@ -356,6 +359,9 @@ extension GeneralSettingsExtension on SettingsBox {
   // AI Model selection
   set aiModel(String value) => put(Settings.aiModel, value);
   String get aiModel => get(Settings.aiModel, defaultValue: "gpt-4.1-nano");
-}
 
-// Contains AI-generated edits.
+  // Usage stats tracking opt-out (opt-in by default)
+  set usageStatsEnabled(bool value) => put(Settings.usageStatsEnabled, value);
+  bool get usageStatsEnabled =>
+      get(Settings.usageStatsEnabled, defaultValue: true);
+}

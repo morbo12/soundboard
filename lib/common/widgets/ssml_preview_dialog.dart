@@ -711,6 +711,7 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
         type: type,
         temperature: 'medium',
         maxTokens: 5000,
+        ref: ref,
       );
 
       if (suggestions.isNotEmpty && mounted) {

@@ -10,6 +10,7 @@ import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/usage_stats_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
@@ -61,6 +62,13 @@ class _PlayerState extends ConsumerState<Player> {
 
   @override
   void dispose() {
+    try {
+      final usageStatsService = ref.read(usageStatsServiceProvider);
+      usageStatsService.flush();
+      usageStatsService.dispose();
+    } catch (e) {
+      _logger.w('Error disposing usage stats service', e);
+    }
     _keyboardFocusNode.dispose();
     super.dispose();
   }
@@ -68,6 +76,10 @@ class _PlayerState extends ConsumerState<Player> {
   Future<void> _initializeApp() async {
     try {
       await Future.wait([_initPackageInfo(), _initJingleManager()]);
+      _initializeUsageStats();
+      if (mounted) {
+        _showPrivacyNotificationIfNeeded();
+      }
     } catch (e) {
       // Only show error message if we're past the loading phase to prevent snackbar flashing
       if (mounted && !_isLoading) {
@@ -144,6 +156,53 @@ class _PlayerState extends ConsumerState<Player> {
       setState(() {
         _packageInfo = info;
       });
+    }
+  }
+
+  void _initializeUsageStats() {
+    try {
+      ref.read(usageStatsServiceProvider);
+      _logger.d('Usage stats service initialized');
+    } catch (e) {
+      _logger.w('Failed to initialize usage stats service', e);
+    }
+  }
+
+  void _showPrivacyNotificationIfNeeded() {
+    final settings = SettingsBox();
+    const privacyNotificationShownKey = 'privacy_notification_shown_v1';
+
+    if (settings.get(privacyNotificationShownKey, defaultValue: false) !=
+        true) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Usage Statistics'),
+          content: const Text(
+            'To help us enhance the Soundboard app, we collect anonymous usage statistics about which features you use. '
+            'This data does not include personal information and is only associated with your device ID.\n\n'
+            'You can opt out of this tracking at any time in Settings.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                settings.usageStatsEnabled = false;
+                settings.put(privacyNotificationShownKey, true);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Opt Out'),
+            ),
+            FilledButton(
+              onPressed: () {
+                settings.put(privacyNotificationShownKey, true);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Got It'),
+            ),
+          ],
+        ),
+      );
     }
   }
 

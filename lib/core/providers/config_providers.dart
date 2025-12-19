@@ -68,6 +68,11 @@ final ssmlPreviewEnabledProvider = StateProvider<bool>((ref) {
   return SettingsBox().enableSsmlPreview;
 });
 
+/// Usage statistics enabled state provider (opt-out toggle)
+final usageStatsEnabledProvider = StateProvider<bool>((ref) {
+  return SettingsBox().usageStatsEnabled;
+});
+
 /// Immutable configuration classes
 
 class SpotifyConfig {

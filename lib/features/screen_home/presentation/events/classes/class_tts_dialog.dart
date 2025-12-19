@@ -119,6 +119,7 @@ class TtsDialog {
                   input: input,
                   type: 'Event',
                   temperature: 'high',
+                  ref: ref,
                 );
                 // Defensive: filter out nulls and non-strings
                 setState(() {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/services/auth_service.dart';
+import 'package:soundboard/core/services/usage_stats_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 /// Service for generating sports announcement sentences using the Soundboard API.
@@ -31,7 +32,9 @@ class AiSentenceService {
     int n = 4,
     String temperature = 'medium',
     int maxTokens = 2000,
+    dynamic ref,
   }) async {
+    final aiStartTime = DateTime.now();
     try {
       final token = await _authService.getValidToken();
       if (token == null) {
@@ -92,6 +95,31 @@ class AiSentenceService {
 
               // Handle string content
               if (content is String) {
+                // Record usage event
+                if (ref != null) {
+                  try {
+                    final generationTime = DateTime.now()
+                        .difference(aiStartTime)
+                        .inMilliseconds;
+                    final usageStatsService = ref.read(
+                      usageStatsServiceProvider,
+                    );
+                    usageStatsService.recordEvent(
+                      eventType: 'AiPromptSent',
+                      feature: 'ai_sentence_generation',
+                      metadata: {
+                        'input_type': type,
+                        'input_length': input.length,
+                        'response_length': content.length,
+                        'model': _settings.aiModel,
+                        'temperature': temperature,
+                        'generation_time_ms': generationTime,
+                      },
+                    );
+                  } catch (e) {
+                    _logger.w('Failed to record AI usage event', e);
+                  }
+                }
                 return [content];
               }
 
@@ -106,13 +134,69 @@ class AiSentenceService {
                   }
                 }
                 if (texts.isNotEmpty) {
+                  // Record usage event
+                  if (ref != null) {
+                    try {
+                      final generationTime = DateTime.now()
+                          .difference(aiStartTime)
+                          .inMilliseconds;
+                      final usageStatsService = ref.read(
+                        usageStatsServiceProvider,
+                      );
+                      final totalLength = texts.fold<int>(
+                        0,
+                        (sum, text) => sum + text.length,
+                      );
+                      usageStatsService.recordEvent(
+                        eventType: 'AiPromptSent',
+                        feature: 'ai_sentence_generation',
+                        metadata: {
+                          'input_type': type,
+                          'input_length': input.length,
+                          'response_length': totalLength,
+                          'response_items': texts.length,
+                          'model': _settings.aiModel,
+                          'temperature': temperature,
+                          'generation_time_ms': generationTime,
+                        },
+                      );
+                    } catch (e) {
+                      _logger.w('Failed to record AI usage event', e);
+                    }
+                  }
                   return texts;
                 }
               }
 
               // Handle single output object with 'text' field
               if (content is Map && content['text'] != null) {
-                return [content['text'].toString()];
+                final responseText = content['text'].toString();
+                // Record usage event
+                if (ref != null) {
+                  try {
+                    final generationTime = DateTime.now()
+                        .difference(aiStartTime)
+                        .inMilliseconds;
+                    final usageStatsService = ref.read(
+                      usageStatsServiceProvider,
+                    );
+                    usageStatsService.recordEvent(
+                      eventType: 'AiPromptSent',
+                      feature: 'ai_sentence_generation',
+                      metadata: {
+                        'input_type': type,
+                        'input_length': input.length,
+                        'response_length': responseText.length,
+                        'model': _settings.aiModel,
+                        'temperature': temperature,
+                        'generation_time_ms': generationTime,
+                      },
+                    );
+                  } catch (e) {
+                    _logger.w('Failed to record AI usage event', e);
+                  }
+                }
+                return [responseText];
               }
             }
           }

@@ -16,6 +16,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ai_model_selector.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_api_features_overview.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_premium_badge.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_usage_stats_toggle.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -223,6 +224,20 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
             description:
                 "Manage your API configuration and explore premium features.",
             child: ApiFeaturesSectionWidget(),
+          ),
+          const Gap(20),
+          _buildSettingItem(
+            title: "Anonymous Usage Statistics",
+            description:
+                "Allow sending anonymized usage events to help improve the app. You can opt out anytime.",
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                UsageStatsToggle(),
+                SizedBox(height: 8),
+                UsageStatsDiagnostics(),
+              ],
+            ),
           ),
         ];
       case 5: // System
