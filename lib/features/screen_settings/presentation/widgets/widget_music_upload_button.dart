@@ -13,14 +13,26 @@ class MusicUploadButton extends ConsumerStatefulWidget {
 }
 
 class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
-  final ValueNotifier<String?> selectedPath = ValueNotifier(null);
   final Logger logger = const Logger('MusicUploadButton');
+
+  late Future<int> _musicFileCountFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _musicFileCountFuture = _getMusicFileCount();
+  }
 
   void _showMusicManager() {
     showDialog(
       context: context,
       builder: (context) => const ModernMusicUploadDialog(),
-    );
+    ).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _musicFileCountFuture = _getMusicFileCount();
+      });
+    });
   }
 
   Future<int> _getMusicFileCount() async {
@@ -32,20 +44,22 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
         return 0;
       }
 
-      final files = musicDir
-          .listSync()
-          .where(
-            (file) =>
-                file is File &&
-                (file.path.toLowerCase().endsWith('.mp3') ||
-                    file.path.toLowerCase().endsWith('.flac') ||
-                    file.path.toLowerCase().endsWith('.ogg') ||
-                    file.path.toLowerCase().endsWith('.wav') ||
-                    file.path.toLowerCase().endsWith('.m4a')),
-          )
-          .length;
+      var fileCount = 0;
+      await for (final entity in musicDir.list(followLinks: false)) {
+        if (entity is! File) continue;
+        final lower = entity.path.toLowerCase();
+        final isSupported =
+            lower.endsWith('.mp3') ||
+            lower.endsWith('.flac') ||
+            lower.endsWith('.ogg') ||
+            lower.endsWith('.wav') ||
+            lower.endsWith('.m4a');
+        if (isSupported) {
+          fileCount++;
+        }
+      }
 
-      return files;
+      return fileCount;
     } catch (e) {
       logger.e("Error counting music files: $e");
       return 0;
@@ -55,7 +69,7 @@ class _MusicUploadButtonState extends ConsumerState<MusicUploadButton> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<int>(
-      future: _getMusicFileCount(),
+      future: _musicFileCountFuture,
       builder: (context, snapshot) {
         final fileCount = snapshot.data ?? 0;
 

@@ -18,9 +18,11 @@ final customCategoryFilesProvider =
           customCategoryId,
         );
 
-        final customCategoryFiles = files
-            .map((file) => CustomCategoryFile.fromFile(file, customCategoryId))
-            .toList();
+        final customCategoryFiles = await Future.wait(
+          files.map(
+            (file) => CustomCategoryFile.fromFileAsync(file, customCategoryId),
+          ),
+        );
 
         // Sort by name for consistent display
         customCategoryFiles.sort((a, b) => a.fileName.compareTo(b.fileName));
@@ -70,9 +72,11 @@ class CustomCategoryFilesNotifier
       final files = await CustomCategoryFileService.getFilesForCustomCategory(
         customCategoryId,
       );
-      final customCategoryFiles = files
-          .map((file) => CustomCategoryFile.fromFile(file, customCategoryId))
-          .toList();
+      final customCategoryFiles = await Future.wait(
+        files.map(
+          (file) => CustomCategoryFile.fromFileAsync(file, customCategoryId),
+        ),
+      );
 
       // Sort by name for consistent display
       customCategoryFiles.sort((a, b) => a.fileName.compareTo(b.fileName));

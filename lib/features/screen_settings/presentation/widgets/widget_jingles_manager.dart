@@ -21,6 +21,14 @@ class JinglesManagerWidget extends ConsumerStatefulWidget {
 class _JinglesManagerWidgetState extends ConsumerState<JinglesManagerWidget> {
   final Logger logger = const Logger('JinglesManagerWidget');
 
+  late Future<int> _musicFileCountFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _musicFileCountFuture = _getMusicFileCount();
+  }
+
   Future<int> _getMusicFileCount() async {
     try {
       final Directory appSupportDir = await getApplicationCacheDirectory();
@@ -59,7 +67,12 @@ class _JinglesManagerWidgetState extends ConsumerState<JinglesManagerWidget> {
     showDialog(
       context: context,
       builder: (context) => const ExtendedJingleUploadDialog(),
-    );
+    ).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _musicFileCountFuture = _getMusicFileCount();
+      });
+    });
   }
 
   @override
@@ -73,7 +86,7 @@ class _JinglesManagerWidgetState extends ConsumerState<JinglesManagerWidget> {
         : _getFileNameFromPath(settings.awayJingleFilePath);
 
     return FutureBuilder<int>(
-      future: _getMusicFileCount(),
+      future: _musicFileCountFuture,
       builder: (context, snapshot) {
         final fileCount = snapshot.data ?? 0;
 

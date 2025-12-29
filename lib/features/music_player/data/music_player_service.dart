@@ -211,11 +211,12 @@ class MusicPlayerService {
         return [];
       }
 
-      final fileEntities = musicDir
-          .listSync()
-          .where((file) => file is File)
-          .cast<File>()
-          .toList();
+      final fileEntities = <File>[];
+      await for (final entity in musicDir.list(followLinks: false)) {
+        if (entity is File) {
+          fileEntities.add(entity);
+        }
+      }
 
       final List<MusicFile> files = [];
 
@@ -229,7 +230,7 @@ class MusicPlayerService {
         } catch (e) {
           logger.w("Error loading metadata for ${file.path}: $e");
           // Fall back to basic file info
-          final basicFile = MusicFile.fromFile(file);
+          final basicFile = await MusicFile.fromFileAsync(file);
           if (basicFile.isSupported) {
             files.add(basicFile);
           }

@@ -42,7 +42,7 @@ class MusicFile {
 
   /// Creates a MusicFile from a File object with metadata
   static Future<MusicFile> fromFileWithMetadata(File file) async {
-    final stats = file.statSync();
+    final stats = await file.stat();
     final name = Platform.isWindows
         ? file.path.split('\\').last
         : file.path.split('/').last;
@@ -70,6 +70,21 @@ class MusicFile {
         lastModified: stats.modified,
       );
     }
+  }
+
+  /// Creates a MusicFile from a File object without metadata
+  static Future<MusicFile> fromFileAsync(File file) async {
+    final stats = await file.stat();
+    final name = Platform.isWindows
+        ? file.path.split('\\').last
+        : file.path.split('/').last;
+
+    return MusicFile(
+      name: name,
+      filePath: file.path,
+      fileSizeBytes: stats.size,
+      lastModified: stats.modified,
+    );
   }
 
   /// Returns the display name (title if available, otherwise filename)

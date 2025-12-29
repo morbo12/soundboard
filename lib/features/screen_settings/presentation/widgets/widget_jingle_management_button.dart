@@ -26,6 +26,44 @@ class _JingleManagementButtonState
     extends ConsumerState<JingleManagementButton> {
   final Logger logger = const Logger('JingleManagementButton');
 
+  static bool _isSupportedAudioFile(String filePath) {
+    final lower = filePath.toLowerCase();
+    return lower.endsWith('.mp3') ||
+        lower.endsWith('.flac') ||
+        lower.endsWith('.ogg') ||
+        lower.endsWith('.wav') ||
+        lower.endsWith('.m4a');
+  }
+
+  Future<List<_JingleFileInfo>> _loadJingleFiles(Directory jingleDir) async {
+    final candidates = <File>[];
+    await for (final entity in jingleDir.list(followLinks: false)) {
+      if (entity is! File) continue;
+      if (!_isSupportedAudioFile(entity.path)) continue;
+      candidates.add(entity);
+    }
+
+    final infos = await Future.wait(
+      candidates.map((file) async {
+        final fileName = Platform.isWindows
+            ? file.path.split('\\').last
+            : file.path.split('/').last;
+        final sizeBytes = await file.length();
+        return _JingleFileInfo(
+          file: file,
+          fileName: fileName,
+          sizeBytes: sizeBytes,
+        );
+      }),
+    );
+
+    infos.sort(
+      (a, b) => a.fileName.toLowerCase().compareTo(b.fileName.toLowerCase()),
+    );
+
+    return infos;
+  }
+
   Future<void> _copyFileToDestination(List<File>? files) async {
     if (files == null) return;
 
@@ -136,19 +174,7 @@ class _JingleManagementButtonState
         await jingleDir.create(recursive: true);
       }
 
-      final files = jingleDir
-          .listSync()
-          .where(
-            (file) =>
-                file is File &&
-                (file.path.toLowerCase().endsWith('.mp3') ||
-                    file.path.toLowerCase().endsWith('.flac') ||
-                    file.path.toLowerCase().endsWith('.ogg') ||
-                    file.path.toLowerCase().endsWith('.wav') ||
-                    file.path.toLowerCase().endsWith('.m4a')),
-          )
-          .cast<File>()
-          .toList();
+      final filesFuture = _loadJingleFiles(jingleDir);
 
       if (mounted) {
         showDialog(
@@ -185,8 +211,29 @@ class _JingleManagementButtonState
                   const SizedBox(height: 16),
                   // File list
                   Expanded(
-                    child: files.isEmpty
-                        ? Center(
+                    child: FutureBuilder<List<_JingleFileInfo>>(
+                      future: filesFuture,
+                      builder: (context, snapshot) {
+                        final fileInfos = snapshot.data;
+
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              'Failed to load files: ${snapshot.error}',
+                            ),
+                          );
+                        }
+
+                        final resolvedFiles = fileInfos ?? const [];
+                        if (resolvedFiles.isEmpty) {
+                          return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -217,95 +264,91 @@ class _JingleManagementButtonState
                                 ),
                               ],
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: files.length,
-                            itemBuilder: (context, index) {
-                              final file = files[index];
-                              final fileName = Platform.isWindows
-                                  ? file.path.split('\\').last
-                                  : file.path.split('/').last;
-                              return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                child: ListTile(
-                                  leading: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryContainer,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.music_note,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondaryContainer,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    fileName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    '${(file.lengthSync() / 1024 / 1024).toStringAsFixed(2)} MB',
-                                  ),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.error,
-                                    ),
-                                    onPressed: () async {
-                                      final shouldDelete = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text('Delete File'),
-                                          content: Text(
-                                            'Are you sure you want to delete "$fileName"?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(
-                                                context,
-                                              ).pop(false),
-                                              child: const Text('Cancel'),
-                                            ),
-                                            FilledButton(
-                                              onPressed: () => Navigator.of(
-                                                context,
-                                              ).pop(true),
-                                              style: FilledButton.styleFrom(
-                                                backgroundColor: Theme.of(
-                                                  context,
-                                                ).colorScheme.error,
-                                              ),
-                                              child: const Text('Delete'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
+                          );
+                        }
 
-                                      if (shouldDelete == true) {
-                                        await file.delete();
-                                        ref
-                                            .read(
-                                              jingleManagerProvider.notifier,
-                                            )
-                                            .reinitialize();
-                                        Navigator.of(context).pop();
-                                        _showJingleManager(); // Refresh the dialog
-                                      }
-                                    },
+                        return ListView.builder(
+                          itemCount: resolvedFiles.length,
+                          itemBuilder: (context, index) {
+                            final fileInfo = resolvedFiles[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              child: ListTile(
+                                leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.secondaryContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.music_note,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSecondaryContainer,
+                                    size: 20,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                                title: Text(
+                                  fileInfo.fileName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${(fileInfo.sizeBytes / 1024 / 1024).toStringAsFixed(2)} MB',
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                  onPressed: () async {
+                                    final shouldDelete = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Delete File'),
+                                        content: Text(
+                                          'Are you sure you want to delete "${fileInfo.fileName}"?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(
+                                              context,
+                                            ).pop(false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          FilledButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(true),
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: Theme.of(
+                                                context,
+                                              ).colorScheme.error,
+                                            ),
+                                            child: const Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (shouldDelete == true) {
+                                      await fileInfo.file.delete();
+                                      ref
+                                          .read(jingleManagerProvider.notifier)
+                                          .reinitialize();
+                                      Navigator.of(context).pop();
+                                      _showJingleManager();
+                                    }
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -558,4 +601,16 @@ class _JingleManagementButtonState
       ),
     );
   }
+}
+
+class _JingleFileInfo {
+  final File file;
+  final String fileName;
+  final int sizeBytes;
+
+  const _JingleFileInfo({
+    required this.file,
+    required this.fileName,
+    required this.sizeBytes,
+  });
 }

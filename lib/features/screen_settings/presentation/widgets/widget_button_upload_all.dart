@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/core/utils/logger.dart';
@@ -18,29 +16,6 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
   File? file;
   final ValueNotifier<String?> selectedPath = ValueNotifier(null);
   final Logger logger = const Logger('UploadButtonAll');
-  Future<void> _unzipFile({required String? file}) async {
-    final Directory appSupportDir = await getApplicationCacheDirectory();
-    final Directory targetDir = Directory(
-      appSupportDir.path,
-    ); // Create target directory
-
-    if (!await targetDir.exists()) {
-      await targetDir.create(
-        recursive: true,
-      ); // Ensure the target directory exists
-    }
-
-    logger.d("Extracting files to $targetDir");
-
-    try {
-      await extractFileToDisk(
-        file!,
-        targetDir.path,
-      ); // Updated to use target directory
-    } catch (e) {
-      logger.d(e.toString());
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,9 +117,8 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonAll> {
 
         selectedPath.value = filePath;
 
-        if (filePath.endsWith('.zip')) {
-          await _unzipFile(file: selectedPath.value);
-        }
+        // NOTE: Bulk ZIP extraction is no longer used and the implementation
+        // was removed to avoid UI-thread blocking work.
 
         ref.read(jingleManagerProvider.notifier).reinitialize();
       },

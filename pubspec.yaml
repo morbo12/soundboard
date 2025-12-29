@@ -81,7 +81,6 @@ dependencies:
   path: any
   collection: any
   hive: any
-  archive: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
