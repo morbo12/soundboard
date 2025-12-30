@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 
 /// Modern unified jingle selection dialog with tabbed interface
@@ -394,7 +395,7 @@ class _ModernJingleSelectionDialogState
         OutlinedButton.icon(
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.close),
-          label: const Text('Cancel'),
+          label: Text(context.l10n.translate('common.cancel')),
         ),
         const Spacer(),
         if (widget.currentAudioFile != null) ...[

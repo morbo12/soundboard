@@ -8,6 +8,7 @@ import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/m
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/events/widgets/live_match_card.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import '../../live/widget_event.dart';
@@ -145,6 +146,7 @@ class LiveEvents extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final effectiveMatch = ref.watch(effectiveMatchProvider);
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
@@ -155,7 +157,11 @@ class LiveEvents extends ConsumerWidget {
           Expanded(
             child: effectiveMatch.matchId != 0
                 ? _buildEventsList(context, ref)
-                : const Center(child: Text('Select a match to view events')),
+                : Center(
+                    child: Text(
+                      l10n.translate('events.select_match_to_view_events'),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -168,9 +174,10 @@ class LiveEvents extends ConsumerWidget {
     return ref
         .watch(matchEventsStreamProvider)
         .when(
-          data: (events) => _buildEventsListView(events, ref),
+          data: (events) => _buildEventsListView(context, events, ref),
           loading: () => isManualMode
               ? _buildEventsListView(
+                  context,
                   [],
                   ref,
                 ) // Skip loading indicator in manual mode
@@ -181,14 +188,18 @@ class LiveEvents extends ConsumerWidget {
                 ),
           error: (error, _) => Center(
             child: Text(
-              'Error loading events: $error',
+              '${context.l10n.translate('events.error_loading_events')}: $error',
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         );
   }
 
-  Widget _buildEventsListView(List<IbyMatchEvent> apiEvents, WidgetRef ref) {
+  Widget _buildEventsListView(
+    BuildContext context,
+    List<IbyMatchEvent> apiEvents,
+    WidgetRef ref,
+  ) {
     // Get manual events and combine with API events
     final manualEvents = ref.watch(manualEventsProvider);
     final allEvents = <IbyMatchEvent>[...apiEvents, ...manualEvents];
@@ -202,11 +213,12 @@ class LiveEvents extends ConsumerWidget {
 
     if (allEvents.isEmpty) {
       final isManualMode = ref.watch(isManualLineupModeProvider);
+      final l10n = context.l10n;
       return Center(
         child: Text(
           isManualMode
-              ? 'No events generated yet. Use the event generator below to create events.'
-              : 'No events yet',
+              ? l10n.translate('events.no_events_generated_yet')
+              : l10n.translate('events.no_events_yet'),
         ),
       );
     }

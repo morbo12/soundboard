@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/board/classes/class_jingle_grid_config_notifier.dart';
 
 class GridSettingsSection extends ConsumerWidget {
@@ -72,7 +73,7 @@ class GridResetButton extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -324,7 +325,7 @@ class _GridSettingsDialogState extends ConsumerState<GridSettingsDialog> {
                 .updateSettings(prevColumns, prevRows);
             Navigator.of(context).pop();
           },
-          child: const Text('Cancel'),
+          child: Text(context.l10n.translate('common.cancel')),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),

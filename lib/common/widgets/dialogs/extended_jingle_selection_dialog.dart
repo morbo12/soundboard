@@ -9,6 +9,7 @@ import 'package:soundboard/core/models/sound_group.dart';
 import 'package:soundboard/core/providers/custom_category_providers.dart';
 import 'package:soundboard/core/providers/custom_category_file_providers.dart';
 import 'package:soundboard/core/models/custom_category_file.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 /// Extended jingle selection dialog with support for custom categories and sound groups
 class ExtendedJingleSelectionDialog extends ConsumerStatefulWidget {
@@ -694,7 +695,7 @@ class _ExtendedJingleSelectionDialogState
               // Cancel button
               OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(context.l10n.translate('common.cancel')),
               ),
             ],
           ),

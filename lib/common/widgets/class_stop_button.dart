@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/common/widgets/dialogs/hotkey_assignment_dialog.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 final Logger logger = const Logger("stop_button");
@@ -37,10 +38,12 @@ class StopButtonState extends ConsumerState<StopButton> {
   Future<void> _showHotkeyDialog() async {
     logger.d("Stop button long pressed - showing hotkey dialog");
 
+    final l10n = context.l10n;
+
     final result = await showHotkeyAssignmentDialog(
       context: context,
       buttonId: _buttonId,
-      buttonName: 'Stop Button (STOP)',
+      buttonName: l10n.translate('hotkeys.stop_button_name'),
     );
 
     if (result != null && mounted) {
@@ -53,6 +56,7 @@ class StopButtonState extends ConsumerState<StopButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final hotkeyService = ref.watch(hotkeyServiceProvider);
@@ -91,7 +95,7 @@ class StopButtonState extends ConsumerState<StopButton> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("STOP", textAlign: TextAlign.center),
+              Text(l10n.translate('buttons.stop'), textAlign: TextAlign.center),
               if (assignedHotkey != null) ...[
                 const SizedBox(height: 4),
                 Text(

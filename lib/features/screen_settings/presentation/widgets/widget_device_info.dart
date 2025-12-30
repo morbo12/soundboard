@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/device_id_manager.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -131,7 +132,7 @@ class DeviceInfoWidget extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.translate('common.cancel')),
             ),
             TextButton(
               onPressed: () {

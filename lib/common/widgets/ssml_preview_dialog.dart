@@ -6,6 +6,7 @@ import 'package:soundboard/core/services/ai_sentence_service.dart';
 import 'package:soundboard/core/services/auth_service.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/pregame_stats.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 /// Dialog to preview and edit SSML before sending to TTS engine
@@ -391,7 +392,7 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
               children: [
                 TextButton(
                   onPressed: _isProcessing ? null : _handleCancel,
-                  child: const Text('Cancel'),
+                  child: Text(context.l10n.translate('common.cancel')),
                 ),
                 const SizedBox(width: 12),
                 FilledButton(

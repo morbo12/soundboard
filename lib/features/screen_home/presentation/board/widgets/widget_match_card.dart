@@ -7,6 +7,7 @@ import 'package:soundboard/core/services/innebandy_api/presentation/providers/st
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'standings_dialog.dart';
 
 class MatchCard extends ConsumerWidget {
@@ -42,6 +43,7 @@ class MatchCard extends ConsumerWidget {
   }
 
   void _showStandings(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final standings = ref.read(standingsProvider);
     if (standings != null) {
       showDialog(
@@ -51,8 +53,8 @@ class MatchCard extends ConsumerWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No standings data available'),
+        SnackBar(
+          content: Text(l10n.translate('events.no_standings_data_available')),
           behavior: SnackBarBehavior.floating,
         ),
       );

@@ -1,0 +1,203 @@
+{
+  "app_title": "Soundboard",
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
+    "error": "Error",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "empty": "Empty",
+    "confirm": "Confirm"
+  },
+  "languages": {
+    "english": "English",
+    "swedish": "Swedish",
+    "czech": "Czech"
+  },
+  "buttons": {
+    "goal": "GOAL",
+    "stop": "STOP"
+  },
+  "nav": {
+    "home": "Home",
+    "match": "Match",
+    "settings": "Settings",
+    "spotify": "Spotify"
+  },
+  "app_bar": {
+    "title": "FBTools Soundboard"
+  },
+  "hotkeys": {
+    "goal_button_name": "Goal Button (GOAL)",
+    "stop_button_name": "Stop Button (STOP)"
+  },
+  "jingle_options": {
+    "title": "Jingle Options",
+    "change_jingle": "Change Jingle",
+    "change_display_name": "Change Display Name",
+    "jingle_info": "Jingle Info",
+    "assign_hotkey": "Assign Hotkey",
+    "delete_assignment": "Delete Assignment"
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Appearance",
+      "audio_hardware": "Audio & Hardware",
+      "text_to_speech": "Text to Speech",
+      "content_media": "Content & Media",
+      "api_premium": "API & Premium",
+      "system": "System"
+    },
+    "api_usage": {
+      "title": "API Usage",
+      "failed_to_load": "Failed to load usage data",
+      "refresh_tooltip": "Refresh usage data",
+      "no_usage_data": "No usage data available"
+    },
+    "clear_cache": {
+      "danger_title": "DANGER - Delete Jingle Cache",
+      "critical_badge": "CRITICAL",
+      "description": "Permanently removes all uploaded jingle files from cache storage",
+      "confirm_title": "Confirm Cache Deletion",
+      "confirm_body": "Are you sure you want to delete the cache?",
+      "location": "Location",
+      "size": "Size",
+      "warning": "Warning: This will remove all cached jingles.",
+      "clearing": "Clearing cache...",
+      "success": "Cache successfully cleared",
+      "not_found_or_empty": "Cache directory not found or already empty",
+      "failed": "Failed to clear cache"
+    },
+    "items": {
+      "language": {
+        "title": "Language"
+      },
+      "color_scheme": {
+        "title": "Color Scheme",
+        "description": "Choose a color theme for the application. Recommended: greyLaw, aquaBlue, ebonyClay."
+      },
+      "background_volume": {
+        "title": "Background Volume",
+        "description": "Adjust the volume level for the background channel."
+      },
+      "deej_serial_port": {
+        "title": "Deej Mixer Serial Port",
+        "description": "Configure the serial port connection for your Deej hardware mixer."
+      },
+      "volume_control_mappings": {
+        "title": "Volume Control & Mappings",
+        "description": "Configure volume control behavior and Deej hardware mappings."
+      },
+      "tts_settings": {
+        "title": "TTS Settings",
+        "description": "Configure Azure TTS settings for voice synthesis."
+      },
+      "ai_model": {
+        "title": "AI Model",
+        "description": "Select the AI model to use for generating sports announcements. Requires API product key."
+      },
+      "ssml_preview": {
+        "title": "SSML Preview",
+        "description": "Enable editing SSML before sending to TTS engine."
+      },
+      "ssml_templates": {
+        "title": "SSML Templates",
+        "description": "Customize templates for welcome, lineup, and referee announcements."
+      },
+      "spotify_configuration": {
+        "title": "Spotify Configuration",
+        "description": "Copy URL from Spotify. In playlist, goto ... -> Share -> Copy link."
+      },
+      "grid_layout": {
+        "title": "Grid Layout",
+        "description": "Configure the layout and reset jingle assignments."
+      },
+      "jingles_manager": {
+        "title": "Jingles Manager",
+        "description": "Upload music files, manage jingles, and configure lineup jingles."
+      },
+      "api_premium_features": {
+        "title": "API & Premium Features",
+        "description": "Manage your API configuration and explore premium features."
+      },
+      "usage_statistics": {
+        "title": "Anonymous Usage Statistics",
+        "description": "Allow sending anonymized usage events to help improve the app. You can opt out anytime."
+      },
+      "clear_cache": {
+        "title": "Clear Cache",
+        "description": "Delete all uploaded jingles from the local cache."
+      }
+    }
+  },
+  "privacy": {
+    "usage_stats_title": "Usage Statistics",
+    "usage_stats_body": "To help us enhance the Soundboard app, we collect anonymous usage statistics about which features you use. This data does not include personal information and is only associated with your device ID.\n\nYou can opt out of this tracking at any time in Settings.",
+    "opt_out": "Opt Out",
+    "got_it": "Got It"
+  },
+  "errors": {
+    "init_app": "Error initializing app",
+    "init_audio_system": "Failed to initialize audio system"
+  },
+  "dialogs": {
+    "no_jingle_assigned": "No jingle assigned to this button",
+    "display_name_label": "Display Name",
+    "display_name_hint": "Enter new display name",
+    "display_name_helper": "Type \\n for line breaks\nExample: TIMEOUT\\nHemmalag → TIMEOUT\nHemmalag",
+    "jingle_information_title": "Jingle Information",
+    "file_path_label": "File Path",
+    "file_path_random": "[Random from category]",
+    "category_label": "Category",
+    "mode_label": "Mode",
+    "mode_random": "Random from category",
+    "mode_specific": "Specific jingle",
+    "confirm_deletion_title": "Confirm Deletion",
+    "confirm_deletion_body": "Are you sure you want to remove this jingle assignment?"
+  },
+  "snackbar_messages": {
+    "jingle_assignment_removed": "Jingle assignment removed"
+  },
+  "tts": {
+    "custom_tts_button": "Custom TTS",
+    "custom_announcement_title": "Custom TTS Announcement",
+    "enter_text_hint": "Enter text to announce",
+    "announce_button": "Announce",
+    "ai_error": "AI error",
+    "ai_suggestions_button": "AI suggestions",
+    "failed_to_play_announcement": "Failed to play announcement"
+  },
+  "home": {},
+  "match": {},
+  "lineup": {
+    "labels": {
+      "time": "Time",
+      "goal": "Goal",
+      "assist": "Assist",
+      "player": "Player",
+      "penalty": "Penalty"
+    },
+    "goal_input": {
+      "label": "Goal (time scorer [assist])",
+      "hint": "112 10 7"
+    },
+    "penalty_input": {
+      "label": "Penalty (time player code)",
+      "hint": "112 10 201",
+      "search_hint": "Search penalty by code or name",
+      "no_penalties_found": "No penalties found"
+    }
+  },
+  "events": {
+    "select_match_to_view_events": "Select a match to view events",
+    "error_loading_events": "Error loading events",
+    "no_events_generated_yet": "No events generated yet. Use the event generator below to create events.",
+    "no_events_yet": "No events yet",
+    "no_standings_data_available": "No standings data available",
+    "no_pregame_statistics_available": "No pregame statistics available"
+  },
+  "music_player": {},
+  "tooltips": {}
+}

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/providers/auth_providers.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsApiTtsVoice extends ConsumerStatefulWidget {
@@ -179,7 +180,9 @@ class _SettingsApiTtsVoiceState extends ConsumerState<SettingsApiTtsVoice> {
                                 onPressed: () {
                                   ref.invalidate(apiVoicesProvider);
                                 },
-                                child: const Text('Retry'),
+                                child: Text(
+                                  context.l10n.translate('common.retry'),
+                                ),
                               ),
                             ],
                           ),

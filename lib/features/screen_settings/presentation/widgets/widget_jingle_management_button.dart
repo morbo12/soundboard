@@ -6,6 +6,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/file_pi
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class JingleManagementButton extends ConsumerStatefulWidget {
   final String directoryName;
@@ -317,7 +318,11 @@ class _JingleManagementButtonState
                                             onPressed: () => Navigator.of(
                                               context,
                                             ).pop(false),
-                                            child: const Text('Cancel'),
+                                            child: Text(
+                                              context.l10n.translate(
+                                                'common.cancel',
+                                              ),
+                                            ),
                                           ),
                                           FilledButton(
                                             onPressed: () =>

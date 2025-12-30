@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -503,7 +504,7 @@ class _ModernJingleUploadDialogState
           OutlinedButton.icon(
             onPressed: () => _exitSelectionMode(category),
             icon: const Icon(Icons.close),
-            label: const Text('Cancel'),
+            label: Text(context.l10n.translate('common.cancel')),
           ),
           const SizedBox(width: 8),
           if (totalFiles > 0) ...[
@@ -580,7 +581,7 @@ class _ModernJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -679,7 +680,7 @@ class _ModernJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

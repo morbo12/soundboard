@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
@@ -120,6 +121,7 @@ class _LiveMatchControls extends ConsumerWidget {
   }
 
   void _showStandings(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final standings = ref.read(standingsProvider);
     if (standings != null) {
       showDialog(
@@ -129,8 +131,8 @@ class _LiveMatchControls extends ConsumerWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No standings data available'),
+        SnackBar(
+          content: Text(l10n.translate('events.no_standings_data_available')),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -139,6 +141,7 @@ class _LiveMatchControls extends ConsumerWidget {
 
   Widget _buildControlsRow(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -171,7 +174,7 @@ class _LiveMatchControls extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Custom TTS',
+                    l10n.translate('tts.custom_tts_button'),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.secondary,
                       fontWeight: FontWeight.w500,
@@ -240,6 +243,7 @@ class _LiveMatchControls extends ConsumerWidget {
   }
 
   void _showPregameStats(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final pregameStats = ref.read(pregameStatsProvider);
     if (pregameStats != null) {
       showDialog(
@@ -251,8 +255,10 @@ class _LiveMatchControls extends ConsumerWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No pregame statistics available'),
+        SnackBar(
+          content: Text(
+            l10n.translate('events.no_pregame_statistics_available'),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -493,6 +499,7 @@ class _MatchCardContent extends ConsumerWidget {
   }
 
   void _showStandings(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final standings = ref.read(standingsProvider);
     if (standings != null) {
       showDialog(
@@ -502,8 +509,8 @@ class _MatchCardContent extends ConsumerWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No standings data available'),
+        SnackBar(
+          content: Text(l10n.translate('events.no_standings_data_available')),
           behavior: SnackBarBehavior.floating,
         ),
       );

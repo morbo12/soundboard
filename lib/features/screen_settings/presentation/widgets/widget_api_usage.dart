@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/models/api_usage.dart';
 import 'package:soundboard/core/services/api_usage_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class ApiUsageWidget extends ConsumerStatefulWidget {
   const ApiUsageWidget({super.key});
@@ -31,7 +32,9 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
       await service.fetchUsage();
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load usage data';
+        _errorMessage = context.l10n.translate(
+          'settings.api_usage.failed_to_load',
+        );
       });
     } finally {
       setState(() {
@@ -43,6 +46,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
   @override
   Widget build(BuildContext context) {
     final usage = ref.watch(currentApiUsageProvider);
+    final l10n = context.l10n;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -56,7 +60,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                 Icon(Icons.cloud, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'API Usage',
+                  l10n.translate('settings.api_usage.title'),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -65,7 +69,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: _isLoading ? null : _fetchUsage,
-                  tooltip: 'Refresh usage data',
+                  tooltip: l10n.translate('settings.api_usage.refresh_tooltip'),
                 ),
               ],
             ),
@@ -90,13 +94,15 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: _fetchUsage,
-                      child: const Text('Retry'),
+                      child: Text(l10n.translate('common.retry')),
                     ),
                   ],
                 ),
               )
             else if (usage == null)
-              const Center(child: Text('No usage data available'))
+              Center(
+                child: Text(l10n.translate('settings.api_usage.no_usage_data')),
+              )
             else
               _buildUsageDetails(context, usage),
           ],

@@ -7,6 +7,7 @@ import 'package:soundboard/features/screen_home/presentation/lineup/classes/clas
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class GoalInputWidget extends ConsumerStatefulWidget {
   final String team;
@@ -95,6 +96,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
   @override
   Widget build(BuildContext context) {
     final playerState = ref.read(GoalTypeStatesProvider.notifier);
+    final l10n = context.l10n;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -109,8 +111,8 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                 horizontal: 8.0,
                 vertical: 4.0,
               ),
-              labelText: 'Goal (time scorer [assist])',
-              hintText: '112 10 7',
+              labelText: l10n.translate('lineup.goal_input.label'),
+              hintText: l10n.translate('lineup.goal_input.hint'),
               errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
               labelStyle: const TextStyle(fontSize: 12),
               hintStyle: const TextStyle(fontSize: 12),
@@ -140,7 +142,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                 children: [
                   if (_time.isNotEmpty)
                     Text(
-                      'Tid: $_time',
+                      '${l10n.translate('lineup.labels.time')}: $_time',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(
@@ -151,7 +153,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                     ),
                   if (_scorer.isNotEmpty)
                     Text(
-                      'Mål: $_scorer',
+                      '${l10n.translate('lineup.labels.goal')}: $_scorer',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.lime,
@@ -160,7 +162,7 @@ class _GoalInputWidgetState extends ConsumerState<GoalInputWidget> {
                     ),
                   if (_assist.isNotEmpty)
                     Text(
-                      'Assist: $_assist',
+                      '${l10n.translate('lineup.labels.assist')}: $_assist',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.lime,
@@ -351,6 +353,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
   @override
   Widget build(BuildContext context) {
     final playerState = ref.read(GoalTypeStatesProvider.notifier);
+    final l10n = context.l10n;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -367,8 +370,8 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                     horizontal: 8.0,
                     vertical: 4.0,
                   ),
-                  labelText: 'Penalty (time player code)',
-                  hintText: '112 10 201',
+                  labelText: l10n.translate('lineup.penalty_input.label'),
+                  hintText: l10n.translate('lineup.penalty_input.hint'),
                   errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
                   labelStyle: const TextStyle(fontSize: 12),
                   hintStyle: const TextStyle(fontSize: 12),
@@ -402,15 +405,17 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                     children: [
                       TextField(
                         controller: _penaltySearchController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8.0,
                             vertical: 4.0,
                           ),
-                          hintText: 'Search penalty by code or name',
-                          hintStyle: TextStyle(fontSize: 12),
-                          prefixIcon: Icon(Icons.search, size: 20),
+                          hintText: l10n.translate(
+                            'lineup.penalty_input.search_hint',
+                          ),
+                          hintStyle: const TextStyle(fontSize: 12),
+                          prefixIcon: const Icon(Icons.search, size: 20),
                         ),
                         style: const TextStyle(fontSize: 12),
                       ),
@@ -418,12 +423,14 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                         child: Container(
                           constraints: const BoxConstraints(maxHeight: 150),
                           child: _filteredPenalties.isEmpty
-                              ? const Center(
+                              ? Center(
                                   child: Padding(
-                                    padding: EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.all(8.0),
                                     child: Text(
-                                      'No penalties found',
-                                      style: TextStyle(fontSize: 12),
+                                      l10n.translate(
+                                        'lineup.penalty_input.no_penalties_found',
+                                      ),
+                                      style: const TextStyle(fontSize: 12),
                                     ),
                                   ),
                                 )
@@ -446,7 +453,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                                         style: const TextStyle(fontSize: 12),
                                       ),
                                       subtitle: Text(
-                                        'Time: ${penalty.penaltyTime}',
+                                        '${l10n.translate('lineup.labels.time')}: ${penalty.penaltyTime}',
                                         style: const TextStyle(fontSize: 10),
                                       ),
                                       onTap: () {
@@ -481,7 +488,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                 children: [
                   if (_time.isNotEmpty)
                     Text(
-                      'Tid: $_time',
+                      '${l10n.translate('lineup.labels.time')}: $_time',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(
@@ -492,7 +499,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                     ),
                   if (_player.isNotEmpty)
                     Text(
-                      'Spelare: $_player',
+                      '${l10n.translate('lineup.labels.player')}: $_player',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.lime,
@@ -501,7 +508,7 @@ class _PenaltyInputWidgetState extends ConsumerState<PenaltyInputWidget> {
                     ),
                   if (_penaltyCode.isNotEmpty)
                     Text(
-                      'Utvisning: ${_getPenaltyInfo()}',
+                      '${l10n.translate('lineup.labels.penalty')}: ${_getPenaltyInfo()}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.lime,

@@ -13,6 +13,7 @@ import 'package:soundboard/common/widgets/dialogs/custom_category_management_dia
 import 'package:soundboard/core/providers/custom_category_file_providers.dart';
 import 'package:soundboard/core/models/custom_category_file.dart';
 import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/common/widgets/dialogs/modern_music_upload_dialog.dart';
 
 /// Extended jingle upload dialog that supports both predefined and custom categories
@@ -950,7 +951,7 @@ class _ExtendedJingleUploadDialogState
           OutlinedButton.icon(
             onPressed: () => _exitSelectionMode(category.id),
             icon: const Icon(Icons.close),
-            label: const Text('Cancel'),
+            label: Text(context.l10n.translate('common.cancel')),
           ),
           const SizedBox(width: 8),
           if (totalFiles > 0) ...[
@@ -1332,7 +1333,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           FilledButton(
             onPressed: () async {
@@ -1360,7 +1361,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1508,7 +1509,7 @@ class _ExtendedJingleUploadDialogState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.translate('common.cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop({
@@ -1642,7 +1643,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

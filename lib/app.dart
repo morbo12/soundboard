@@ -11,6 +11,7 @@ import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/usage_stats_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_match/presentation/widgets/match_setup_screen.dart';
 import 'package:soundboard/core/properties.dart';
@@ -83,8 +84,9 @@ class _PlayerState extends ConsumerState<Player> {
     } catch (e) {
       // Only show error message if we're past the loading phase to prevent snackbar flashing
       if (mounted && !_isLoading) {
+        final l10n = context.l10n;
         showMessage(
-          message: 'Error initializing app: ${e.toString()}',
+          message: '${l10n.translate('errors.init_app')}: ${e.toString()}',
           type: MessageType.error,
         );
       } else {
@@ -139,8 +141,10 @@ class _PlayerState extends ConsumerState<Player> {
     } catch (e) {
       // Only show error message if we're past the loading phase
       if (mounted && !_isLoading) {
+        final l10n = context.l10n;
         showMessage(
-          message: 'Failed to initialize audio system: ${e.toString()}',
+          message:
+              '${l10n.translate('errors.init_audio_system')}: ${e.toString()}',
           type: MessageType.error,
         );
       } else {
@@ -169,6 +173,7 @@ class _PlayerState extends ConsumerState<Player> {
   }
 
   void _showPrivacyNotificationIfNeeded() {
+    final l10n = context.l10n;
     final settings = SettingsBox();
     const privacyNotificationShownKey = 'privacy_notification_shown_v1';
 
@@ -178,12 +183,8 @@ class _PlayerState extends ConsumerState<Player> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text('Usage Statistics'),
-          content: const Text(
-            'To help us enhance the Soundboard app, we collect anonymous usage statistics about which features you use. '
-            'This data does not include personal information and is only associated with your device ID.\n\n'
-            'You can opt out of this tracking at any time in Settings.',
-          ),
+          title: Text(l10n.translate('privacy.usage_stats_title')),
+          content: Text(l10n.translate('privacy.usage_stats_body')),
           actions: [
             TextButton(
               onPressed: () {
@@ -191,14 +192,14 @@ class _PlayerState extends ConsumerState<Player> {
                 settings.put(privacyNotificationShownKey, true);
                 Navigator.of(context).pop();
               },
-              child: const Text('Opt Out'),
+              child: Text(l10n.translate('privacy.opt_out')),
             ),
             FilledButton(
               onPressed: () {
                 settings.put(privacyNotificationShownKey, true);
                 Navigator.of(context).pop();
               },
-              child: const Text('Got It'),
+              child: Text(l10n.translate('privacy.got_it')),
             ),
           ],
         ),
@@ -280,6 +281,7 @@ class _PlayerState extends ConsumerState<Player> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final selectedIndex = ref.watch(selectedIndexProvider);
     final hotkeyService = ref.watch(hotkeyServiceProvider);
 
@@ -325,7 +327,7 @@ class _PlayerState extends ConsumerState<Player> {
                 );
               },
               child: Text(
-                'FBTools Soundboard ${_packageInfo.version}',
+                '${l10n.translate('app_bar.title')} ${_packageInfo.version}',
                 style: const TextStyle(fontSize: 12),
               ),
             ),
@@ -379,7 +381,7 @@ class _PlayerState extends ConsumerState<Player> {
                             context,
                             icon: FluentIcons.home_12_regular,
                             selectedIcon: FluentIcons.home_12_filled,
-                            label: "Home",
+                            label: l10n.translate('nav.home'),
                             index: 0,
                             selectedIndex: selectedIndex,
                             onTap: () =>
@@ -390,7 +392,7 @@ class _PlayerState extends ConsumerState<Player> {
                             context,
                             icon: FluentIcons.settings_28_regular,
                             selectedIcon: FluentIcons.settings_28_filled,
-                            label: "Match",
+                            label: l10n.translate('nav.match'),
                             index: 1,
                             selectedIndex: selectedIndex,
                             onTap: () =>
@@ -401,7 +403,7 @@ class _PlayerState extends ConsumerState<Player> {
                             context,
                             icon: FluentIcons.settings_16_regular,
                             selectedIcon: FluentIcons.settings_16_filled,
-                            label: "Settings",
+                            label: l10n.translate('nav.settings'),
                             index: 2,
                             selectedIndex: selectedIndex,
                             onTap: () =>
@@ -412,7 +414,7 @@ class _PlayerState extends ConsumerState<Player> {
                             context,
                             icon: FluentIcons.music_note_2_16_regular,
                             selectedIcon: FluentIcons.music_note_2_16_filled,
-                            label: "Spotify",
+                            label: l10n.translate('nav.spotify'),
                             index: 3,
                             selectedIndex: selectedIndex,
                             onTap: launchSpotify,

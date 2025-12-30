@@ -109,7 +109,9 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/translations/
+    - assets/translations/en.json
+    - assets/translations/sv.json
+    - assets/translations/cs.json
     - assets/icon/
     - assets/icon/fbtools.eu.png
 

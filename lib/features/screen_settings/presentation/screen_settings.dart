@@ -2,6 +2,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_button_clean_cache.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_settings_color_scheme.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/volume_system_config_widget.dart';
@@ -15,6 +16,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ssml_template_settings_button.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_ai_model_selector.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_api_features_overview.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_language_selector.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_premium_badge.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_usage_stats_toggle.dart';
 
@@ -30,32 +32,32 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   final List<_SettingsSection> _sections = [
     _SettingsSection(
-      title: 'Appearance',
+      titleKey: 'settings.sections.appearance',
       icon: Icons.palette_outlined,
       selectedIcon: Icons.palette,
     ),
     _SettingsSection(
-      title: 'Audio & Hardware',
+      titleKey: 'settings.sections.audio_hardware',
       icon: Icons.equalizer_outlined,
       selectedIcon: Icons.equalizer,
     ),
     _SettingsSection(
-      title: 'Text to Speech',
+      titleKey: 'settings.sections.text_to_speech',
       icon: Icons.record_voice_over_outlined,
       selectedIcon: Icons.record_voice_over,
     ),
     _SettingsSection(
-      title: 'Content & Media',
+      titleKey: 'settings.sections.content_media',
       icon: Icons.library_music_outlined,
       selectedIcon: Icons.library_music,
     ),
     _SettingsSection(
-      title: 'API & Premium',
+      titleKey: 'settings.sections.api_premium',
       icon: Icons.workspace_premium_outlined,
       selectedIcon: Icons.workspace_premium,
     ),
     _SettingsSection(
-      title: 'System',
+      titleKey: 'settings.sections.system',
       icon: Icons.settings_applications_outlined,
       selectedIcon: Icons.settings_applications,
     ),
@@ -64,6 +66,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return Scaffold(
       body: Row(
@@ -84,7 +87,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 icon: Icon(section.icon),
                 selectedIcon: Icon(section.selectedIcon),
                 label: Text(
-                  section.title,
+                  l10n.translate(section.titleKey),
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               );
@@ -105,7 +108,9 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _sections[_selectedIndex].title.toUpperCase(),
+                    l10n
+                        .translate(_sections[_selectedIndex].titleKey)
+                        .toUpperCase(),
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
@@ -133,103 +138,124 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   List<Widget> _buildContent(int index) {
+    final l10n = context.l10n;
+
     switch (index) {
       case 0: // Appearance
         return [
+          const LanguageSelector(),
+          const Gap(20),
           _buildSettingItem(
-            title: "Color Scheme",
-            description:
-                "Choose a color theme for the application. Recommended: greyLaw, aquaBlue, ebonyClay.",
+            title: l10n.translate('settings.items.color_scheme.title'),
+            description: l10n.translate(
+              'settings.items.color_scheme.description',
+            ),
             child: const MyColorScheme(),
           ),
         ];
       case 1: // Audio & Hardware
         return [
           _buildSettingItem(
-            title: "Background Volume",
-            description: "Adjust the volume level for the background channel.",
+            title: l10n.translate('settings.items.background_volume.title'),
+            description: l10n.translate(
+              'settings.items.background_volume.description',
+            ),
             child: const BackgroundVolume(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "Deej Mixer Serial Port",
-            description:
-                "Configure the serial port connection for your Deej hardware mixer.",
+            title: l10n.translate('settings.items.deej_serial_port.title'),
+            description: l10n.translate(
+              'settings.items.deej_serial_port.description',
+            ),
             child: const SerialPortSettingsButton(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "Volume Control & Mappings",
-            description:
-                "Configure volume control behavior and Deej hardware mappings.",
+            title: l10n.translate(
+              'settings.items.volume_control_mappings.title',
+            ),
+            description: l10n.translate(
+              'settings.items.volume_control_mappings.description',
+            ),
             child: const VolumeSystemConfigButton(),
           ),
         ];
       case 2: // Text to Speech
         return [
           _buildSettingItem(
-            title: "TTS Settings",
-            description: "Configure Azure TTS settings for voice synthesis.",
+            title: l10n.translate('settings.items.tts_settings.title'),
+            description: l10n.translate(
+              'settings.items.tts_settings.description',
+            ),
             child: const TtsSettingsButton(),
           ),
           const Gap(20),
           buildPremiumSettingItem(
             context: context,
-            title: "AI Model",
-            description:
-                "Select the AI model to use for generating sports announcements. Requires API product key.",
+            title: l10n.translate('settings.items.ai_model.title'),
+            description: l10n.translate('settings.items.ai_model.description'),
             child: AiModelSelector(),
             isPremium: true,
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "SSML Preview",
-            description: "Enable editing SSML before sending to TTS engine.",
+            title: l10n.translate('settings.items.ssml_preview.title'),
+            description: l10n.translate(
+              'settings.items.ssml_preview.description',
+            ),
             child: const SsmlPreviewToggle(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "SSML Templates",
-            description:
-                "Customize templates for welcome, lineup, and referee announcements.",
+            title: l10n.translate('settings.items.ssml_templates.title'),
+            description: l10n.translate(
+              'settings.items.ssml_templates.description',
+            ),
             child: const SsmlTemplateSettingsButton(),
           ),
         ];
       case 3: // Content & Media
         return [
           _buildSettingItem(
-            title: "Spotify Configuration",
-            description:
-                "Copy URL from Spotify. In playlist, goto ... -> Share -> Copy link.",
+            title: l10n.translate('settings.items.spotify_configuration.title'),
+            description: l10n.translate(
+              'settings.items.spotify_configuration.description',
+            ),
             child: const SettingsSpotify(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "Grid Layout",
-            description: "Configure the layout and reset jingle assignments.",
+            title: l10n.translate('settings.items.grid_layout.title'),
+            description: l10n.translate(
+              'settings.items.grid_layout.description',
+            ),
             child: const GridSettingsSection(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "Jingles Manager",
-            description:
-                "Upload music files, manage jingles, and configure lineup jingles.",
+            title: l10n.translate('settings.items.jingles_manager.title'),
+            description: l10n.translate(
+              'settings.items.jingles_manager.description',
+            ),
             child: const JinglesManagerWidget(),
           ),
         ];
       case 4: // API & Premium
         return [
           _buildSettingItem(
-            title: "API & Premium Features",
-            description:
-                "Manage your API configuration and explore premium features.",
+            title: l10n.translate('settings.items.api_premium_features.title'),
+            description: l10n.translate(
+              'settings.items.api_premium_features.description',
+            ),
             child: ApiFeaturesSectionWidget(),
           ),
           const Gap(20),
           _buildSettingItem(
-            title: "Anonymous Usage Statistics",
-            description:
-                "Allow sending anonymized usage events to help improve the app. You can opt out anytime.",
+            title: l10n.translate('settings.items.usage_statistics.title'),
+            description: l10n.translate(
+              'settings.items.usage_statistics.description',
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -243,8 +269,10 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
       case 5: // System
         return [
           _buildSettingItem(
-            title: "Clear Cache",
-            description: "Delete all uploaded jingles from the local cache.",
+            title: l10n.translate('settings.items.clear_cache.title'),
+            description: l10n.translate(
+              'settings.items.clear_cache.description',
+            ),
             child: const CleanCacheButton(),
           ),
         ];
@@ -295,12 +323,12 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
 }
 
 class _SettingsSection {
-  final String title;
+  final String titleKey;
   final IconData icon;
   final IconData selectedIcon;
 
   _SettingsSection({
-    required this.title,
+    required this.titleKey,
     required this.icon,
     required this.selectedIcon,
   });

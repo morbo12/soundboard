@@ -63,6 +63,9 @@ enum Settings {
 
   // Usage stats tracking opt-out
   usageStatsEnabled,
+
+  // Localization
+  appLanguage,
 }
 
 class SettingsBox extends EasyBox {
@@ -148,6 +151,10 @@ extension GeneralSettingsExtension on SettingsBox {
   }
 
   set themeMode(ThemeMode value) => put(Settings.themeMode, value.index);
+
+  String get appLanguage => get(Settings.appLanguage, defaultValue: 'en');
+  set appLanguage(String value) => put(Settings.appLanguage, value);
+
   String get spotifyUri => get(
     Settings.spotifyUri,
     defaultValue: AppConstants.defaultSpotifyUri,
