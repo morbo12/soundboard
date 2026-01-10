@@ -420,8 +420,8 @@ class _JingleManagementButtonState
         : categoryInfo['containerColor'];
 
     final Color trailingIconColor = isLoading
-      ? colorScheme.onSurfaceVariant
-      : hasError
+        ? colorScheme.onSurfaceVariant
+        : hasError
         ? colorScheme.onErrorContainer
         : categoryInfo['textColor'];
 

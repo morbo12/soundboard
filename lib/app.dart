@@ -287,11 +287,7 @@ class _PlayerState extends ConsumerState<Player> {
 
     if (_isLoading) {
       return const MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('Loading...'),
-          ),
-        ),
+        home: Scaffold(body: Center(child: Text('Loading...'))),
       );
     }
 
@@ -312,9 +308,7 @@ class _PlayerState extends ConsumerState<Player> {
         child: Scaffold(
           body: isJingleManagerInitialized
               ? _buildMainContent(selectedIndex)
-              : const Center(
-                  child: Text('Loading...'),
-                ),
+              : const Center(child: Text('Loading...')),
           appBar: AppBar(
             toolbarHeight: 20.0,
             title: InkWell(

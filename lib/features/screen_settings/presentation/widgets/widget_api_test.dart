@@ -209,10 +209,7 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                     ],
                   ),
                   loading: () => const Row(
-                    children: [
-                      SizedBox(width: 8),
-                      Text('Loading voices...'),
-                    ],
+                    children: [SizedBox(width: 8), Text('Loading voices...')],
                   ),
                   error: (error, stack) => const Row(
                     children: [

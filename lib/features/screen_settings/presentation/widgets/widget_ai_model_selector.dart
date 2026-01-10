@@ -177,12 +177,7 @@ class _LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Gap(12),
-        Text('Loading AI models...'),
-      ],
-    );
+    return const Row(children: [Gap(12), Text('Loading AI models...')]);
   }
 }
 

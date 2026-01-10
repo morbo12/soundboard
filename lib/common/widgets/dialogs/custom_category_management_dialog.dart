@@ -164,8 +164,8 @@ class _CustomCategoryManagementDialogState
             _isLoading
                 ? 'Saving...'
                 : isEditing
-                    ? 'Update'
-                    : 'Create',
+                ? 'Update'
+                : 'Create',
           ),
         ),
       ],
