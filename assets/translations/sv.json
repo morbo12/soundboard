@@ -20,6 +20,12 @@
     "goal": "MÅL",
     "stop": "STOP"
   },
+  "match_status": {
+    "live": "Live",
+    "paused": "Paus",
+    "finished": "Slut",
+    "start_live": "Starta Live"
+  },
   "nav": {
     "home": "Hem",
     "match": "Match",

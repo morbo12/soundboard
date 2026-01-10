@@ -20,6 +20,12 @@
     "goal": "GOAL",
     "stop": "STOP"
   },
+  "match_status": {
+    "live": "Live",
+    "paused": "Paused",
+    "finished": "Finished",
+    "start_live": "Start Live"
+  },
   "nav": {
     "home": "Home",
     "match": "Match",

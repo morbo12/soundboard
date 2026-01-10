@@ -20,6 +20,12 @@
     "goal": "GÓL",
     "stop": "STOP"
   },
+  "match_status": {
+    "live": "Live",
+    "paused": "Pauza",
+    "finished": "Konec",
+    "start_live": "Spustit Live"
+  },
   "nav": {
     "home": "Domů",
     "match": "Zápas",

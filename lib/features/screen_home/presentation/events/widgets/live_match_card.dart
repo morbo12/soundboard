@@ -172,19 +172,8 @@ class _LiveMatchControlsState extends ConsumerState<_LiveMatchControls> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Play streaming button
-            InkWell(
-              onTap: () => _handlePlayButton(ref),
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  Icons.play_arrow,
-                  color: theme.colorScheme.primary,
-                  size: 32,
-                ),
-              ),
-            ),
+            // Status-aware play button
+            _buildLiveStatusButton(context, ref),
             // Custom TTS button
             TextButton(
               onPressed: () => TtsDialog.show(context, ref),
@@ -296,6 +285,80 @@ class _LiveMatchControlsState extends ConsumerState<_LiveMatchControls> {
       color: Theme.of(
         context,
       ).colorScheme.onSurfaceVariant.withAlpha(51), // Subtle divider
+    );
+  }
+
+  Widget _buildLiveStatusButton(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
+    // Determine button properties based on match status
+    final String statusText;
+    final IconData statusIcon;
+    final Color statusColor;
+    final bool shouldPulse;
+
+    switch (widget.match.matchStatus) {
+      case 2: // Active/Playing
+        statusText = l10n.translate('match_status.live');
+        statusIcon = Icons.circle;
+        statusColor = Colors.red;
+        shouldPulse = true;
+        break;
+      case 3: // Paused
+        statusText = l10n.translate('match_status.paused');
+        statusIcon = Icons.pause;
+        statusColor = Colors.orange;
+        shouldPulse = false;
+        break;
+      case 4: // Finished
+        statusText = l10n.translate('match_status.finished');
+        statusIcon = Icons.check;
+        statusColor = theme.colorScheme.outline;
+        shouldPulse = false;
+        break;
+      default: // Not started (1) or N/A (0)
+        statusText = l10n.translate('match_status.start_live');
+        statusIcon = Icons.play_arrow;
+        statusColor = theme.colorScheme.primary;
+        shouldPulse = false;
+    }
+
+    return TextButton(
+      onPressed: widget.match.matchStatus == 4
+          ? null
+          : () => _handlePlayButton(ref),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          shouldPulse
+              ? TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.6, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeInOut,
+                  builder: (context, opacity, child) {
+                    return Opacity(
+                      opacity: opacity,
+                      child: Icon(statusIcon, color: statusColor, size: 16),
+                    );
+                  },
+                  onEnd: () {
+                    if (mounted && shouldPulse) {
+                      setState(() {});
+                    }
+                  },
+                )
+              : Icon(statusIcon, color: statusColor, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            statusText,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: statusColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
