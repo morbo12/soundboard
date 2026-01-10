@@ -326,7 +326,7 @@ class _ModernJingleUploadDialogState
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) =>
           Center(child: Text('Error loading files: $error')),
     );

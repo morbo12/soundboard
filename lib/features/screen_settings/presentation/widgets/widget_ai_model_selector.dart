@@ -179,11 +179,6 @@ class _LoadingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Row(
       children: [
-        SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
         Gap(12),
         Text('Loading AI models...'),
       ],

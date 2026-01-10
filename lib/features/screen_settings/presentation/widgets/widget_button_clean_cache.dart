@@ -102,21 +102,11 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                     ],
                   ),
                 ),
-                if (_isLoading)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  )
-                else
-                  Icon(
-                    Icons.warning_amber,
-                    color: Theme.of(context).colorScheme.error,
-                    size: 24,
-                  ),
+                Icon(
+                  Icons.warning_amber,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 24,
+                ),
               ],
             ),
           ),

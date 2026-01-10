@@ -48,7 +48,7 @@ class StopGoalRow extends ConsumerWidget {
       },
       loading: () => const Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [Expanded(child: Center(child: CircularProgressIndicator()))],
+        children: [Expanded(child: Center(child: Text('Loading...')))],
       ),
       error: (error, stack) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

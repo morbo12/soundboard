@@ -182,8 +182,11 @@ class LiveEvents extends ConsumerWidget {
                   ref,
                 ) // Skip loading indicator in manual mode
               : Center(
-                  child: CircularProgressIndicator(
-                    color: Theme.of(context).colorScheme.primary,
+                  child: Text(
+                    'Loading...',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
           error: (error, _) => Center(

@@ -116,7 +116,7 @@ class StandingsDialog extends ConsumerWidget {
     ThemeData theme,
   ) {
     if (standings == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: Text('Loading...'));
     }
 
     return SingleChildScrollView(
@@ -279,7 +279,7 @@ class StandingsDialog extends ConsumerWidget {
     WidgetRef ref,
   ) {
     if (playerStats == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: Text('Loading...'));
     }
 
     // Sort by points (descending)

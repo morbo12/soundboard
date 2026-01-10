@@ -351,15 +351,6 @@ class MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: colorScheme.primary,
-              ),
-            ),
-            const Gap(20),
             Text(
               'Laddar matcher...',
               style: theme.textTheme.bodyLarge?.copyWith(

@@ -300,7 +300,7 @@ class _ExtendedJingleUploadDialogState
         );
       },
       loading: () => const Dialog.fullscreen(
-        child: Scaffold(body: Center(child: CircularProgressIndicator())),
+        child: Scaffold(body: Center(child: Text('Loading...'))),
       ),
       error: (error, stackTrace) => Dialog.fullscreen(
         child: Scaffold(
@@ -450,7 +450,7 @@ class _ExtendedJingleUploadDialogState
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SizedBox.shrink(),
         error: (error, stack) =>
             Center(child: Text('Error loading files: $error')),
       );
@@ -469,7 +469,7 @@ class _ExtendedJingleUploadDialogState
               .read(customCategoryFilesNotifierProvider.notifier)
               .refreshCategory(category.customId);
         });
-        return const Center(child: CircularProgressIndicator());
+        return const SizedBox.shrink();
       }
 
       return customCategoryFilesAsync.when(
@@ -495,7 +495,7 @@ class _ExtendedJingleUploadDialogState
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SizedBox.shrink(),
         error: (error, stack) =>
             Center(child: Text('Error loading files: $error')),
       );
@@ -1084,7 +1084,7 @@ class _ExtendedJingleUploadDialogState
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) =>
           Center(child: Text('Error loading custom categories: $error')),
     );

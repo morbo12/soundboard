@@ -268,7 +268,7 @@ class _ExtendedJingleSelectionDialogState
 
         return _buildFilesList(context, filteredFiles, category);
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) => Center(child: Text('Error: $error')),
     );
   }
@@ -309,12 +309,12 @@ class _ExtendedJingleSelectionDialogState
               category,
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const SizedBox.shrink(),
           error: (error, stack) =>
               Center(child: Text('Error loading sound groups: $error')),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) =>
           Center(child: Text('Error loading files: $error')),
     );

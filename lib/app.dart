@@ -289,7 +289,7 @@ class _PlayerState extends ConsumerState<Player> {
       return const MaterialApp(
         home: Scaffold(
           body: Center(
-            child: CircularProgressIndicator(strokeCap: StrokeCap.round),
+            child: Text('Loading...'),
           ),
         ),
       );
@@ -313,7 +313,7 @@ class _PlayerState extends ConsumerState<Player> {
           body: isJingleManagerInitialized
               ? _buildMainContent(selectedIndex)
               : const Center(
-                  child: CircularProgressIndicator(strokeCap: StrokeCap.round),
+                  child: Text('Loading...'),
                 ),
           appBar: AppBar(
             toolbarHeight: 20.0,

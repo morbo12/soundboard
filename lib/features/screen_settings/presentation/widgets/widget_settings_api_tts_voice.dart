@@ -149,14 +149,7 @@ class _SettingsApiTtsVoiceState extends ConsumerState<SettingsApiTtsVoice> {
                         );
                       },
                       loading: () => const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Loading voices from API...'),
-                          ],
-                        ),
+                        child: Text('Loading voices from API...'),
                       ),
                       error: (error, stackTrace) {
                         logger.e('Error loading voices: $error', stackTrace);

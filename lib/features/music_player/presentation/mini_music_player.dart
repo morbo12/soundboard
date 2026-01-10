@@ -409,10 +409,9 @@ class MiniMusicPlayer extends ConsumerWidget {
             child: SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colorScheme.primary,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
+              child: Text(
+                'Loading...',
+                style: TextStyle(color: colorScheme.primary),
               ),
             ),
           ),

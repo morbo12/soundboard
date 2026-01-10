@@ -160,13 +160,13 @@ class _CustomCategoryManagementDialogState
         ),
         FilledButton(
           onPressed: _isLoading ? null : _handleSave,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(isEditing ? 'Update' : 'Create'),
+          child: Text(
+            _isLoading
+                ? 'Saving...'
+                : isEditing
+                    ? 'Update'
+                    : 'Create',
+          ),
         ),
       ],
     );

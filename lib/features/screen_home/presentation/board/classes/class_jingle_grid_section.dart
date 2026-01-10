@@ -43,7 +43,7 @@ class JingleGridSection extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) =>
           Center(child: Text('Error loading jingle manager: $error')),
     );

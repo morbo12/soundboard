@@ -349,15 +349,7 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
                     icon: const Icon(Icons.auto_awesome, size: 16),
                     label: Text('AI Enhance', style: theme.textTheme.bodySmall),
                   ),
-                  if (_isEnhancing)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
+
                   const Spacer(),
                   Text(
                     '${_getCurrentController().text.length} chars',
@@ -397,13 +389,7 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
                 const SizedBox(width: 12),
                 FilledButton(
                   onPressed: _isProcessing ? null : _handleConfirm,
-                  child: _isProcessing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Confirm'),
+                  child: Text(_isProcessing ? 'Processing...' : 'Confirm'),
                 ),
               ],
             ),

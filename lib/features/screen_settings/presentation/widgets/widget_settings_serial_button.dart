@@ -410,13 +410,7 @@ class _SerialSettingsDialogState extends ConsumerState<SerialSettingsDialog> {
         ElevatedButton(
           onPressed: isConnecting ? null : _connectToPort,
           style: ElevatedButton.styleFrom(),
-          child: isConnecting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Connect'),
+          child: Text(isConnecting ? 'Connecting...' : 'Connect'),
         ),
         ElevatedButton(
           onPressed: serialPortManager.isConnected ? _disconnectPort : null,

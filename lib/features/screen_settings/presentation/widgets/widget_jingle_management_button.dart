@@ -219,9 +219,7 @@ class _JingleManagementButtonState
 
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                          return const SizedBox.shrink();
                         }
 
                         if (snapshot.hasError) {
@@ -421,6 +419,12 @@ class _JingleManagementButtonState
         ? colorScheme.errorContainer
         : categoryInfo['containerColor'];
 
+    final Color trailingIconColor = isLoading
+      ? colorScheme.onSurfaceVariant
+      : hasError
+        ? colorScheme.onErrorContainer
+        : categoryInfo['textColor'];
+
     return Card(
       elevation: 2,
       child: InkWell(
@@ -491,20 +495,10 @@ class _JingleManagementButtonState
                   ],
                 ),
               ),
-              if (!isLoading) ...[
-                Icon(
-                  hasError ? Icons.error : Icons.arrow_forward_ios,
-                  color: hasError
-                      ? colorScheme.onErrorContainer
-                      : categoryInfo['textColor'],
-                ),
-              ] else ...[
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ],
+              Icon(
+                hasError ? Icons.error : Icons.arrow_forward_ios,
+                color: trailingIconColor,
+              ),
             ],
           ),
         ),

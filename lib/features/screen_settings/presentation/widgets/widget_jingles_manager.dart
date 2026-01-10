@@ -253,7 +253,7 @@ class _LineupJingleSettingsDialogState
       content: SizedBox(
         width: 500,
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const SizedBox.shrink()
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
