@@ -147,7 +147,7 @@ class MatchEventsStream extends _$MatchEventsStream {
         currentMatchState.matchStatus = 4;
         // Ensure all events are there
         currentMatchState.events = allEvents;
-        
+
         ref.read(selectedMatchProvider.notifier).state = currentMatchState;
         _streamController.add(allEvents);
         return;
@@ -159,7 +159,7 @@ class MatchEventsStream extends _$MatchEventsStream {
 
       // Calculate Intermediate Results based on current events
       final intermediates = <IbyMatchIntermediateResult>[];
-      
+
       // Helper to find goals scored in a specific period only
       void addIntermediate(int period) {
         // Only add intermediate result if period has ended (Periodslut event exists)
@@ -167,33 +167,38 @@ class MatchEventsStream extends _$MatchEventsStream {
           (e) => e.period == period && e.matchEventTypeId == 9,
           orElse: () => currentEvents.first, // dummy
         );
-        
+
         // Check if we found a real period end event
-        if (periodEndEvent.matchEventTypeId == 9 && periodEndEvent.period == period) {
+        if (periodEndEvent.matchEventTypeId == 9 &&
+            periodEndEvent.period == period) {
           // Get score at start of this period (end of previous period or 0-0)
           int startHomeGoals = 0;
           int startAwayGoals = 0;
-          
+
           if (period > 1) {
             // Find the last event of the previous period
-            final prevPeriodEvents = currentEvents.where((e) => e.period == period - 1);
+            final prevPeriodEvents = currentEvents.where(
+              (e) => e.period == period - 1,
+            );
             if (prevPeriodEvents.isNotEmpty) {
               final prevPeriodLastEvent = prevPeriodEvents.last;
               startHomeGoals = prevPeriodLastEvent.goalsHomeTeam;
               startAwayGoals = prevPeriodLastEvent.goalsAwayTeam;
             }
           }
-          
+
           // Goals scored IN this period = end score - start score
           final periodHomeGoals = periodEndEvent.goalsHomeTeam - startHomeGoals;
           final periodAwayGoals = periodEndEvent.goalsAwayTeam - startAwayGoals;
-          
-          intermediates.add(IbyMatchIntermediateResult(
-            matchId: matchId,
-            period: period,
-            goalsHomeTeam: periodHomeGoals,
-            goalsAwayTeam: periodAwayGoals,
-          ));
+
+          intermediates.add(
+            IbyMatchIntermediateResult(
+              matchId: matchId,
+              period: period,
+              goalsHomeTeam: periodHomeGoals,
+              goalsAwayTeam: periodAwayGoals,
+            ),
+          );
         }
       }
 
@@ -204,39 +209,43 @@ class MatchEventsStream extends _$MatchEventsStream {
 
       // Determine match status based on latest event
       int status = 2; // Default active
-      if (latestEvent.matchEventTypeId == 9) { // Periodslut
-         status = 3; // Paus
-      } else if (latestEvent.matchEventTypeId == 8) { // Periodstart
-         status = 2; // Active
+      if (latestEvent.matchEventTypeId == 9) {
+        // Periodslut
+        status = 3; // Paus
+      } else if (latestEvent.matchEventTypeId == 8) {
+        // Periodstart
+        status = 2; // Active
       }
-      
+
       // Update match object
-      // We must create a new object or modify existing if allowed. 
+      // We must create a new object or modify existing if allowed.
       // IbyMatch fields are mutable, but we create a "copy" logic by fetching fresh wrapper if needed.
       // But here we can just update our local tracking object and push it.
-      
-      // To trigger Riverpod update reliably with identity check, we might want a shallow copy or 
-      // rely on the equality operator removal we did earlier. 
-      // Since we removed '==', it should update if we just pass the object (it's same instance). 
+
+      // To trigger Riverpod update reliably with identity check, we might want a shallow copy or
+      // rely on the equality operator removal we did earlier.
+      // Since we removed '==', it should update if we just pass the object (it's same instance).
       // Wait, passing same instance to StateProvider might NOT trigger if it checks identical().
       // Let's create a new list for events to ensure some change.
-      
+
       // Modify state
       currentMatchState.matchStatus = status;
       currentMatchState.events = List.from(currentEvents); // New list
-      currentMatchState.intermediateResults = List.from(intermediates); // New list
+      currentMatchState.intermediateResults = List.from(
+        intermediates,
+      ); // New list
       currentMatchState.goalsHomeTeam = latestEvent.goalsHomeTeam;
       currentMatchState.goalsAwayTeam = latestEvent.goalsAwayTeam;
-      
-      // Force update. 
-      // Since we don't have copyWith easily available for all fields, 
+
+      // Force update.
+      // Since we don't have copyWith easily available for all fields,
       // and we removed operator ==, we might need to force the provider to notify.
-      // But StateProvider usually does 'if (old != new)'. 
+      // But StateProvider usually does 'if (old != new)'.
       // If we pass the SAME object reference, 'identical(old, new)' is true.
       // So we should try to clone it or create a new instance.
-      // Easiest "clone" without copyWith for complex object: 
+      // Easiest "clone" without copyWith for complex object:
       // Use cleanMockup and re-apply fields.
-      
+
       final freshMatch = MatchMockupData.getMockupMatch();
       freshMatch.matchStatus = status;
       freshMatch.events = List.from(currentEvents);
@@ -247,8 +256,10 @@ class MatchEventsStream extends _$MatchEventsStream {
 
       ref.read(selectedMatchProvider.notifier).state = freshMatch;
       _streamController.add(currentEvents);
-      
-      _logger.d('Simulated event $currentIndex: ${latestEvent.matchEventType} (Score: ${latestEvent.goalsHomeTeam}-${latestEvent.goalsAwayTeam})');
+
+      _logger.d(
+        'Simulated event $currentIndex: ${latestEvent.matchEventType} (Score: ${latestEvent.goalsHomeTeam}-${latestEvent.goalsAwayTeam})',
+      );
     });
   }
 
