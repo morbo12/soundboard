@@ -53,26 +53,50 @@ class LiveMatchCard extends ConsumerWidget {
 
 /// Internal widget containing the live event controls.
 /// This maintains separation of concerns while keeping the implementation clean.
-class _LiveMatchControls extends ConsumerWidget {
+class _LiveMatchControls extends ConsumerStatefulWidget {
   final IbyMatch match;
 
   const _LiveMatchControls({required this.match});
 
-  // Track which matches have already been auto-triggered to prevent multiple calls
-  static final Set<int> _autoTriggeredMatches = <int>{};
+  @override
+  ConsumerState<_LiveMatchControls> createState() => _LiveMatchControlsState();
+}
+
+class _LiveMatchControlsState extends ConsumerState<_LiveMatchControls> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoTrigger();
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+  void didUpdateWidget(covariant _LiveMatchControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.match.matchId != widget.match.matchId ||
+        oldWidget.match.matchStatus != widget.match.matchStatus) {
+      _checkAutoTrigger();
+    }
+  }
 
-    // Auto-trigger streaming if match status is 4 and hasn't been triggered yet
-    if (match.matchStatus == 4 &&
-        !_autoTriggeredMatches.contains(match.matchId)) {
+  void _checkAutoTrigger() {
+    // Auto-start streaming for active (2) or paused (3) matches only
+    // Do NOT auto-start for finished (4) matches - they should stay finished
+    // Only if matchId is valid (not 0) and not manual mode
+    if (widget.match.matchId != 0 &&
+        (widget.match.matchStatus == 2 || widget.match.matchStatus == 3)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handlePlayButton(ref);
-        _autoTriggeredMatches.add(match.matchId);
+        if (mounted) {
+          _handlePlayButton(ref);
+        }
       });
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // Auto-start is now handled by lifecycle methods.
 
     return Container(
       decoration: BoxDecoration(
@@ -95,14 +119,14 @@ class _LiveMatchControls extends ConsumerWidget {
   }
 
   void _handlePlayButton(WidgetRef ref) {
-    if (match.matchId != 0) {
+    if (widget.match.matchId != 0) {
       ref
           .read(matchEventsStreamProvider.notifier)
-          .startStreaming(match.matchId);
+          .startStreaming(widget.match.matchId);
     }
   }
 
-  /// Checks if standings data is available
+  /// Checks if standing data is available
   bool _hasStandingsData(WidgetRef ref) {
     final standings = ref.watch(standingsProvider);
     return standings != null && standings.standingsRows.isNotEmpty;
@@ -127,7 +151,7 @@ class _LiveMatchControls extends ConsumerWidget {
       showDialog(
         context: context,
         builder: (context) =>
-            StandingsDialog(competitionName: match.competitionName),
+            StandingsDialog(competitionName: widget.match.competitionName),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -249,8 +273,8 @@ class _LiveMatchControls extends ConsumerWidget {
       showDialog(
         context: context,
         builder: (context) => PregameStatsDialog(
-          homeTeam: match.homeTeam,
-          awayTeam: match.awayTeam,
+          homeTeam: widget.match.homeTeam,
+          awayTeam: widget.match.awayTeam,
         ),
       );
     } else {

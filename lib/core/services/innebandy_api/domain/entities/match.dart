@@ -273,16 +273,6 @@ class IbyMatch {
     );
   }
 
-  // In your IbyMatch class
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is IbyMatch && other.matchId == matchId;
-  }
-
-  @override
-  int get hashCode => matchId.hashCode;
-
   /// Fetches the lineup for this match and updates both the instance and provider.
   ///
   /// This method handles errors gracefully and ensures the lineup is available
