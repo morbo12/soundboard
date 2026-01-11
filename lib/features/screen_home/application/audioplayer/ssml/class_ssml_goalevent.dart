@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match_event.dart';
+import 'package:soundboard/core/properties.dart';
 import 'class_ssml_base.dart';
 
 class GoalPhrases {
@@ -150,7 +151,11 @@ class SsmlGoalEvent extends BaseSsmlEvent {
       final announcement = formatAnnouncement();
       logger.d("Announcement: $announcement");
 
-      await showToast(context, announcement);
+      // Skip toast if SSML preview is enabled (dialog will show instead)
+      final settings = SettingsBox();
+      if (!settings.enableSsmlPreview) {
+        await showToast(context, announcement);
+      }
       await playAnnouncement(announcement, context);
 
       return true;

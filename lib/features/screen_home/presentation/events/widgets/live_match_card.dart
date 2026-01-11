@@ -79,16 +79,20 @@ class _LiveMatchControlsState extends ConsumerState<_LiveMatchControls> {
   }
 
   void _checkAutoTrigger() {
-    // Auto-start streaming for active (2) or paused (3) matches only
-    // Do NOT auto-start for finished (4) matches - they should stay finished
+    // Auto-start streaming for active (2), paused (3), or completed (4) matches
     // Only if matchId is valid (not 0) and not manual mode
     if (widget.match.matchId != 0 &&
-        (widget.match.matchStatus == 2 || widget.match.matchStatus == 3)) {
+        (widget.match.matchStatus == 2 ||
+            widget.match.matchStatus == 3 ||
+            widget.match.matchStatus == 4)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _handlePlayButton(ref);
         }
       });
+    } else {
+      // For matches that won't auto-trigger, clear old events
+      ref.read(matchEventsStreamProvider.notifier).stopStreaming();
     }
   }
 

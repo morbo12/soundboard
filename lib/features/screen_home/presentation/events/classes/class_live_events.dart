@@ -51,7 +51,7 @@ class MatchEventsStream extends _$MatchEventsStream {
     if ((_timer?.isActive ?? false) && _currentMatchId == matchId) return;
 
     // Stop any existing timer
-    stopStreaming();
+    stopStreaming(clearEvents: true);
 
     _currentMatchId = matchId;
 
@@ -277,9 +277,9 @@ class MatchEventsStream extends _$MatchEventsStream {
         );
 
         if (match.matchStatus == 4) {
-          // Match finished - stop streaming
+          // Match finished - stop streaming without clearing events
           _logger.d('Match $matchId finished, stopping streaming');
-          stopStreaming();
+          stopStreaming(clearEvents: false);
         } else if (match.matchStatus == 2 || match.matchStatus == 3) {
           // Match is active or paused - adjust timer interval
           _logger.d('Match $matchId status changed, adjusting timer interval');
@@ -289,7 +289,7 @@ class MatchEventsStream extends _$MatchEventsStream {
           _logger.d(
             'Match $matchId no longer active/paused, stopping streaming',
           );
-          stopStreaming();
+          stopStreaming(clearEvents: true);
         }
 
         _lastKnownStatus = match.matchStatus;
@@ -299,11 +299,14 @@ class MatchEventsStream extends _$MatchEventsStream {
     }
   }
 
-  void stopStreaming() {
+  void stopStreaming({bool clearEvents = true}) {
     _timer?.cancel();
     _timer = null;
     _currentMatchId = null;
     _lastKnownStatus = null;
+    if (clearEvents) {
+      _streamController.add([]); // Clear events from UI
+    }
     _logger.d('Streaming stopped and state cleared');
   }
 }
