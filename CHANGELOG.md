@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6-beta4] - 2026-01-17
+
+### Added
+
+- Comprehensive localization system with support for English, Swedish, and Czech languages
+- Language selector widget in Settings screen
+- Usage statistics tracking with opt-out feature in Settings
+- Live match simulation for demo and testing purposes
+- Localization enforcement rules in linter configuration
+- Translation keys validation tests
+- SSML preview settings for goal and penalty events
+- Flag icons widget for language display
+- Locale provider for application-wide language management
+- Enhanced AI sentence generation with context-aware input and type handling
+- Loading text widgets to replace CircularProgressIndicator across the app
+
+### Changed
+
+- Updated Flutter version to 3.38.6
+- Enhanced file handling with asynchronous methods in music file management
+- Improved live match events streaming logic with better status handling
+- Refactored SSML preview dialog for cleaner implementation
+- Updated jingle management button with better state handling
+- Enhanced TTS dialog with improved player/penalty selection logic
+- Modernized various settings widgets with localized text
+
+### Fixed
+
+- Removed debug log from usage stats flush timer
+- Updated AI system prompt for better context handling
+- Improved whitespace and code readability in MatchEventsStream
+- Enhanced error handling in API client
+
 ## [0.4.6-beta2] - 2025-12-14
 
 ### Changed
