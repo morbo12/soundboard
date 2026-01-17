@@ -48,7 +48,9 @@ class AboutDialogWidget extends StatelessWidget {
         }
 
         if (!snapshot.hasData) {
-          return const SizedBox.shrink();
+          return const AlertDialog(
+            content: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final packageInfo = snapshot.data!;
