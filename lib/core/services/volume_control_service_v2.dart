@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/providers/volume_providers.dart';
 import 'package:soundboard/core/providers/deej_providers.dart';
 import 'package:soundboard/core/properties.dart';
@@ -7,6 +8,7 @@ import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/utils/platform_utils.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
+import 'package:soundboard/core/services/jingle_manager/class_jingle_manager.dart';
 import 'package:soundboard/features/music_player/data/music_player_provider.dart';
 
 /// New Volume Control Service with separated Deej connected/disconnected logic
@@ -253,34 +255,29 @@ class VolumeControlServiceV2 {
     double volumePercent,
   ) async {
     try {
+      // Apply muting threshold: if volume is below 2%, mute the channel
+      final actualVolume = volumePercent < 0.02 ? 0.0 : volumePercent;
+
       // Always update the provider for AudioPlayer channels when controlled by Deej
       if (channelNumber == 1) {
-        _ref.read(c1VolumeProvider.notifier).updateVolume(volumePercent);
+        _ref.read(c1VolumeProvider.notifier).updateVolume(actualVolume);
       } else if (channelNumber == 2) {
-        _ref.read(c2VolumeProvider.notifier).updateVolume(volumePercent);
+        _ref.read(c2VolumeProvider.notifier).updateVolume(actualVolume);
       }
 
       // Update the actual AudioPlayer volume for any currently playing audio
       try {
-        final audioManagerAsync = _ref.read(audioManagerProvider);
-        if (audioManagerAsync.hasValue) {
-          final audioManager = audioManagerAsync.value;
+        final jingleManagerAsync = _ref.read(jingleManagerProvider);
+        if (jingleManagerAsync is AsyncData<JingleManager>) {
+          final jingleManager = jingleManagerAsync.value;
           logger.d(
             'Calling AudioManager.updateChannelVolume for C$channelNumber',
           );
-          await audioManager.updateChannelVolume(
+          await jingleManager.audioManager.updateChannelVolume(
             _ref,
             channelNumber,
-            volumePercent,
+            actualVolume,
           );
-        } else if (audioManagerAsync.isLoading) {
-          logger.d(
-            'AudioManager not ready (loading) - volume will be applied when audio plays',
-          );
-        } else if (audioManagerAsync.hasError) {
-          logger.e('AudioManager error: ${audioManagerAsync.error}');
-        } else {
-          logger.w('AudioManager in unknown state');
         }
       } catch (e) {
         logger.w(
@@ -288,27 +285,37 @@ class VolumeControlServiceV2 {
         );
       }
 
-      logger.d(
-        'Updated AudioPlayer C$channelNumber volume to ${(volumePercent * 100).toStringAsFixed(0)}%',
-      );
+      if (actualVolume == 0.0 && volumePercent >= 0.02) {
+        logger.d(
+          'Updated AudioPlayer C$channelNumber volume to ${(volumePercent * 100).toStringAsFixed(0)}% - muting due to below 2% threshold',
+        );
+      } else {
+        logger.d(
+          'Updated AudioPlayer C$channelNumber volume to ${(volumePercent * 100).toStringAsFixed(0)}%',
+        );
+      }
     } catch (e) {
       logger.e('Error updating AudioPlayer channel volume: $e');
     }
   }
 
   /// Updates the music player volume
+  /// Applies muting threshold: if volume is below 2%, mutes the player
   Future<void> _updateMusicPlayerVolume(double volumePercent) async {
     try {
+      // Apply muting threshold: if volume is below 2%, mute the player
+      final actualVolume = volumePercent < 0.02 ? 0.0 : volumePercent;
+
       // Update the provider for music player volume
-      _ref.read(musicPlayerVolumeProvider.notifier).updateVolume(volumePercent);
-      SettingsBox().musicPlayerInitialVolume = volumePercent;
+      _ref.read(musicPlayerVolumeProvider.notifier).updateVolume(actualVolume);
+      SettingsBox().musicPlayerInitialVolume = actualVolume;
 
       // Update the actual music player volume if it's currently playing
       try {
         final musicNotifier = _ref.read(musicPlayerNotifierProvider.notifier);
-        await musicNotifier.setVolumeDirectly(volumePercent);
+        await musicNotifier.setVolumeDirectly(actualVolume);
         logger.d(
-          'Updated music player volume directly to ${(volumePercent * 100).toStringAsFixed(0)}%',
+          'Updated music player volume directly to ${(actualVolume * 100).toStringAsFixed(0)}%',
         );
       } catch (e) {
         logger.w(
@@ -317,7 +324,7 @@ class VolumeControlServiceV2 {
       }
 
       logger.d(
-        'Updated Music Player volume to ${(volumePercent * 100).toStringAsFixed(0)}%',
+        'Updated Music Player volume to ${(actualVolume * 100).toStringAsFixed(0)}%',
       );
     } catch (e) {
       logger.e('Error updating music player volume: $e');
@@ -334,6 +341,7 @@ class VolumeControlServiceV2 {
 
   /// Gets the target volume for an AudioPlayer channel
   /// Returns max volume when Deej disconnected, provider volume when connected and mapped
+  /// Applies muting threshold: if volume is below 2%, returns 0 (muted)
   Future<double> getAudioPlayerTargetVolume(int channelNumber) async {
     final isDeejConnected = _ref.read(deejConnectionStatusProvider);
 
@@ -364,10 +372,17 @@ class VolumeControlServiceV2 {
             final sliderValues = deejService.sliderValues;
 
             if (deejSliderIdx < sliderValues.length) {
-              final actualSliderValue = sliderValues[deejSliderIdx];
+              var actualSliderValue = sliderValues[deejSliderIdx];
               logger.d(
                 'Channel $channelNumber target volume from actual Deej slider $deejSliderIdx: $actualSliderValue',
               );
+              // Apply muting threshold: if volume < 2%, mute the channel
+              if (actualSliderValue < 0.02) {
+                actualSliderValue = 0.0;
+                logger.d(
+                  'Channel $channelNumber volume below 2% threshold - applying mute',
+                );
+              }
               return actualSliderValue;
             }
           } catch (e) {
@@ -381,7 +396,15 @@ class VolumeControlServiceV2 {
         final provider = channelNumber == 1
             ? c1VolumeProvider
             : c2VolumeProvider;
-        return _ref.read(provider).vol;
+        var targetVolume = _ref.read(provider).vol;
+        // Apply muting threshold: if volume < 2%, mute the channel
+        if (targetVolume < 0.02) {
+          targetVolume = 0.0;
+          logger.d(
+            'Channel $channelNumber volume below 2% threshold - applying mute',
+          );
+        }
+        return targetVolume;
       } else {
         // Use max volume when Deej connected but not mapped
         return 1.0;
@@ -391,6 +414,7 @@ class VolumeControlServiceV2 {
 
   /// Gets the target volume for the music player
   /// Returns max volume when Deej disconnected, provider volume when connected and mapped
+  /// Applies muting threshold: if volume is below 2%, returns 0 (muted)
   Future<double> getMusicPlayerTargetVolume() async {
     final isDeejConnected = _ref.read(deejConnectionStatusProvider);
 
@@ -419,10 +443,17 @@ class VolumeControlServiceV2 {
             final sliderValues = deejService.sliderValues;
 
             if (deejSliderIdx < sliderValues.length) {
-              final actualSliderValue = sliderValues[deejSliderIdx];
+              var actualSliderValue = sliderValues[deejSliderIdx];
               logger.d(
                 'Music player target volume from actual Deej slider $deejSliderIdx: $actualSliderValue',
               );
+              // Apply muting threshold: if volume < 2%, mute the player
+              if (actualSliderValue < 0.02) {
+                actualSliderValue = 0.0;
+                logger.d(
+                  'Music player volume below 2% threshold - applying mute',
+                );
+              }
               return actualSliderValue;
             }
           } catch (e) {
@@ -433,7 +464,13 @@ class VolumeControlServiceV2 {
         }
 
         // Fallback to provider volume if we can't get Deej slider value
-        return _ref.read(musicPlayerVolumeProvider).vol;
+        var targetVolume = _ref.read(musicPlayerVolumeProvider).vol;
+        // Apply muting threshold: if volume < 2%, mute the player
+        if (targetVolume < 0.02) {
+          targetVolume = 0.0;
+          logger.d('Music player volume below 2% threshold - applying mute');
+        }
+        return targetVolume;
       } else {
         // Use max volume when Deej connected but not mapped
         return 1.0;
