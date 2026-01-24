@@ -22,6 +22,24 @@ class APIClient {
         ),
         receiveTimeout: const Duration(milliseconds: APIConfig.receiveTimeout),
         sendTimeout: const Duration(milliseconds: APIConfig.sendTimeout),
+        headers: {
+          'accept': 'application/json, text/plain, */*',
+          'accept-encoding': 'gzip, deflate, br, zstd',
+          'accept-language':
+              'sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,da;q=0.6,de;q=0.5,no;q=0.4',
+          'dnt': '1',
+          'origin': 'https://stats.innebandy.se',
+          'referer': 'https://stats.innebandy.se/',
+          'sec-ch-ua':
+              '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand)";v="24"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"Windows"',
+          'sec-fetch-dest': 'empty',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-site',
+          'user-agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+        },
       ),
     );
 
@@ -44,6 +62,24 @@ class APIClient {
     logger.d("Token is expired or null. Fetching new token.");
     final response = await http.get(
       Uri.parse('${APIConstants.baseUrl}${APIConstants.startKit}'),
+      headers: {
+        'accept': 'application/json, text/plain, */*',
+        'accept-encoding': 'gzip, deflate, br, zstd',
+        'accept-language':
+            'sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,da;q=0.6,de;q=0.5,no;q=0.4',
+        'dnt': '1',
+        'origin': 'https://stats.innebandy.se',
+        'referer': 'https://stats.innebandy.se/',
+        'sec-ch-ua':
+            '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand)";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'user-agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+      },
     );
 
     if (response.statusCode == 200) {

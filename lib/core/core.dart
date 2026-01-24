@@ -4,6 +4,7 @@
 // Constants
 export 'constants/app_constants.dart';
 export 'constants/message_types.dart';
+export 'constants/swedish_numbers.dart';
 
 // Utilities
 export 'utils/responsive_utils.dart';

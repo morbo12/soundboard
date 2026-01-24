@@ -32,6 +32,23 @@ class CustomCategoryFile {
     );
   }
 
+  /// Create from a File object without blocking the UI thread
+  static Future<CustomCategoryFile> fromFileAsync(
+    File file,
+    String customCategoryId,
+  ) async {
+    final fileName = file.path.split(Platform.pathSeparator).last;
+    final stats = await file.stat();
+
+    return CustomCategoryFile(
+      fileName: fileName,
+      filePath: file.path,
+      customCategoryId: customCategoryId,
+      fileSizeBytes: stats.size,
+      lastModified: stats.modified,
+    );
+  }
+
   /// Get the file extension
   String get extension {
     return fileName.split('.').last.toLowerCase();

@@ -47,8 +47,10 @@ class FileSystemHelper {
   // Helper method to check if a directory has any files
   Future<bool> _hasFiles(Directory directory) async {
     if (!await directory.exists()) return false;
-    final List<FileSystemEntity> entities = directory.listSync();
-    return entities.isNotEmpty;
+    await for (final _ in directory.list(followLinks: false)) {
+      return true;
+    }
+    return false;
   }
 
   // Migrate files from old directory to new directory
@@ -87,9 +89,7 @@ class FileSystemHelper {
     }
 
     // Get all entities from the source directory
-    final List<FileSystemEntity> entities = sourceDir.listSync();
-
-    for (final entity in entities) {
+    await for (final entity in sourceDir.list(followLinks: false)) {
       final String relativePath = path.relative(
         entity.path,
         from: sourceDir.path,
@@ -142,8 +142,7 @@ class FileSystemHelper {
     dynamic Function(File) fileAction,
   ) async {
     if (await directoryExists(directory)) {
-      final List<FileSystemEntity> files = directory.listSync();
-      for (final file in files) {
+      await for (final file in directory.list(followLinks: false)) {
         if (file is File) {
           final result = fileAction(file);
           // If the result is a Future, await it

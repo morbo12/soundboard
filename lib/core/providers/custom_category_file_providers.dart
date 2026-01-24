@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/services/custom_category_file_service.dart';
 import 'package:soundboard/core/models/custom_category_file.dart';
 import 'package:soundboard/core/utils/logger.dart';
@@ -17,9 +18,11 @@ final customCategoryFilesProvider =
           customCategoryId,
         );
 
-        final customCategoryFiles = files
-            .map((file) => CustomCategoryFile.fromFile(file, customCategoryId))
-            .toList();
+        final customCategoryFiles = await Future.wait(
+          files.map(
+            (file) => CustomCategoryFile.fromFileAsync(file, customCategoryId),
+          ),
+        );
 
         // Sort by name for consistent display
         customCategoryFiles.sort((a, b) => a.fileName.compareTo(b.fileName));
@@ -69,9 +72,11 @@ class CustomCategoryFilesNotifier
       final files = await CustomCategoryFileService.getFilesForCustomCategory(
         customCategoryId,
       );
-      final customCategoryFiles = files
-          .map((file) => CustomCategoryFile.fromFile(file, customCategoryId))
-          .toList();
+      final customCategoryFiles = await Future.wait(
+        files.map(
+          (file) => CustomCategoryFile.fromFileAsync(file, customCategoryId),
+        ),
+      );
 
       // Sort by name for consistent display
       customCategoryFiles.sort((a, b) => a.fileName.compareTo(b.fileName));

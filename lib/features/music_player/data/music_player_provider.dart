@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/features/music_player/data/music_player_service.dart';
 import 'package:soundboard/features/music_player/data/music_models.dart';
 import 'package:soundboard/core/services/volume_control_service_v2.dart';

@@ -1,6 +1,209 @@
 {
-  "hello": "Hej",
-  "welcome": "Välkommen",
-  "message": "Meddelande",
-  "appTitle": "Min App"
+  "app_title": "Ljudpanel",
+  "common": {
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "delete": "Ta bort",
+    "close": "Stäng",
+    "error": "Fel",
+    "retry": "Försök igen",
+    "loading": "Laddar...",
+    "empty": "Tomt",
+    "confirm": "Bekräfta"
+  },
+  "languages": {
+    "english": "Engelska",
+    "swedish": "Svenska",
+    "czech": "Tjeckiska"
+  },
+  "buttons": {
+    "goal": "MÅL",
+    "stop": "STOP"
+  },
+  "match_status": {
+    "live": "Live",
+    "paused": "Paus",
+    "finished": "Slut",
+    "start_live": "Starta Live"
+  },
+  "nav": {
+    "home": "Hem",
+    "match": "Match",
+    "settings": "Inställningar",
+    "spotify": "Spotify"
+  },
+  "app_bar": {
+    "title": "FBTools Soundboard"
+  },
+  "hotkeys": {
+    "goal_button_name": "Målknapp (MÅL)",
+    "stop_button_name": "Stoppknapp (STOP)"
+  },
+  "jingle_options": {
+    "title": "Jingle-alternativ",
+    "change_jingle": "Ändra jingle",
+    "change_display_name": "Ändra visningsnamn",
+    "jingle_info": "Jingle-info",
+    "assign_hotkey": "Tilldela snabbtangent",
+    "delete_assignment": "Ta bort tilldelning"
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Utseende",
+      "audio_hardware": "Ljud & Hårdvara",
+      "text_to_speech": "Text till tal",
+      "content_media": "Innehåll & Media",
+      "api_premium": "API & Premium",
+      "system": "System"
+    },
+    "api_usage": {
+      "title": "API-användning",
+      "failed_to_load": "Misslyckades att hämta användningsdata",
+      "refresh_tooltip": "Uppdatera användningsdata",
+      "no_usage_data": "Ingen användningsdata tillgänglig"
+    },
+    "clear_cache": {
+      "danger_title": "FARA - Ta bort jingle-cache",
+      "critical_badge": "KRITISK",
+      "description": "Tar permanent bort alla uppladdade jinglefiler från cachelagringen",
+      "confirm_title": "Bekräfta borttagning av cache",
+      "confirm_body": "Är du säker på att du vill ta bort cachen?",
+      "location": "Plats",
+      "size": "Storlek",
+      "warning": "Varning: Detta tar bort alla cachelagrade jinglar.",
+      "clearing": "Rensar cache...",
+      "success": "Cachen rensades",
+      "not_found_or_empty": "Cachekatalogen hittades inte eller är redan tom",
+      "failed": "Misslyckades att rensa cache"
+    },
+    "items": {
+      "language": {
+        "title": "Språk"
+      },
+      "color_scheme": {
+        "title": "Färgschema",
+        "description": "Välj ett färgtema för applikationen. Rekommenderat: greyLaw, aquaBlue, ebonyClay."
+      },
+      "background_volume": {
+        "title": "Bakgrundsvolym",
+        "description": "Justera volymnivån för bakgrundskanalen."
+      },
+      "deej_serial_port": {
+        "title": "Deej-mixer seriell port",
+        "description": "Konfigurera den seriella portanslutningen för din Deej-hårdvarumixer."
+      },
+      "volume_control_mappings": {
+        "title": "Volymkontroll & mappningar",
+        "description": "Konfigurera volymbeteende och Deej-hårdvarumappningar."
+      },
+      "tts_settings": {
+        "title": "TTS-inställningar",
+        "description": "Konfigurera Azure TTS-inställningar för röstsyntes."
+      },
+      "ai_model": {
+        "title": "AI-modell",
+        "description": "Välj AI-modellen som ska användas för att generera sportutrop. Kräver API-produktnyckel."
+      },
+      "ssml_preview": {
+        "title": "SSML-förhandsvisning",
+        "description": "Aktivera redigering av SSML innan det skickas till TTS-motorn."
+      },
+      "ssml_templates": {
+        "title": "SSML-mallar",
+        "description": "Anpassa mallar för välkomst-, laguppställnings- och domarutrop."
+      },
+      "spotify_configuration": {
+        "title": "Spotify-konfiguration",
+        "description": "Kopiera URL från Spotify. I spellista: ... → Dela → Kopiera länk."
+      },
+      "grid_layout": {
+        "title": "Rutnätslayout",
+        "description": "Konfigurera layouten och återställ jingle-tilldelningar."
+      },
+      "jingles_manager": {
+        "title": "Jingle-hanterare",
+        "description": "Ladda upp musikfiler, hantera jinglar och konfigurera laguppställningsjinglar."
+      },
+      "api_premium_features": {
+        "title": "API- och Premiumfunktioner",
+        "description": "Hantera din API-konfiguration och utforska premiumfunktioner."
+      },
+      "usage_statistics": {
+        "title": "Anonym användningsstatistik",
+        "description": "Tillåt att anonymiserade användningshändelser skickas för att hjälpa till att förbättra appen. Du kan när som helst välja bort."
+      },
+      "clear_cache": {
+        "title": "Rensa cache",
+        "description": "Ta bort alla uppladdade jinglar från den lokala cachen."
+      }
+    }
+  },
+  "privacy": {
+    "usage_stats_title": "Användningsstatistik",
+    "usage_stats_body": "För att hjälpa oss förbättra Soundboard-appen samlar vi in anonym användningsstatistik om vilka funktioner du använder. Den här datan innehåller ingen personlig information och är endast kopplad till ditt enhets-ID.\n\nDu kan när som helst välja bort spårningen i Inställningar.",
+    "opt_out": "Välj bort",
+    "got_it": "Jag förstår"
+  },
+  "errors": {
+    "init_app": "Fel vid initiering av app",
+    "init_audio_system": "Misslyckades att initiera ljudsystem"
+  },
+  "dialogs": {
+    "no_jingle_assigned": "Ingen jingle är tilldelad till den här knappen",
+    "display_name_label": "Visningsnamn",
+    "display_name_hint": "Ange nytt visningsnamn",
+    "display_name_helper": "Skriv \\n för radbrytningar\nExempel: TIMEOUT\\nHemmalag → TIMEOUT\nHemmalag",
+    "jingle_information_title": "Jingle-information",
+    "file_path_label": "Sökväg",
+    "file_path_random": "[Slump från kategori]",
+    "category_label": "Kategori",
+    "mode_label": "Läge",
+    "mode_random": "Slump från kategori",
+    "mode_specific": "Specifik jingle",
+    "confirm_deletion_title": "Bekräfta borttagning",
+    "confirm_deletion_body": "Är du säker på att du vill ta bort den här jingle-tilldelningen?"
+  },
+  "snackbar_messages": {
+    "jingle_assignment_removed": "Jingle-tilldelning borttagen"
+  },
+  "tts": {
+    "custom_tts_button": "Egen TTS",
+    "custom_announcement_title": "Eget TTS-utrop",
+    "enter_text_hint": "Skriv text att läsa upp",
+    "announce_button": "Läs upp",
+    "ai_error": "AI-fel",
+    "ai_suggestions_button": "AI-förslag",
+    "failed_to_play_announcement": "Misslyckades att spela upp utrop"
+  },
+  "home": {},
+  "match": {},
+  "lineup": {
+    "labels": {
+      "time": "Tid",
+      "goal": "Mål",
+      "assist": "Assist",
+      "player": "Spelare",
+      "penalty": "Utvisning"
+    },
+    "goal_input": {
+      "label": "Mål (tid målskytt [assist])",
+      "hint": "112 10 7"
+    },
+    "penalty_input": {
+      "label": "Utvisning (tid spelare kod)",
+      "hint": "112 10 201",
+      "search_hint": "Sök utvisning på kod eller namn",
+      "no_penalties_found": "Inga utvisningar hittades"
+    }
+  },
+  "events": {
+    "select_match_to_view_events": "Välj en match för att se händelser",
+    "error_loading_events": "Fel vid laddning av händelser",
+    "no_events_generated_yet": "Inga händelser skapade än. Använd händelsegeneratorn nedan för att skapa händelser.",
+    "no_events_yet": "Inga händelser än",
+    "no_standings_data_available": "Ingen tabellinformation tillgänglig",
+    "no_pregame_statistics_available": "Ingen förmatchstatistik tillgänglig"
+  },
+  "music_player": {},
+  "tooltips": {}
 }

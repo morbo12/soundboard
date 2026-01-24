@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 /// Dialog for assigning hotkeys to buttons
 class HotkeyAssignmentDialog extends ConsumerStatefulWidget {
@@ -324,7 +325,7 @@ class _HotkeyAssignmentDialogState
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(context.l10n.translate('common.cancel')),
                   ),
                   const SizedBox(width: 8),
                   if (_currentHotkey.isNotEmpty) ...[

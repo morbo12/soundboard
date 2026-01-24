@@ -8,10 +8,12 @@ import 'package:soundboard/common/models/enum_goaltypes.dart';
 import 'package:soundboard/features/screen_home/presentation/live/data/class_penalty_type.dart';
 import 'package:soundboard/core/services/ai_sentence_service.dart';
 import 'package:soundboard/core/services/auth_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 // mock
 class TtsDialog {
   static Future<void> show(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final TextEditingController textController = TextEditingController();
     final CustomTtsEvent ssmlEvent = CustomTtsEvent(ref: ref);
     final Logger logger = const Logger('TtsDialog');
@@ -97,7 +99,7 @@ class TtsDialog {
 
     await showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         // Move state variables outside the builder closure to persist state across rebuilds
         List<String> aiSuggestions = [];
         bool aiLoading = false;
@@ -110,13 +112,16 @@ class TtsDialog {
                 aiError = null;
               });
               try {
-                final prompt = _buildAIPrompt(
+                final input = _buildAIPrompt(
                   goalPlayer,
                   assistPlayer,
                   penaltyPlayer,
                 );
                 final suggestions = await aiService.generateSentences(
-                  prompt: prompt,
+                  input: input,
+                  type: 'Event',
+                  temperature: 'high',
+                  ref: ref,
                 );
                 // Defensive: filter out nulls and non-strings
                 setState(() {
@@ -211,7 +216,7 @@ class TtsDialog {
             }
 
             return AlertDialog(
-              title: const Text('Custom TTS Announcement'),
+              title: Text(l10n.translate('tts.custom_announcement_title')),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -242,7 +247,7 @@ class TtsDialog {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        'AI error: $aiError',
+                        '${l10n.translate('tts.ai_error')}: $aiError',
                         style: const TextStyle(color: Colors.red),
                       ),
                     ),
@@ -250,15 +255,15 @@ class TtsDialog {
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
                       icon: const Icon(Icons.auto_awesome),
-                      label: const Text('AI-förslag'),
+                      label: Text(l10n.translate('tts.ai_suggestions_button')),
                       onPressed: aiLoading ? null : fetchAISuggestions,
                     ),
                   ),
                   TextField(
                     controller: textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter text to announce',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: l10n.translate('tts.enter_text_hint'),
+                      border: const OutlineInputBorder(),
                     ),
                     maxLines: 3,
                   ),
@@ -266,8 +271,8 @@ class TtsDialog {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(l10n.translate('common.cancel')),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -286,10 +291,10 @@ class TtsDialog {
 
                         // Show plain text to user, but send SSML to TTS
                         await ssmlEvent.showToast(context, textController.text);
-                        await ssmlEvent.playAnnouncement(announcement);
+                        await ssmlEvent.playAnnouncement(announcement, context);
 
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
                         }
                       } catch (e, stackTrace) {
                         logger.e(
@@ -297,17 +302,17 @@ class TtsDialog {
                           e,
                           stackTrace,
                         );
-                        if (context.mounted) {
+                        if (dialogContext.mounted) {
                           await ssmlEvent.showToast(
-                            context,
-                            'Failed to play announcement: ${e.toString()}',
+                            dialogContext,
+                            '${l10n.translate('tts.failed_to_play_announcement')}: ${e.toString()}',
                             isError: true,
                           );
                         }
                       }
                     }
                   },
-                  child: const Text('Announce'),
+                  child: Text(l10n.translate('tts.announce_button')),
                 ),
               ],
             );
@@ -324,13 +329,13 @@ class TtsDialog {
     String? penaltyPlayer,
   ) {
     if (goalPlayer != null && assistPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för ett mål av $goalPlayer, assisterad av $assistPlayer.';
+      return 'Goal by $goalPlayer, assist by $assistPlayer';
     } else if (goalPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för ett mål av $goalPlayer.';
+      return 'Goal by $goalPlayer';
     } else if (penaltyPlayer != null) {
-      return 'Skriv en svensk sportkommentator-mening för en utvisning på $penaltyPlayer.';
+      return 'Penalty $penaltyPlayer';
     } else {
-      return 'Skriv en svensk sportkommentator-mening för en innebandymatch.';
+      return 'Floorball match event';
     }
   }
 }

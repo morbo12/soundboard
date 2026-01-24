@@ -10,6 +10,7 @@ import 'package:soundboard/features/screen_home/presentation/board/classes/class
 import 'package:soundboard/common/widgets/class_normal_button.dart';
 import 'package:soundboard/common/widgets/button_with_progress.dart';
 import 'package:soundboard/common/widgets/dialogs/extended_jingle_selection_dialog.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class DraggableJingleButton extends ConsumerStatefulWidget {
   final int index;
@@ -30,6 +31,10 @@ class DraggableJingleButton extends ConsumerStatefulWidget {
 
 class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
   String get _buttonId => 'jingle_button_${widget.index}';
+  final GlobalKey _buttonKey = GlobalKey();
+  Size? _buttonSize;
+  // Scale factor for drag preview; slightly larger than the original
+  static const double _dragScale = 1.08;
 
   @override
   void initState() {
@@ -165,33 +170,75 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
             .swapPositions(details.data, widget.index);
       },
       builder: (context, candidateData, rejectedData) {
-        return Draggable<int>(
+        // Measure the button size once it is laid out so we can keep
+        // the drag feedback and placeholder consistent with the button
+        // size and avoid visual shrinking when dragging.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final contextForSize = _buttonKey.currentContext;
+          if (contextForSize != null) {
+            final renderBox = contextForSize.findRenderObject() as RenderBox?;
+            if (renderBox != null) {
+              final newSize = renderBox.size;
+              if (_buttonSize == null || _buttonSize != newSize) {
+                setState(() {
+                  _buttonSize = newSize;
+                });
+              }
+            }
+          }
+        });
+        return LongPressDraggable<int>(
           data: widget.index,
-          feedback: NormalButton(
-            primaryText: buttonText,
-            onTap: () {}, // Feedback doesn't need tap functionality
-            style: buttonStyle,
-            // If NormalButton relies on Material (e.g., for InkWell),
-            // this might affect its appearance, but should fix the error.
-            // We might need to wrap it in a specific Material type later if needed.
+          delay: const Duration(milliseconds: 500),
+          feedback: SizedBox(
+            width: (_buttonSize?.width ?? 100) * _dragScale,
+            height: (_buttonSize?.height ?? 100) * _dragScale,
+            child: Material(
+              elevation: 8,
+              shadowColor: Colors.black.withOpacity(0.45),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: NormalButton(
+                  primaryText: buttonText,
+                  onTap: () {}, // Feedback doesn't need tap functionality
+                  style: buttonStyle,
+                ),
+              ),
+            ),
           ),
-          childWhenDragging: NormalButton(
-            primaryText: '',
-            onTap: () {},
-            isDisabled: false,
-          ),
-          child: GestureDetector(
-            onLongPress: () => _handleLongPress(context, ref),
-            child: ButtonWithProgress(
-              audioFile: widget.audioFile,
+          childWhenDragging: SizedBox(
+            width: _buttonSize?.width,
+            height: _buttonSize?.height ?? 100,
+            child: Opacity(
+              opacity: 0.0,
               child: NormalButton(
                 primaryText: assignedHotkey != null
                     ? '$buttonText\n[${HotkeyUtils.formatForDisplay(assignedHotkey)}]'
                     : buttonText,
-                onTap: () => _handleTap(context, ref),
+                onTap: () {},
                 style: buttonStyle,
-                isDisabled: false,
-                isSelected: candidateData.isNotEmpty,
+                isDisabled: true,
+              ),
+            ),
+          ),
+          child: GestureDetector(
+            onSecondaryTap: () => _handleLongPress(context, ref),
+            child: ButtonWithProgress(
+              audioFile: widget.audioFile,
+              child: Container(
+                key: _buttonKey,
+                child: NormalButton(
+                  primaryText: assignedHotkey != null
+                      ? '$buttonText\n[${HotkeyUtils.formatForDisplay(assignedHotkey)}]'
+                      : buttonText,
+                  onTap: () => _handleTap(context, ref),
+                  style: buttonStyle,
+                  isDisabled: false,
+                  isSelected: candidateData.isNotEmpty,
+                ),
               ),
             ),
           ),
@@ -222,9 +269,12 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
         },
         error: (error, stack) async {
           // Handle error state
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $error')));
+          final l10n = context.l10n;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${l10n.translate('common.error')}: $error'),
+            ),
+          );
         },
       );
     } else {
@@ -234,31 +284,33 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
   }
 
   Future<void> _handleLongPress(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+
     final choice = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Jingle Options'),
+        title: Text(l10n.translate('jingle_options.title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.music_note),
-              title: const Text('Change Jingle'),
+              title: Text(l10n.translate('jingle_options.change_jingle')),
               onTap: () => Navigator.of(context).pop('change_jingle'),
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Change Display Name'),
+              title: Text(l10n.translate('jingle_options.change_display_name')),
               onTap: () => Navigator.of(context).pop('change_name'),
             ),
             ListTile(
               leading: const Icon(Icons.info),
-              title: const Text('Jingle Info'),
+              title: Text(l10n.translate('jingle_options.jingle_info')),
               onTap: () => Navigator.of(context).pop('show_info'),
             ),
             ListTile(
               leading: const Icon(Icons.keyboard),
-              title: const Text('Assign Hotkey'),
+              title: Text(l10n.translate('jingle_options.assign_hotkey')),
               onTap: () => Navigator.of(context).pop('assign_hotkey'),
             ),
             if (widget.audioFile != null &&
@@ -268,7 +320,7 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
                         .isCategoryOnly)) // Only show delete option if a real jingle is assigned (not empty buttons)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete Assignment'),
+                title: Text(l10n.translate('jingle_options.delete_assignment')),
                 onTap: () => Navigator.of(context).pop('delete_assignment'),
               ),
           ],
@@ -301,9 +353,11 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final l10n = context.l10n;
+
     if (widget.audioFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No jingle assigned to this button')),
+        SnackBar(content: Text(l10n.translate('dialogs.no_jingle_assigned'))),
       );
       return;
     }
@@ -314,18 +368,17 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change Display Name'),
+        title: Text(l10n.translate('jingle_options.change_display_name')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Display Name',
-                hintText: 'Enter new display name',
-                helperText:
-                    'Type \\n for line breaks\nExample: TIMEOUT\\nHemmalag → TIMEOUT\nHemmalag',
+              decoration: InputDecoration(
+                labelText: l10n.translate('dialogs.display_name_label'),
+                hintText: l10n.translate('dialogs.display_name_hint'),
+                helperText: l10n.translate('dialogs.display_name_helper'),
                 helperMaxLines: 3,
               ),
               keyboardType: TextInputType.multiline,
@@ -337,7 +390,7 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () {
@@ -345,7 +398,7 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
               final processedText = controller.text.replaceAll('\\n', '\n');
               Navigator.of(context).pop(processedText);
             },
-            child: const Text('Save'),
+            child: Text(l10n.translate('common.save')),
           ),
         ],
       ),
@@ -365,9 +418,11 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
   }
 
   Future<void> _showJingleInfo(BuildContext context) async {
+    final l10n = context.l10n;
+
     if (widget.audioFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No jingle assigned to this button')),
+        SnackBar(content: Text(l10n.translate('dialogs.no_jingle_assigned'))),
       );
       return;
     }
@@ -375,31 +430,37 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Jingle Information'),
+        title: Text(l10n.translate('dialogs.jingle_information_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Display Name: ${widget.audioFile!.displayName}'),
+            Text(
+              '${l10n.translate('dialogs.display_name_label')}: ${widget.audioFile!.displayName}',
+            ),
             const SizedBox(height: 8),
             if (!widget.audioFile!.isCategoryOnly)
-              Text('File Path: ${widget.audioFile!.filePath}')
+              Text(
+                '${l10n.translate('dialogs.file_path_label')}: ${widget.audioFile!.filePath}',
+              )
             else
-              const Text('File Path: [Random from category]'),
+              Text(
+                '${l10n.translate('dialogs.file_path_label')}: ${l10n.translate('dialogs.file_path_random')}',
+              ),
             const SizedBox(height: 8),
             Text(
-              'Category: ${widget.audioFile!.audioCategory.toString().split('.').last}',
+              '${l10n.translate('dialogs.category_label')}: ${widget.audioFile!.audioCategory.toString().split('.').last}',
             ),
             const SizedBox(height: 8),
             Text(
-              'Mode: ${widget.audioFile!.isCategoryOnly ? "Random from category" : "Specific jingle"}',
+              '${l10n.translate('dialogs.mode_label')}: ${widget.audioFile!.isCategoryOnly ? l10n.translate('dialogs.mode_random') : l10n.translate('dialogs.mode_specific')}',
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(l10n.translate('common.close')),
           ),
         ],
       ),
@@ -410,6 +471,8 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final l10n = context.l10n;
+
     final result = await showDialog<dynamic>(
       context: context,
       builder: (context) => ExtendedJingleSelectionDialog(
@@ -424,7 +487,11 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
         ref.read(jingleGridConfigProvider.notifier).removeJingle(widget.index);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Jingle assignment removed')),
+            SnackBar(
+              content: Text(
+                l10n.translate('snackbar_messages.jingle_assignment_removed'),
+              ),
+            ),
           );
         }
       } else if (result is AudioFile) {
@@ -440,23 +507,23 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final l10n = context.l10n;
+
     // Confirm deletion
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Deletion'),
-        content: const Text(
-          'Are you sure you want to remove this jingle assignment?',
-        ),
+        title: Text(l10n.translate('dialogs.confirm_deletion_title')),
+        content: Text(l10n.translate('dialogs.confirm_deletion_body')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(l10n.translate('common.delete')),
           ),
         ],
       ),
@@ -468,7 +535,11 @@ class _DraggableJingleButtonState extends ConsumerState<DraggableJingleButton> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Jingle assignment removed')),
+          SnackBar(
+            content: Text(
+              l10n.translate('snackbar_messages.jingle_assignment_removed'),
+            ),
+          ),
         );
       }
     }

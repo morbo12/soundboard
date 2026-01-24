@@ -25,6 +25,14 @@ linter:
     prefer_const_constructors: true
     avoid_print: true  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    
+    # Localization enforcement
+    # These help catch hardcoded strings but won't catch everything
+    use_string_in_part_of_directives: true
+    
+    # Code quality rules that help identify potential issues
+    prefer_const_literals_to_create_immutables: true
+    unnecessary_string_escapes: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

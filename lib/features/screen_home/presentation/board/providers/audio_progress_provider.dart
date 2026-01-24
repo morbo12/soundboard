@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 
 /// Provider to track which jingle is currently playing

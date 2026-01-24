@@ -4,6 +4,7 @@ import 'package:soundboard/common/widgets/button_with_progress.dart';
 import 'package:soundboard/common/widgets/dialogs/hotkey_assignment_dialog.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/audioplayer_func.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
@@ -47,10 +48,12 @@ class GoalButtonState extends ConsumerState<GoalButton> {
   Future<void> _showHotkeyDialog() async {
     logger.d("Goal button long pressed - showing hotkey dialog");
 
+    final l10n = context.l10n;
+
     final result = await showHotkeyAssignmentDialog(
       context: context,
       buttonId: _buttonId,
-      buttonName: 'Goal Button (MÅL)',
+      buttonName: l10n.translate('hotkeys.goal_button_name'),
     );
 
     if (result != null && mounted) {
@@ -63,6 +66,7 @@ class GoalButtonState extends ConsumerState<GoalButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final hotkeyService = ref.watch(hotkeyServiceProvider);
@@ -114,7 +118,10 @@ class GoalButtonState extends ConsumerState<GoalButton> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("MÅL", textAlign: TextAlign.center),
+                Text(
+                  l10n.translate('buttons.goal'),
+                  textAlign: TextAlign.center,
+                ),
                 if (assignedHotkey != null) ...[
                   const SizedBox(height: 4),
                   Text(

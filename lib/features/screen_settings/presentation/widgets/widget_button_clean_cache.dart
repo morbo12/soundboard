@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/class_cache_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class CleanCacheButton extends StatefulWidget {
   const CleanCacheButton({super.key}); // Updated constructor
@@ -14,6 +15,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Card(
       elevation: 2,
       child: Container(
@@ -55,7 +57,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                       Row(
                         children: [
                           Text(
-                            'DANGER - Delete Jingle Cache',
+                            l10n.translate('settings.clear_cache.danger_title'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -75,7 +77,9 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'CRITICAL',
+                              l10n.translate(
+                                'settings.clear_cache.critical_badge',
+                              ),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -87,7 +91,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Permanently removes all uploaded jingle files from cache storage',
+                        l10n.translate('settings.clear_cache.description'),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(
@@ -98,21 +102,11 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                     ],
                   ),
                 ),
-                if (_isLoading)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  )
-                else
-                  Icon(
-                    Icons.warning_amber,
-                    color: Theme.of(context).colorScheme.error,
-                    size: 24,
-                  ),
+                Icon(
+                  Icons.warning_amber,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 24,
+                ),
               ],
             ),
           ),
@@ -174,34 +168,39 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
     return showDialog<bool>(
       context: context, // Using the current context is safe here
       builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: const Text('Confirm Cache Deletion'),
+          title: Text(l10n.translate('settings.clear_cache.confirm_title')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Are you sure you want to delete the cache?'),
+              Text(l10n.translate('settings.clear_cache.confirm_body')),
               const SizedBox(height: 16),
-              Text('Location: $cachePath'),
+              Text(
+                '${l10n.translate('settings.clear_cache.location')}: $cachePath',
+              ),
               const SizedBox(height: 8),
-              Text('Size: $cacheSize'),
+              Text(
+                '${l10n.translate('settings.clear_cache.size')}: $cacheSize',
+              ),
               const SizedBox(height: 16),
-              const Text(
-                'Warning: This will remove all cached jingles.',
+              Text(
+                l10n.translate('settings.clear_cache.warning'),
                 style: TextStyle(color: Colors.orange),
               ),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(l10n.translate('common.cancel')),
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
+              child: Text(l10n.translate('common.delete')),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
@@ -224,7 +223,7 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 20),
-              const Text("Clearing cache..."),
+              Text(context.l10n.translate('settings.clear_cache.clearing')),
             ],
           ),
         );
@@ -233,12 +232,13 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   }
 
   void _showResultFeedback(bool success) {
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           success
-              ? 'Cache successfully cleared'
-              : 'Cache directory not found or already empty',
+              ? l10n.translate('settings.clear_cache.success')
+              : l10n.translate('settings.clear_cache.not_found_or_empty'),
         ),
         backgroundColor: success ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 3),
@@ -247,9 +247,12 @@ class CleanCacheButtonState extends State<CleanCacheButton> {
   }
 
   void _showErrorFeedback(String errorMessage) {
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Failed to clear cache: $errorMessage'),
+        content: Text(
+          '${l10n.translate('settings.clear_cache.failed')}: $errorMessage',
+        ),
         backgroundColor: Colors.red,
         duration: const Duration(seconds: 5),
       ),

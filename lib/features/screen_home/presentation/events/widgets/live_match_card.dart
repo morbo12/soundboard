@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/match.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/matchstatus.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/standings_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/presentation/providers/player_statistics_provider.dart';
+import 'package:soundboard/core/services/innebandy_api/presentation/providers/pregame_stats_provider.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
 import 'package:soundboard/features/screen_home/presentation/board/widgets/standings_dialog.dart';
+import 'package:soundboard/features/screen_home/presentation/board/widgets/pregame_stats_dialog.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_period_score.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_tts_dialog.dart';
 import 'package:soundboard/features/screen_home/presentation/events/classes/class_live_events.dart';
@@ -50,26 +53,54 @@ class LiveMatchCard extends ConsumerWidget {
 
 /// Internal widget containing the live event controls.
 /// This maintains separation of concerns while keeping the implementation clean.
-class _LiveMatchControls extends ConsumerWidget {
+class _LiveMatchControls extends ConsumerStatefulWidget {
   final IbyMatch match;
 
   const _LiveMatchControls({required this.match});
 
-  // Track which matches have already been auto-triggered to prevent multiple calls
-  static final Set<int> _autoTriggeredMatches = <int>{};
+  @override
+  ConsumerState<_LiveMatchControls> createState() => _LiveMatchControlsState();
+}
+
+class _LiveMatchControlsState extends ConsumerState<_LiveMatchControls> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoTrigger();
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void didUpdateWidget(covariant _LiveMatchControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.match.matchId != widget.match.matchId ||
+        oldWidget.match.matchStatus != widget.match.matchStatus) {
+      _checkAutoTrigger();
+    }
+  }
+
+  void _checkAutoTrigger() {
+    // Auto-start streaming for active (2), paused (3), or completed (4) matches
+    // Only if matchId is valid (not 0) and not manual mode
+    if (widget.match.matchId != 0 &&
+        (widget.match.matchStatus == 2 ||
+            widget.match.matchStatus == 3 ||
+            widget.match.matchStatus == 4)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _handlePlayButton(ref);
+        }
+      });
+    } else {
+      // For matches that won't auto-trigger, clear old events
+      ref.read(matchEventsStreamProvider.notifier).stopStreaming();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Auto-trigger streaming if match status is 4 and hasn't been triggered yet
-    if (match.matchStatus == 4 &&
-        !_autoTriggeredMatches.contains(match.matchId)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handlePlayButton(ref);
-        _autoTriggeredMatches.add(match.matchId);
-      });
-    }
+    // Auto-start is now handled by lifecycle methods.
 
     return Container(
       decoration: BoxDecoration(
@@ -92,56 +123,163 @@ class _LiveMatchControls extends ConsumerWidget {
   }
 
   void _handlePlayButton(WidgetRef ref) {
-    if (match.matchId != 0) {
+    if (widget.match.matchId != 0) {
       ref
           .read(matchEventsStreamProvider.notifier)
-          .startStreaming(match.matchId);
+          .startStreaming(widget.match.matchId);
+    }
+  }
+
+  /// Checks if standing data is available
+  bool _hasStandingsData(WidgetRef ref) {
+    final standings = ref.watch(standingsProvider);
+    return standings != null && standings.standingsRows.isNotEmpty;
+  }
+
+  /// Checks if player statistics data is available
+  bool _hasPlayerStatistics(WidgetRef ref) {
+    final playerStats = ref.watch(playerStatisticsProvider);
+    return playerStats != null && playerStats.playerStatisticsRows.isNotEmpty;
+  }
+
+  /// Checks if pregame statistics data is available
+  bool _hasPregameStats(WidgetRef ref) {
+    final pregameStats = ref.watch(pregameStatsProvider);
+    return pregameStats != null;
+  }
+
+  void _showStandings(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final standings = ref.read(standingsProvider);
+    if (standings != null) {
+      showDialog(
+        context: context,
+        builder: (context) =>
+            StandingsDialog(competitionName: widget.match.competitionName),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.translate('events.no_standings_data_available')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   Widget _buildControlsRow(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
       children: [
-        // Play streaming button
-        InkWell(
-          onTap: () => _handlePlayButton(ref),
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              Icons.play_arrow,
-              color: theme.colorScheme.primary,
-              size: 32,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Status-aware play button
+            _buildLiveStatusButton(context, ref),
+            // Custom TTS button
+            TextButton(
+              onPressed: () => TtsDialog.show(context, ref),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.record_voice_over,
+                    color: theme.colorScheme.secondary,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.translate('tts.custom_tts_button'),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-        // Custom TTS button
-        TextButton(
-          onPressed: () => TtsDialog.show(context, ref),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.record_voice_over,
-                color: theme.colorScheme.secondary,
-                size: 16,
+        // Stats buttons row
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          alignment: WrapAlignment.center,
+          children: [
+            if (_hasStandingsData(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Tabell',
+                Icons.leaderboard,
+                () => _showStandings(context, ref),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Custom TTS',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
+            if (_hasPlayerStatistics(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Spelstat',
+                Icons.bar_chart,
+                () => _showStandings(context, ref),
               ),
-            ],
-          ),
+            if (_hasPregameStats(ref))
+              _buildStatButton(
+                context,
+                ref,
+                'Förhandsstats',
+                Icons.analytics,
+                () => _showPregameStats(context, ref),
+              ),
+          ],
         ),
       ],
     );
+  }
+
+  Widget _buildStatButton(
+    BuildContext context,
+    WidgetRef ref,
+    String label,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
+    final theme = Theme.of(context);
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 14),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        minimumSize: const Size(0, 32),
+        textStyle: theme.textTheme.labelSmall,
+      ),
+    );
+  }
+
+  void _showPregameStats(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final pregameStats = ref.read(pregameStatsProvider);
+    if (pregameStats != null) {
+      showDialog(
+        context: context,
+        builder: (context) => PregameStatsDialog(
+          homeTeam: widget.match.homeTeam,
+          awayTeam: widget.match.awayTeam,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.translate('events.no_pregame_statistics_available'),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildDivider(BuildContext context) {
@@ -151,6 +289,80 @@ class _LiveMatchControls extends ConsumerWidget {
       color: Theme.of(
         context,
       ).colorScheme.onSurfaceVariant.withAlpha(51), // Subtle divider
+    );
+  }
+
+  Widget _buildLiveStatusButton(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
+    // Determine button properties based on match status
+    final String statusText;
+    final IconData statusIcon;
+    final Color statusColor;
+    final bool shouldPulse;
+
+    switch (widget.match.matchStatus) {
+      case 2: // Active/Playing
+        statusText = l10n.translate('match_status.live');
+        statusIcon = Icons.circle;
+        statusColor = Colors.red;
+        shouldPulse = true;
+        break;
+      case 3: // Paused
+        statusText = l10n.translate('match_status.paused');
+        statusIcon = Icons.pause;
+        statusColor = Colors.orange;
+        shouldPulse = false;
+        break;
+      case 4: // Finished
+        statusText = l10n.translate('match_status.finished');
+        statusIcon = Icons.check;
+        statusColor = theme.colorScheme.outline;
+        shouldPulse = false;
+        break;
+      default: // Not started (1) or N/A (0)
+        statusText = l10n.translate('match_status.start_live');
+        statusIcon = Icons.play_arrow;
+        statusColor = theme.colorScheme.primary;
+        shouldPulse = false;
+    }
+
+    return TextButton(
+      onPressed: widget.match.matchStatus == 4
+          ? null
+          : () => _handlePlayButton(ref),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          shouldPulse
+              ? TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.6, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeInOut,
+                  builder: (context, opacity, child) {
+                    return Opacity(
+                      opacity: opacity,
+                      child: Icon(statusIcon, color: statusColor, size: 16),
+                    );
+                  },
+                  onEnd: () {
+                    if (mounted && shouldPulse) {
+                      setState(() {});
+                    }
+                  },
+                )
+              : Icon(statusIcon, color: statusColor, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            statusText,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: statusColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -378,6 +590,7 @@ class _MatchCardContent extends ConsumerWidget {
   }
 
   void _showStandings(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final standings = ref.read(standingsProvider);
     if (standings != null) {
       showDialog(
@@ -387,8 +600,8 @@ class _MatchCardContent extends ConsumerWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No standings data available'),
+        SnackBar(
+          content: Text(l10n.translate('events.no_standings_data_available')),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -418,6 +631,12 @@ class _MatchCardContent extends ConsumerWidget {
   /// Checks if match has events data
   bool _hasEventsData() {
     return match.events != null && match.events!.isNotEmpty;
+  }
+
+  /// Checks if pregame statistics data is available
+  bool _hasPregameStats(WidgetRef ref) {
+    final pregameStats = ref.watch(pregameStatsProvider);
+    return pregameStats != null;
   }
 
   /// Builds stats availability indicators
@@ -503,6 +722,27 @@ class _MatchCardContent extends ConsumerWidget {
               Icons.event_note,
               size: 12,
               color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Pregame stats indicator
+    if (_hasPregameStats(ref)) {
+      indicators.add(
+        Tooltip(
+          message: 'Pregame statistics available',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.tertiaryContainer.withAlpha(204),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.analytics,
+              size: 12,
+              color: theme.colorScheme.onTertiaryContainer,
             ),
           ),
         ),

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +23,9 @@ import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/core/services/volume_control_service_v2.dart';
 import 'package:soundboard/features/screen_home/presentation/board/providers/audio_progress_provider.dart';
 import 'package:soundboard/core/services/custom_category_service.dart';
-import 'package:soundboard/core/models/sound_group.dart';
 import 'package:soundboard/core/services/custom_category_file_service.dart';
+import 'package:soundboard/core/models/sound_group.dart';
+import 'package:soundboard/core/services/usage_stats_service.dart';
 
 /// Enum representing the available audio channels
 enum AudioChannel { channel1, channel2 }
@@ -358,6 +360,7 @@ class AudioManager {
     AudioFile? audioFile, // Track which jingle is playing
     bool isGoalHorn = false, // Special flag for goal horn immediate playback
   }) async {
+    final playbackStartTime = DateTime.now();
     try {
       final otherChannel = channel == AudioChannel.channel1
           ? AudioChannel.channel2
@@ -421,6 +424,30 @@ class AudioManager {
       }
 
       await player.play(DeviceFileSource(filePath));
+
+      // Record usage event with playback latency
+      if (audioFile != null && !isBackgroundMusic) {
+        try {
+          final playbackLatency = DateTime.now()
+              .difference(playbackStartTime)
+              .inMilliseconds;
+          final usageStatsService = ref.read(usageStatsServiceProvider);
+          usageStatsService.recordEvent(
+            eventType: 'SoundPlayed',
+            feature: 'audio_playback',
+            metadata: {
+              'category': audioFile.audioCategory.name,
+              'filename': audioFile.displayName,
+              'channel': channel == AudioChannel.channel1 ? 1 : 2,
+              'is_background_music': isBackgroundMusic,
+              'is_goal_horn': isGoalHorn,
+              'playback_latency_ms': playbackLatency,
+            },
+          );
+        } catch (e) {
+          logger.w('Failed to record SoundPlayed usage event', e);
+        }
+      }
 
       if (isBackgroundMusic) {
         // Fade down to background music level
@@ -1069,7 +1096,11 @@ class AudioManager {
         ref.read(c2VolumeProvider.notifier).updateVolume(targetVolume);
       }
 
-      await channel2.play(BytesSource(audio));
+      if (Platform.isMacOS) {
+        await channel2.play(BytesSource(audio, mimeType: 'audio/mpeg3'));
+      } else {
+        await channel2.play(BytesSource(audio));
+      }
     } catch (e) {
       logger.e("Error playing bytes: $e");
     }
@@ -1121,7 +1152,11 @@ class AudioManager {
       logger.d("[playBytesAndWait] Playing audio");
 
       // Play the audio
-      await channel2.play(BytesSource(audio));
+      if (Platform.isMacOS) {
+        await channel2.play(BytesSource(audio, mimeType: 'audio/mpeg3'));
+      } else {
+        await channel2.play(BytesSource(audio));
+      }
 
       logger.d("[playBytesAndWait] Returning completer");
 

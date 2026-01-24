@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/models/api_usage.dart';
 import 'package:soundboard/core/services/api_usage_service.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 class ApiUsageWidget extends ConsumerStatefulWidget {
   const ApiUsageWidget({super.key});
@@ -31,7 +32,9 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
       await service.fetchUsage();
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load usage data';
+        _errorMessage = context.l10n.translate(
+          'settings.api_usage.failed_to_load',
+        );
       });
     } finally {
       setState(() {
@@ -43,6 +46,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
   @override
   Widget build(BuildContext context) {
     final usage = ref.watch(currentApiUsageProvider);
+    final l10n = context.l10n;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -56,7 +60,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                 Icon(Icons.cloud, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'API Usage',
+                  l10n.translate('settings.api_usage.title'),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -65,7 +69,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   onPressed: _isLoading ? null : _fetchUsage,
-                  tooltip: 'Refresh usage data',
+                  tooltip: l10n.translate('settings.api_usage.refresh_tooltip'),
                 ),
               ],
             ),
@@ -74,7 +78,7 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(),
+                  child: Text('Loading...'),
                 ),
               )
             else if (_errorMessage != null)
@@ -90,13 +94,15 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: _fetchUsage,
-                      child: const Text('Retry'),
+                      child: Text(l10n.translate('common.retry')),
                     ),
                   ],
                 ),
               )
             else if (usage == null)
-              const Center(child: Text('No usage data available'))
+              Center(
+                child: Text(l10n.translate('settings.api_usage.no_usage_data')),
+              )
             else
               _buildUsageDetails(context, usage),
           ],
@@ -200,14 +206,15 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
     BuildContext context,
     String label,
     num used,
-    num limit,
-    num remaining,
+    num? limit,
+    num? remaining,
     IconData icon, {
     bool isMinutes = false,
   }) {
     final theme = Theme.of(context);
-    final percentage = (used / limit * 100).clamp(0.0, 100.0);
-    final isExceeded = remaining <= 0;
+    final hasLimit = limit != null && limit > 0;
+    final percentage = hasLimit ? (used / limit * 100).clamp(0.0, 100.0) : 0.0;
+    final isExceeded = remaining != null && remaining <= 0;
     final isWarning = percentage > 80;
 
     Color getProgressColor() {
@@ -264,16 +271,25 @@ class _ApiUsageWidgetState extends ConsumerState<ApiUsageWidget> {
                     : 'Used: $used',
                 style: theme.textTheme.bodySmall,
               ),
-              Text(
-                isMinutes
-                    ? 'Remaining: ${remaining.toStringAsFixed(1)} min'
-                    : 'Remaining: $remaining',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: isExceeded
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.onSurfaceVariant,
+              if (hasLimit)
+                Text(
+                  isMinutes
+                      ? 'Remaining: ${(remaining ?? 0).toStringAsFixed(1)} min'
+                      : 'Remaining: ${remaining ?? 0}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isExceeded
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                Text(
+                  'Unlimited',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
             ],
           ),
         ],

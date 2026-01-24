@@ -8,19 +8,19 @@ class FederationSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final federations = ref.watch(federationsProvider);
-    final selectedFederation =
-        ref.watch(matchSetupStateProvider).selectedFederation;
+    final selectedFederation = ref
+        .watch(matchSetupStateProvider)
+        .selectedFederation;
 
     return DropdownButton<int>(
       value: selectedFederation,
       isExpanded: true,
-      items:
-          federations.map((federation) {
-            return DropdownMenuItem<int>(
-              value: federation.id,
-              child: Text(federation.name),
-            );
-          }).toList(),
+      items: federations.map((federation) {
+        return DropdownMenuItem<int>(
+          value: federation.id,
+          child: Text(federation.name),
+        );
+      }).toList(),
       onChanged: (value) {
         if (value != null) {
           ref.read(matchSetupStateProvider.notifier).updateFederation(value);

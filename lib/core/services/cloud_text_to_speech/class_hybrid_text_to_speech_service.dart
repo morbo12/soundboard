@@ -1,9 +1,11 @@
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_voice.dart';
 import 'package:soundboard/core/providers/auth_providers.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/utils/logger.dart';
+import 'package:soundboard/core/services/usage_stats_service.dart';
 
 final voicesProvider = StateProvider<VoicesSuccessMicrosoft>((ref) {
   return VoicesSuccessMicrosoft(voices: []);
@@ -68,7 +70,7 @@ class HybridTextToSpeechService {
       logger.i("Using Soundboard API for TTS");
 
       final soundboardTtsService = ref.read(soundboardTtsServiceProvider);
-      final audioData = await soundboardTtsService.generateSpeech(text);
+      final audioData = await soundboardTtsService.generateSpeech(text, ref);
 
       logger.i(
         "Successfully generated speech using Soundboard API (${audioData.length} bytes)",
@@ -93,6 +95,7 @@ class HybridTextToSpeechService {
     required String text,
     String? voice,
   }) async {
+    final ttsStartTime = DateTime.now();
     logger.i("Using Azure Direct SDK for TTS");
 
     var cachedVoices = ref.read(voicesProvider);
@@ -139,6 +142,27 @@ class HybridTextToSpeechService {
 
     final ttsResponse = await TtsMicrosoft.convertTts(params);
     logger.i("Successfully generated speech using Azure Direct SDK");
+
+    // Record usage event for Azure Direct mode as well
+    try {
+      final generationTime = DateTime.now()
+          .difference(ttsStartTime)
+          .inMilliseconds;
+      final usageStatsService = ref.read(usageStatsServiceProvider);
+      usageStatsService.recordEvent(
+        eventType: 'TtsCalled',
+        feature: 'text_to_speech',
+        metadata: {
+          'text_length': text.length,
+          'voice': selectedVoice.code,
+          'audio_bytes': ttsResponse.audio.length,
+          'generation_time_ms': generationTime,
+          'mode': 'azure_direct',
+        },
+      );
+    } catch (e) {
+      logger.w('Failed to record TTS usage event (Azure Direct)', e);
+    }
 
     return ttsResponse;
   }

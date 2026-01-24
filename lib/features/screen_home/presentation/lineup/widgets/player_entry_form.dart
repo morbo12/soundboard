@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 
 class PlayerEntryFormDialog extends ConsumerStatefulWidget {
@@ -165,7 +166,7 @@ class _PlayerEntryFormDialogState extends ConsumerState<PlayerEntryFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.translate('common.cancel')),
         ),
         ElevatedButton(
           onPressed: _savePlayer,

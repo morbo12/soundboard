@@ -7,6 +7,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-01-24
+
+### Added
+
+- Comprehensive localization system with support for English, Swedish, and Czech languages
+- Language selector widget in Settings screen
+- Usage statistics tracking with opt-out feature in Settings
+- Live match simulation for demo and testing purposes
+- Localization enforcement rules in linter configuration
+- Translation keys validation tests
+- SSML preview settings for goal and penalty events
+- Flag icons widget for language display
+- Locale provider for application-wide language management
+- Enhanced AI sentence generation with context-aware input and type handling
+- Loading text widgets to replace CircularProgressIndicator across the app
+
+### Changed
+
+- Updated Flutter version to 3.38.6
+- Enhanced file handling with asynchronous methods in music file management
+- Improved live match events streaming logic with better status handling
+- Refactored SSML preview dialog for cleaner implementation
+- Updated jingle management button with better state handling
+- Enhanced TTS dialog with improved player/penalty selection logic
+- Modernized various settings widgets with localized text
+
+### Fixed
+
+- Removed debug log from usage stats flush timer
+- Updated AI system prompt for better context handling
+- Improved whitespace and code readability in MatchEventsStream
+- Enhanced error handling in API client
+
+## [0.4.6-beta2] - 2025-12-14
+
+### Changed
+
+- Upgraded Riverpod to 3.0.3
+
+### Fixed
+
+- Updates to system prompt for AI-Enhanced Announced Text
+
+## [0.4.6-beta1] - 2025-12-06
+
+### Added
+
+- Swedish numbers mapping and integration into SSML template service
+- Right-click menu for jingle button options (change jingle, rename, hotkey assignment, info)
+- SSML template management and rendering service
+- Possibility to edit SSML before sending to Azure TTS
+- AI-Enhanced Announced Text support
+- AI model selection and management widget
+- AI model selection to Settings screen
+- Pregame stats integration (fetch + UI indicator) and AI-enhanced welcome SSML now enriched with form/head-to-head context
+- API and Premium Features integration in Settings screen
+- JSON schema for Usage API response
+- Funding on GitHub
+- macOS support
+
+### Changed
+
+- **BREAKING CHANGE**: Long-press menu moved to right-click for jingle buttons
+  - Long-press now triggers drag-to-reorder with 500ms delay to prevent accidental drags
+  - Right-click opens button options menu (change jingle, rename, hotkey assignment, info)
+  - Left-click still plays jingles as before
+- UI components for improved layout and styling in Home, Board, Events, and Lineup sections
+- API base URL resolution
+- Settings screen updates
+- Flutter version bump
+- Updated SonarQube scan action to version 6
+
+### Fixed
+
+- Custom categories buttons on random play not being persisted
+- Button move threshold adjustment
+- PowerShell cmdlet error handling
+
 ## [0.4.5] - 2025-10-20
 
 ### Added

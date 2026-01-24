@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/services/auth_service.dart';
 import 'package:soundboard/core/services/soundboard_tts_service.dart';
 

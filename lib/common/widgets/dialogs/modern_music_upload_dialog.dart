@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/file_picker_util.dart';
 import 'package:soundboard/core/utils/logger.dart';
 import 'package:soundboard/features/music_player/data/music_player_provider.dart';
@@ -212,7 +213,7 @@ class _ModernMusicUploadDialogState
       future: _getMusicFiles(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox.shrink();
         }
 
         if (snapshot.hasError) {
@@ -401,7 +402,7 @@ class _ModernMusicUploadDialogState
               OutlinedButton.icon(
                 onPressed: () => _exitSelectionMode(),
                 icon: const Icon(Icons.close),
-                label: const Text('Cancel'),
+                label: Text(context.l10n.translate('common.cancel')),
               ),
               const SizedBox(width: 8),
               if (totalFiles > 0) ...[
@@ -501,7 +502,7 @@ class _ModernMusicUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -556,7 +557,7 @@ class _ModernMusicUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

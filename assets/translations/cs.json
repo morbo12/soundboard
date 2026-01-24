@@ -1,0 +1,209 @@
+{
+  "app_title": "Zvuková deska",
+  "common": {
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "delete": "Smazat",
+    "close": "Zavřít",
+    "error": "Chyba",
+    "retry": "Zkusit znovu",
+    "loading": "Načítání...",
+    "empty": "Prázdné",
+    "confirm": "Potvrdit"
+  },
+  "languages": {
+    "english": "Angličtina",
+    "swedish": "Švédština",
+    "czech": "Čeština"
+  },
+  "buttons": {
+    "goal": "GÓL",
+    "stop": "STOP"
+  },
+  "match_status": {
+    "live": "Live",
+    "paused": "Pauza",
+    "finished": "Konec",
+    "start_live": "Spustit Live"
+  },
+  "nav": {
+    "home": "Domů",
+    "match": "Zápas",
+    "settings": "Nastavení",
+    "spotify": "Spotify"
+  },
+  "app_bar": {
+    "title": "FBTools Soundboard"
+  },
+  "hotkeys": {
+    "goal_button_name": "Tlačítko gól (GÓL)",
+    "stop_button_name": "Tlačítko stop (STOP)"
+  },
+  "jingle_options": {
+    "title": "Možnosti znělky",
+    "change_jingle": "Změnit znělku",
+    "change_display_name": "Změnit zobrazovaný název",
+    "jingle_info": "Informace o znělce",
+    "assign_hotkey": "Přiřadit zkratku",
+    "delete_assignment": "Odstranit přiřazení"
+  },
+  "settings": {
+    "sections": {
+      "appearance": "Vzhled",
+      "audio_hardware": "Zvuk a hardware",
+      "text_to_speech": "Převod textu na řeč",
+      "content_media": "Obsah a média",
+      "api_premium": "API a Premium",
+      "system": "Systém"
+    },
+    "api_usage": {
+      "title": "Využití API",
+      "failed_to_load": "Nepodařilo se načíst data využití",
+      "refresh_tooltip": "Obnovit data využití",
+      "no_usage_data": "Žádná data využití nejsou k dispozici"
+    },
+    "clear_cache": {
+      "danger_title": "NEBEZPEČÍ - Smazat cache znělek",
+      "critical_badge": "KRITICKÉ",
+      "description": "Trvale odstraní všechny nahrané soubory znělek z úložiště cache",
+      "confirm_title": "Potvrdit smazání cache",
+      "confirm_body": "Opravdu chcete smazat cache?",
+      "location": "Umístění",
+      "size": "Velikost",
+      "warning": "Varování: Tímto odstraníte všechny cacheované znělky.",
+      "clearing": "Mazání cache...",
+      "success": "Cache byla úspěšně vymazána",
+      "not_found_or_empty": "Adresář cache nebyl nalezen nebo je již prázdný",
+      "failed": "Nepodařilo se vymazat cache"
+    },
+    "items": {
+      "language": {
+        "title": "Jazyk"
+      },
+      "color_scheme": {
+        "title": "Barevné schéma",
+        "description": "Vyberte barevné téma pro aplikaci. Doporučeno: greyLaw, aquaBlue, ebonyClay."
+      },
+      "background_volume": {
+        "title": "Hlasitost pozadí",
+        "description": "Upravte úroveň hlasitosti pro kanál pozadí."
+      },
+      "deej_serial_port": {
+        "title": "Sériový port mixéru Deej",
+        "description": "Nastavte připojení sériového portu pro váš hardwarový mixér Deej."
+      },
+      "volume_control_mappings": {
+        "title": "Ovládání hlasitosti a mapování",
+        "description": "Nastavte chování ovládání hlasitosti a mapování hardwaru Deej."
+      },
+      "tts_settings": {
+        "title": "Nastavení TTS",
+        "description": "Nastavte Azure TTS pro syntézu hlasu."
+      },
+      "ai_model": {
+        "title": "Model AI",
+        "description": "Vyberte model AI pro generování sportovních hlášení. Vyžaduje produktový klíč API."
+      },
+      "ssml_preview": {
+        "title": "Náhled SSML",
+        "description": "Povolit úpravu SSML před odesláním do TTS enginu."
+      },
+      "ssml_templates": {
+        "title": "Šablony SSML",
+        "description": "Přizpůsobte šablony pro uvítání, sestavu a hlášení rozhodčích."
+      },
+      "spotify_configuration": {
+        "title": "Nastavení Spotify",
+        "description": "Zkopírujte URL ze Spotify. V playlistu: ... → Sdílet → Kopírovat odkaz."
+      },
+      "grid_layout": {
+        "title": "Rozvržení mřížky",
+        "description": "Nastavte rozvržení a resetujte přiřazení znělek."
+      },
+      "jingles_manager": {
+        "title": "Správce znělek",
+        "description": "Nahrajte hudební soubory, spravujte znělky a nastavte znělky pro sestavu."
+      },
+      "api_premium_features": {
+        "title": "API a prémiové funkce",
+        "description": "Spravujte konfiguraci API a prozkoumejte prémiové funkce."
+      },
+      "usage_statistics": {
+        "title": "Anonymní statistiky používání",
+        "description": "Povolit odesílání anonymizovaných událostí používání pro zlepšení aplikace. Kdykoliv se můžete odhlásit."
+      },
+      "clear_cache": {
+        "title": "Vymazat cache",
+        "description": "Smazat všechny nahrané znělky z místní cache."
+      }
+    }
+  },
+  "privacy": {
+    "usage_stats_title": "Statistiky používání",
+    "usage_stats_body": "Abychom mohli aplikaci Soundboard zlepšovat, sbíráme anonymní statistiky používání o tom, které funkce využíváte. Tato data neobsahují osobní údaje a jsou spojena pouze s ID vašeho zařízení.\n\nSledování můžete kdykoli vypnout v Nastavení.",
+    "opt_out": "Odhlásit se",
+    "got_it": "Rozumím"
+  },
+  "errors": {
+    "init_app": "Chyba při inicializaci aplikace",
+    "init_audio_system": "Nepodařilo se inicializovat audio systém"
+  },
+  "dialogs": {
+    "no_jingle_assigned": "K tomuto tlačítku není přiřazena znělka",
+    "display_name_label": "Zobrazovaný název",
+    "display_name_hint": "Zadejte nový zobrazovaný název",
+    "display_name_helper": "Pro zalomení řádku napište \\n\nPříklad: TIMEOUT\\nDomácí tým → TIMEOUT\nDomácí tým",
+    "jingle_information_title": "Informace o znělce",
+    "file_path_label": "Cesta k souboru",
+    "file_path_random": "[Náhodně z kategorie]",
+    "category_label": "Kategorie",
+    "mode_label": "Režim",
+    "mode_random": "Náhodně z kategorie",
+    "mode_specific": "Konkrétní znělka",
+    "confirm_deletion_title": "Potvrdit odstranění",
+    "confirm_deletion_body": "Opravdu chcete odstranit toto přiřazení znělky?"
+  },
+  "snackbar_messages": {
+    "jingle_assignment_removed": "Přiřazení znělky odstraněno"
+  },
+  "tts": {
+    "custom_tts_button": "Vlastní TTS",
+    "custom_announcement_title": "Vlastní TTS hlášení",
+    "enter_text_hint": "Zadejte text k přečtení",
+    "announce_button": "Oznámit",
+    "ai_error": "Chyba AI",
+    "ai_suggestions_button": "Návrhy AI",
+    "failed_to_play_announcement": "Nepodařilo se přehrát hlášení"
+  },
+  "home": {},
+  "match": {},
+  "lineup": {
+    "labels": {
+      "time": "Čas",
+      "goal": "Gól",
+      "assist": "Asistence",
+      "player": "Hráč",
+      "penalty": "Trest"
+    },
+    "goal_input": {
+      "label": "Gól (čas střelec [asistence])",
+      "hint": "112 10 7"
+    },
+    "penalty_input": {
+      "label": "Trest (čas kód hráče)",
+      "hint": "112 10 201",
+      "search_hint": "Hledat trest podle kódu nebo jména",
+      "no_penalties_found": "Žádné tresty nenalezeny"
+    }
+  },
+  "events": {
+    "select_match_to_view_events": "Vyberte zápas pro zobrazení událostí",
+    "error_loading_events": "Chyba při načítání událostí",
+    "no_events_generated_yet": "Zatím nebyly vytvořeny žádné události. Použijte generátor událostí níže.",
+    "no_events_yet": "Zatím žádné události",
+    "no_standings_data_available": "Nejsou k dispozici žádná data tabulky",
+    "no_pregame_statistics_available": "Nejsou k dispozici žádné předzápasové statistiky"
+  },
+  "music_player": {},
+  "tooltips": {}
+}

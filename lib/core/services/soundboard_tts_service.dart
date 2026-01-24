@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/services/auth_service.dart';
+import 'package:soundboard/core/services/usage_stats_service.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 /// Service for Text-to-Speech using the Soundboard API
@@ -16,7 +17,8 @@ class SoundboardTtsService {
   /// Generate speech audio from text using the Soundboard API
   /// Returns binary audio data (MP3/WAV) that can be played directly
   /// Throws TtsApiException on error instead of returning null
-  Future<Uint8List> generateSpeech(String text) async {
+  Future<Uint8List> generateSpeech(String text, [dynamic ref]) async {
+    final ttsStartTime = DateTime.now();
     try {
       // Get valid JWT token
       final token = await _authService.getValidToken();
@@ -32,6 +34,9 @@ class SoundboardTtsService {
       _logger.i(
         'Generating speech for text: "${text.substring(0, text.length.clamp(0, 50))}", voice: $voiceName',
       );
+
+      // Log full SSML for debugging TTS issues
+      _logger.d('Full SSML text to be sent:\n$text');
 
       // Prepare request
       final uri = Uri.parse('${_settings.apiBaseUrl}/api/tts/synthesize');
@@ -49,6 +54,7 @@ class SoundboardTtsService {
       });
 
       _logger.d('Making TTS request to: $uri');
+      _logger.d('Request body: $body');
 
       // Make HTTP request
       http.Response response = await http.post(
@@ -64,6 +70,30 @@ class SoundboardTtsService {
           _logger.i(
             'Successfully generated speech audio (${response.bodyBytes.length} bytes)',
           );
+
+          // Record usage event if ref is provided
+          if (ref != null) {
+            try {
+              final generationTime = DateTime.now()
+                  .difference(ttsStartTime)
+                  .inMilliseconds;
+              final usageStatsService = ref.read(usageStatsServiceProvider);
+              usageStatsService.recordEvent(
+                eventType: 'TtsCalled',
+                feature: 'text_to_speech',
+                metadata: {
+                  'text_length': text.length,
+                  'voice': voiceName,
+                  'audio_bytes': response.bodyBytes.length,
+                  'generation_time_ms': generationTime,
+                  'mode': 'soundboard_api',
+                },
+              );
+            } catch (e) {
+              _logger.w('Failed to record TTS usage event', e);
+            }
+          }
+
           return response.bodyBytes;
         } else {
           _logger.e('Unexpected content type: $contentType');

@@ -13,6 +13,7 @@ import 'package:soundboard/common/widgets/dialogs/custom_category_management_dia
 import 'package:soundboard/core/providers/custom_category_file_providers.dart';
 import 'package:soundboard/core/models/custom_category_file.dart';
 import 'package:soundboard/core/properties.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/common/widgets/dialogs/modern_music_upload_dialog.dart';
 
 /// Extended jingle upload dialog that supports both predefined and custom categories
@@ -299,7 +300,7 @@ class _ExtendedJingleUploadDialogState
         );
       },
       loading: () => const Dialog.fullscreen(
-        child: Scaffold(body: Center(child: CircularProgressIndicator())),
+        child: Scaffold(body: Center(child: Text('Loading...'))),
       ),
       error: (error, stackTrace) => Dialog.fullscreen(
         child: Scaffold(
@@ -449,7 +450,7 @@ class _ExtendedJingleUploadDialogState
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SizedBox.shrink(),
         error: (error, stack) =>
             Center(child: Text('Error loading files: $error')),
       );
@@ -468,7 +469,7 @@ class _ExtendedJingleUploadDialogState
               .read(customCategoryFilesNotifierProvider.notifier)
               .refreshCategory(category.customId);
         });
-        return const Center(child: CircularProgressIndicator());
+        return const SizedBox.shrink();
       }
 
       return customCategoryFilesAsync.when(
@@ -494,7 +495,7 @@ class _ExtendedJingleUploadDialogState
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SizedBox.shrink(),
         error: (error, stack) =>
             Center(child: Text('Error loading files: $error')),
       );
@@ -648,7 +649,7 @@ class _ExtendedJingleUploadDialogState
                     color: Colors.orange.shade700,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'HOME',
                     style: TextStyle(
                       fontSize: 9,
@@ -669,7 +670,7 @@ class _ExtendedJingleUploadDialogState
                     color: Colors.orange.shade700,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'AWAY',
                     style: TextStyle(
                       fontSize: 9,
@@ -711,7 +712,7 @@ class _ExtendedJingleUploadDialogState
                                   ? 'Removed from Home Team lineup'
                                   : 'Set as Home Team lineup jingle',
                             ),
-                            duration: Duration(seconds: 2),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       },
@@ -757,7 +758,7 @@ class _ExtendedJingleUploadDialogState
                                   ? 'Removed from Away Team lineup'
                                   : 'Set as Away Team lineup jingle',
                             ),
-                            duration: Duration(seconds: 2),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       },
@@ -950,7 +951,7 @@ class _ExtendedJingleUploadDialogState
           OutlinedButton.icon(
             onPressed: () => _exitSelectionMode(category.id),
             icon: const Icon(Icons.close),
-            label: const Text('Cancel'),
+            label: Text(context.l10n.translate('common.cancel')),
           ),
           const SizedBox(width: 8),
           if (totalFiles > 0) ...[
@@ -1083,7 +1084,7 @@ class _ExtendedJingleUploadDialogState
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (error, stack) =>
           Center(child: Text('Error loading custom categories: $error')),
     );
@@ -1332,7 +1333,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           FilledButton(
             onPressed: () async {
@@ -1360,7 +1361,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1508,7 +1509,7 @@ class _ExtendedJingleUploadDialogState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.translate('common.cancel')),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop({
@@ -1642,7 +1643,7 @@ class _ExtendedJingleUploadDialogState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

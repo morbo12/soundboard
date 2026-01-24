@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundboard/common/widgets/ssml_preview_dialog.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
@@ -40,35 +41,42 @@ class _LineupState extends ConsumerState<Lineup> {
     return SizedBox(
       width: widget.availableWidth,
       height: widget.availableHeight,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Mode Toggle Switch
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 4.0,
-              ),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Manual Mode'),
-                  Switch(
-                    value: isManualMode,
-                    onChanged: (value) {
-                      ref.read(isManualLineupModeProvider.notifier).state =
-                          value;
-                    },
+            // Header with Toggle
+            Row(
+              children: [
+                Icon(Icons.people, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Text(
+                  'Lineup',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                Text(
+                  'Manual',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: isManualMode,
+                  onChanged: (value) {
+                    ref.read(isManualLineupModeProvider.notifier).state = value;
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // Only show header section in API mode (not manual mode)
             if (!isManualMode) ...[
@@ -84,11 +92,11 @@ class _LineupState extends ConsumerState<Lineup> {
               flex: 3,
               child: isManualMode
                   ? ManualLineupEntryWidget(
-                      availableWidth: widget.availableWidth,
+                      availableWidth: widget.availableWidth - 32,
                       availableHeight: widget.availableHeight * 0.6,
                     )
                   : LineupData(
-                      availableWidth: widget.availableWidth,
+                      availableWidth: widget.availableWidth - 32,
                       availableHeight: widget.availableHeight,
                     ),
             ),
@@ -99,7 +107,7 @@ class _LineupState extends ConsumerState<Lineup> {
               Expanded(
                 flex: 2,
                 child: ManualEventGeneratorWidget(
-                  availableWidth: widget.availableWidth,
+                  availableWidth: widget.availableWidth - 32,
                   availableHeight: widget.availableHeight * 0.4,
                 ),
               ),
@@ -205,6 +213,41 @@ class _LineupState extends ConsumerState<Lineup> {
         "[_handlePlayLineup] Away team players count: ${lineupData.awayTeamPlayers.length}",
       );
 
+      final settings = SettingsBox();
+      String introSsml = selectedMatch.introSsml(ref);
+      String homeTeamSsml = selectedMatch.homeTeamSsml(ref);
+      String awayTeamSsml = selectedMatch.awayTeamSsml(ref);
+
+      // Show preview dialog if enabled
+      if (settings.enableSsmlPreview && mounted) {
+        final sections = <String, String>{
+          'welcome': introSsml,
+          'awayTeam': awayTeamSsml,
+          'homeTeam': homeTeamSsml,
+        };
+
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => SsmlPreviewDialog(
+            initialSsml: '', // Not used in multi-section mode
+            onCancel: () {},
+            onConfirm: (_) async {}, // Not used in multi-section mode
+            sections: sections,
+            onConfirmSections: (editedSections) async {
+              // Update the SSML strings with edited versions
+              introSsml = editedSections['welcome'] ?? introSsml;
+              awayTeamSsml = editedSections['awayTeam'] ?? awayTeamSsml;
+              homeTeamSsml = editedSections['homeTeam'] ?? homeTeamSsml;
+            },
+          ),
+        );
+
+        // User cancelled
+        if (confirmed != true) {
+          return;
+        }
+      }
+
       // Get the jingle manager from provider
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       final jingleManager = await jingleManagerAsync.when(
@@ -218,14 +261,14 @@ class _LineupState extends ConsumerState<Lineup> {
       //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
 
       final welcomeTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.introSsml(ref),
+        text: introSsml,
       );
-      final homeTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.homeTeamSsml(ref),
-      );
-      final awayTeamTTS = await textToSpeechService.getTtsNoFile(
-        text: selectedMatch.awayTeamSsml(ref),
-      );
+      final homeTeamTTS = homeTeamSsml.isNotEmpty
+          ? await textToSpeechService.getTtsNoFile(text: homeTeamSsml)
+          : null;
+      final awayTeamTTS = awayTeamSsml.isNotEmpty
+          ? await textToSpeechService.getTtsNoFile(text: awayTeamSsml)
+          : null;
 
       ref.read(azCharCountProvider.notifier).state +=
           selectedMatch.generateSsml(ref).length as int;
@@ -274,7 +317,7 @@ class _LineupState extends ConsumerState<Lineup> {
         );
       }
 
-      // wait for 10 seconds
+      // wait for 7 seconds
 
       logger.d("[_handlePlayLineup] Waiting 7 seconds");
 
@@ -289,34 +332,42 @@ class _LineupState extends ConsumerState<Lineup> {
         ref: ref,
       );
 
+      // wait for 7 seconds
+
+      logger.d("[_handlePlayLineup] Waiting 3 seconds");
+
+      await Future.delayed(const Duration(seconds: 3));
+
       // Play away team lineup with background music
 
-      logger.d("[_handlePlayLineup] Playing Away team background music");
+      if (awayTeamTTS != null) {
+        logger.d("[_handlePlayLineup] Playing Away team lineup");
 
-      await jingleManager.audioManager.playBytesAndWait(
-        audio: awayTeamTTS.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+        await jingleManager.audioManager.playBytesAndWait(
+          audio: awayTeamTTS.audio.buffer.asUint8List(),
+          ref: ref,
+        );
 
-      // wait for 10 seconds
+        // wait for 2 seconds
 
-      logger.d("[_handlePlayLineup] Waiting 2 seconds");
+        logger.d("[_handlePlayLineup] Waiting 2 seconds");
 
-      await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
-      // Stop all audio
-      // await jingleManager.audioManager.stopAll(ref);
+        // Stop all audio
+        // await jingleManager.audioManager.stopAll(ref);
 
-      logger.d("[_handlePlayLineup] Fading out background music");
+        logger.d("[_handlePlayLineup] Fading out background music");
 
-      await jingleManager.audioManager.fadeOutNoStop(
-        ref,
-        AudioChannel.channel1,
-      );
+        await jingleManager.audioManager.fadeOutNoStop(
+          ref,
+          AudioChannel.channel1,
+        );
 
-      logger.d("[_handlePlayLineup] Stopping channel2");
+        logger.d("[_handlePlayLineup] Stopping channel2");
 
-      await jingleManager.audioManager.channel2.stop();
+        await jingleManager.audioManager.channel2.stop();
+      }
 
       // Play home team lineup with background music
 
@@ -360,21 +411,23 @@ class _LineupState extends ConsumerState<Lineup> {
         );
       }
 
-      // wait for 10 seconds
-      logger.d("[_handlePlayLineup] Waiting 10 seconds");
+      if (homeTeamTTS != null) {
+        // wait for 7 seconds
+        logger.d("[_handlePlayLineup] Waiting 7 seconds");
 
-      await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 7));
 
-      // Play home team lineup with background music
+        // Play home team lineup with background music
 
-      logger.d("[_handlePlayLineup] Playing Home team lineup");
+        logger.d("[_handlePlayLineup] Playing Home team lineup");
 
-      await jingleManager.audioManager.playBytesAndWait(
-        audio: homeTeamTTS.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+        await jingleManager.audioManager.playBytesAndWait(
+          audio: homeTeamTTS.audio.buffer.asUint8List(),
+          ref: ref,
+        );
+      }
 
-      // wait for 10 seconds
+      // wait for 5 seconds
 
       logger.d("[_handlePlayLineup] Waiting 5 seconds");
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:soundboard/core/properties.dart';
 
@@ -60,6 +61,16 @@ final azureTtsConfigProvider = Provider<AzureTtsConfig>((ref) {
     voiceId: settings.azVoiceId,
     regionId: settings.azRegionId,
   );
+});
+
+/// SSML preview feature enabled state provider
+final ssmlPreviewEnabledProvider = StateProvider<bool>((ref) {
+  return SettingsBox().enableSsmlPreview;
+});
+
+/// Usage statistics enabled state provider (opt-out toggle)
+final usageStatsEnabledProvider = StateProvider<bool>((ref) {
+  return SettingsBox().usageStatsEnabled;
 });
 
 /// Immutable configuration classes

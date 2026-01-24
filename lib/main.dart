@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:soundboard/core/providers/locale_provider.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/class_azure_region.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/scroll_config.dart';
 import 'package:soundboard/core/properties.dart'; // Local file for handling soundboard properties.
 import 'package:soundboard/app.dart'; // Local main app file.
@@ -105,33 +107,27 @@ class _SoundBoardState extends ConsumerState<SoundBoard> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp(
       navigatorKey: navigatorKey,
+      locale: locale,
       builder: (contex, child) {
         return ScrollConfiguration(
           behavior: MyCustomScrollBehavior(),
           child: child!,
         );
       },
-      // Let Flutter use the system locale (no hardcoded locale)
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // Specify supported locales - add all locales you want to support
       supportedLocales: const [
         Locale('en', 'US'),
         Locale('sv', 'SE'),
-        Locale('en', 'GB'),
-        Locale('de', 'DE'),
-        Locale('fr', 'FR'),
-        Locale('es', 'ES'),
-        Locale('it', 'IT'),
-        Locale('nb', 'NO'),
-        Locale('da', 'DK'),
-        Locale('fi', 'FI'),
-        // Add more locales as needed
+        Locale('cs', 'CZ'),
       ],
       title: 'Soundboard',
       darkTheme: AppTheme.darkTheme(ref),

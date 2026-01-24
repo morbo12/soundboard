@@ -131,13 +131,7 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                 onPressed: hasApiKey && !_isTesting
                     ? _testAuthentication
                     : null,
-                icon: _isTesting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.play_arrow),
+                icon: const Icon(Icons.play_arrow),
                 label: Text(_isTesting ? 'Testing...' : 'Test API Connection'),
               ),
             ),
@@ -166,11 +160,6 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                   ),
                   loading: () => const Row(
                     children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
                       SizedBox(width: 8),
                       Text('Testing connection...'),
                     ],
@@ -220,15 +209,7 @@ class _ApiTestWidgetState extends ConsumerState<ApiTestWidget> {
                     ],
                   ),
                   loading: () => const Row(
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      SizedBox(width: 8),
-                      Text('Loading voices...'),
-                    ],
+                    children: [SizedBox(width: 8), Text('Loading voices...')],
                   ),
                   error: (error, stack) => const Row(
                     children: [

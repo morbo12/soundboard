@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
+import 'package:soundboard/common/widgets/ssml_preview_dialog.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
@@ -69,12 +70,35 @@ abstract class BaseSsmlEvent {
   }
 
   /// Plays the announcement using TTS
-  Future<void> playAnnouncement(String ssml) async {
+  /// If SSML preview is enabled, shows a dialog for editing before sending
+  Future<void> playAnnouncement(String ssml, BuildContext context) async {
     try {
-      final textToSpeechService = ref.read(textToSpeechServiceProvider);
-      final result = await textToSpeechService.getTtsNoFile(text: ssml);
+      final settings = SettingsBox();
+      String finalSsml = ssml;
 
-      await _updateCharCount(ssml);
+      // Show preview dialog if enabled
+      if (settings.enableSsmlPreview && context.mounted) {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => SsmlPreviewDialog(
+            initialSsml: ssml,
+            onCancel: () {},
+            onConfirm: (editedSsml) async {
+              finalSsml = editedSsml;
+            },
+          ),
+        );
+
+        // User cancelled the dialog
+        if (confirmed != true) {
+          return;
+        }
+      }
+
+      final textToSpeechService = ref.read(textToSpeechServiceProvider);
+      final result = await textToSpeechService.getTtsNoFile(text: finalSsml);
+
+      await _updateCharCount(finalSsml);
 
       final jingleManagerAsync = ref.read(jingleManagerProvider);
       final jingleManager = jingleManagerAsync.maybeWhen(

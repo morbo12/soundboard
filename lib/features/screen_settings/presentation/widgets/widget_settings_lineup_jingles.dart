@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 
 class LineupJingleSettingsButton extends ConsumerWidget {
@@ -202,7 +203,7 @@ class _LineupJingleSettingsDialogState
       content: SizedBox(
         width: 500,
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const SizedBox.shrink()
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +263,7 @@ class _LineupJingleSettingsDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.translate('common.cancel')),
         ),
         FilledButton(
           onPressed: specialJingles.isEmpty ? null : _saveSettings,

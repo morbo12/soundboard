@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 @immutable
 class ApiUsageData {
   final bool success;
-  final String message;
   final String month;
   final DateTime resetsAt;
   final UsageStats usage;
@@ -12,7 +11,6 @@ class ApiUsageData {
 
   const ApiUsageData({
     required this.success,
-    required this.message,
     required this.month,
     required this.resetsAt,
     required this.usage,
@@ -23,7 +21,6 @@ class ApiUsageData {
   factory ApiUsageData.fromJson(Map<String, dynamic> json) {
     return ApiUsageData(
       success: json['success'] as bool,
-      message: json['message'] as String,
       month: json['month'] as String,
       resetsAt: DateTime.parse(json['resetsAt'] as String),
       usage: UsageStats.fromJson(json['usage'] as Map<String, dynamic>),
@@ -37,7 +34,6 @@ class ApiUsageData {
   Map<String, dynamic> toJson() {
     return {
       'success': success,
-      'message': message,
       'month': month,
       'resetsAt': resetsAt.toIso8601String(),
       'usage': usage.toJson(),
@@ -82,21 +78,23 @@ class UsageStats {
 
 @immutable
 class UsageLimits {
-  final int ttsRequestsPerMonth;
-  final int aiRequestsPerMonth;
-  final int audioMinutesPerMonth;
+  final int? ttsRequestsPerMonth;
+  final int? aiRequestsPerMonth;
+  final double? audioMinutesPerMonth;
 
   const UsageLimits({
-    required this.ttsRequestsPerMonth,
-    required this.aiRequestsPerMonth,
-    required this.audioMinutesPerMonth,
+    this.ttsRequestsPerMonth,
+    this.aiRequestsPerMonth,
+    this.audioMinutesPerMonth,
   });
 
   factory UsageLimits.fromJson(Map<String, dynamic> json) {
     return UsageLimits(
-      ttsRequestsPerMonth: json['ttsRequestsPerMonth'] as int,
-      aiRequestsPerMonth: json['aiRequestsPerMonth'] as int,
-      audioMinutesPerMonth: json['audioMinutesPerMonth'] as int,
+      ttsRequestsPerMonth: json['ttsRequestsPerMonth'] as int?,
+      aiRequestsPerMonth: json['aiRequestsPerMonth'] as int?,
+      audioMinutesPerMonth: json['audioMinutesPerMonth'] != null
+          ? (json['audioMinutesPerMonth'] as num).toDouble()
+          : null,
     );
   }
 
@@ -111,21 +109,19 @@ class UsageLimits {
 
 @immutable
 class UsageRemaining {
-  final int ttsRequests;
-  final int aiRequests;
-  final double audioMinutes;
+  final int? ttsRequests;
+  final int? aiRequests;
+  final double? audioMinutes;
 
-  const UsageRemaining({
-    required this.ttsRequests,
-    required this.aiRequests,
-    required this.audioMinutes,
-  });
+  const UsageRemaining({this.ttsRequests, this.aiRequests, this.audioMinutes});
 
   factory UsageRemaining.fromJson(Map<String, dynamic> json) {
     return UsageRemaining(
-      ttsRequests: json['ttsRequests'] as int,
-      aiRequests: json['aiRequests'] as int,
-      audioMinutes: (json['audioMinutes'] as num).toDouble(),
+      ttsRequests: json['ttsRequests'] as int?,
+      aiRequests: json['aiRequests'] as int?,
+      audioMinutes: json['audioMinutes'] != null
+          ? (json['audioMinutes'] as num).toDouble()
+          : null,
     );
   }
 

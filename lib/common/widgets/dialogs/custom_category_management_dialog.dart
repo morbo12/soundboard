@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/models/custom_category.dart';
 import 'package:soundboard/core/providers/custom_category_providers.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 
 /// Dialog for creating and editing custom categories
 class CustomCategoryManagementDialog extends ConsumerStatefulWidget {
@@ -155,17 +156,17 @@ class _CustomCategoryManagementDialogState
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.translate('common.cancel')),
         ),
         FilledButton(
           onPressed: _isLoading ? null : _handleSave,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(isEditing ? 'Update' : 'Create'),
+          child: Text(
+            _isLoading
+                ? 'Saving...'
+                : isEditing
+                ? 'Update'
+                : 'Create',
+          ),
         ),
       ],
     );

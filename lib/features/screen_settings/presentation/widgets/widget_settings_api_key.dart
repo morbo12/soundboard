@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:soundboard/core/properties.dart';
 import 'package:soundboard/core/providers/config_providers.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
 class SettingsApiProductKey extends ConsumerStatefulWidget {
@@ -142,7 +143,7 @@ class _SettingsApiProductKeyState extends ConsumerState<SettingsApiProductKey> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           ElevatedButton(
             onPressed: () {

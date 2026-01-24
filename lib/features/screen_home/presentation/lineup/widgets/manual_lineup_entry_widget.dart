@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/services/innebandy_api/domain/entities/lineup.dart';
+import 'package:soundboard/core/utils/app_localizations.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/providers/manual_lineup_providers.dart';
 import 'package:soundboard/features/screen_home/presentation/lineup/widgets/player_entry_form.dart';
 
@@ -265,7 +266,7 @@ class _ManualLineupEntryWidgetState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.translate('common.cancel')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -355,7 +356,7 @@ class _ManualLineupEntryWidgetState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.translate('common.cancel')),
           ),
           ElevatedButton(
             onPressed: () {

@@ -4,6 +4,7 @@ import 'package:soundboard/core/constants/app_constants.dart';
 import 'package:easy_hive/easy_hive.dart';
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings.dart';
 import 'package:soundboard/core/models/volume_system_config.dart';
+import 'package:soundboard/core/models/ssml_template.dart';
 
 enum Settings {
   key, // Use as box key. You can use a String constant instead.
@@ -48,6 +49,23 @@ enum Settings {
   apiTokenExpiry,
   azVoiceName,
   apiRefreshToken,
+
+  // SSML Preview feature
+  enableSsmlPreview,
+
+  // SSML Templates
+  ssmlWelcomeTemplate,
+  ssmlLineupTemplate,
+  ssmlRefereeTemplate,
+
+  // AI Model selection
+  aiModel,
+
+  // Usage stats tracking opt-out
+  usageStatsEnabled,
+
+  // Localization
+  appLanguage,
 }
 
 class SettingsBox extends EasyBox {
@@ -133,6 +151,10 @@ extension GeneralSettingsExtension on SettingsBox {
   }
 
   set themeMode(ThemeMode value) => put(Settings.themeMode, value.index);
+
+  String get appLanguage => get(Settings.appLanguage, defaultValue: 'en');
+  set appLanguage(String value) => put(Settings.appLanguage, value);
+
   String get spotifyUri => get(
     Settings.spotifyUri,
     defaultValue: AppConstants.defaultSpotifyUri,
@@ -286,13 +308,18 @@ extension GeneralSettingsExtension on SettingsBox {
   set apiDeviceId(String value) => put(Settings.apiDeviceId, value);
   String get apiDeviceId => get(Settings.apiDeviceId, defaultValue: "");
 
-  set apiBaseUrl(String value) => put(Settings.apiBaseUrl, value);
-  String get apiBaseUrl => get(
-    Settings.apiBaseUrl,
-    defaultValue: kDebugMode
-        ? "https://soundboard-api-dev.fbtoolseu.workers.dev"
-        : "https://soundboard-api.fbtoolseu.workers.dev",
-  );
+  String get apiBaseUrl => _resolveBaseUrlFromProductKey();
+
+  String _resolveBaseUrlFromProductKey() {
+    final productKey = apiProductKey.trim().toUpperCase();
+    if (productKey.startsWith('SOUND-DEV-')) {
+      return 'https://soundboard-api-dev.fbtoolseu.workers.dev';
+    }
+    if (productKey.startsWith('SOUND-STG-')) {
+      return 'https://soundboard-api-stg.fbtoolseu.workers.dev';
+    }
+    return 'https://soundboard-api.fbtoolseu.workers.dev';
+  }
 
   set apiToken(String value) => put(Settings.apiToken, value);
   String get apiToken => get(Settings.apiToken, defaultValue: "");
@@ -308,6 +335,40 @@ extension GeneralSettingsExtension on SettingsBox {
   set azVoiceName(String value) => put(Settings.azVoiceName, value);
   String get azVoiceName =>
       get(Settings.azVoiceName, defaultValue: "en-US-AriaNeural");
-}
 
-// Contains AI-generated edits.
+  // SSML Preview feature setting
+  set enableSsmlPreview(bool value) => put(Settings.enableSsmlPreview, value);
+  bool get enableSsmlPreview =>
+      get(Settings.enableSsmlPreview, defaultValue: false);
+
+  // SSML Templates
+  String get ssmlWelcomeTemplate => get(
+    Settings.ssmlWelcomeTemplate,
+    defaultValue: DefaultSsmlTemplates.welcomeTemplate.template,
+  );
+  set ssmlWelcomeTemplate(String value) =>
+      put(Settings.ssmlWelcomeTemplate, value);
+
+  String get ssmlLineupTemplate => get(
+    Settings.ssmlLineupTemplate,
+    defaultValue: DefaultSsmlTemplates.lineupTemplate.template,
+  );
+  set ssmlLineupTemplate(String value) =>
+      put(Settings.ssmlLineupTemplate, value);
+
+  String get ssmlRefereeTemplate => get(
+    Settings.ssmlRefereeTemplate,
+    defaultValue: DefaultSsmlTemplates.refereeTemplate.template,
+  );
+  set ssmlRefereeTemplate(String value) =>
+      put(Settings.ssmlRefereeTemplate, value);
+
+  // AI Model selection
+  set aiModel(String value) => put(Settings.aiModel, value);
+  String get aiModel => get(Settings.aiModel, defaultValue: "gpt-4.1-nano");
+
+  // Usage stats tracking opt-out (opt-in by default)
+  set usageStatsEnabled(bool value) => put(Settings.usageStatsEnabled, value);
+  bool get usageStatsEnabled =>
+      get(Settings.usageStatsEnabled, defaultValue: true);
+}

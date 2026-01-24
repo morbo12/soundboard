@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 // final lineupSsmlProvider = StateProvider<IbyMatchLineup>((ref) {
 //   // Initialize with default values.
@@ -100,44 +100,52 @@ class IbyMatchLineup {
   List<TeamTeamPerson> awayTeamTeamPersons;
 
   factory IbyMatchLineup.fromJson(Map<String, dynamic> json) => IbyMatchLineup(
-        matchId: json["MatchID"],
-        homeTeamId: json["HomeTeamID"],
-        homeTeam: json["HomeTeam"],
-        homeTeamShortName: json["HomeTeamShortName"],
-        homeTeamLogotypeUrl: json["HomeTeamLogotypeUrl"],
-        awayTeamId: json["AwayTeamID"],
-        awayTeam: json["AwayTeam"],
-        awayTeamShortName: json["AwayTeamShortName"],
-        awayTeamLogotypeUrl: json["AwayTeamLogotypeUrl"],
-        homeTeamPlayers: List<TeamPlayer>.from(
-            json["HomeTeamPlayers"].map((x) => TeamPlayer.fromJson(x))),
-        awayTeamPlayers: List<TeamPlayer>.from(
-            json["AwayTeamPlayers"].map((x) => TeamPlayer.fromJson(x))),
-        homeTeamTeamPersons: List<TeamTeamPerson>.from(
-            json["HomeTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x))),
-        awayTeamTeamPersons: List<TeamTeamPerson>.from(
-            json["AwayTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x))),
-      );
+    matchId: json["MatchID"],
+    homeTeamId: json["HomeTeamID"],
+    homeTeam: json["HomeTeam"],
+    homeTeamShortName: json["HomeTeamShortName"],
+    homeTeamLogotypeUrl: json["HomeTeamLogotypeUrl"],
+    awayTeamId: json["AwayTeamID"],
+    awayTeam: json["AwayTeam"],
+    awayTeamShortName: json["AwayTeamShortName"],
+    awayTeamLogotypeUrl: json["AwayTeamLogotypeUrl"],
+    homeTeamPlayers: List<TeamPlayer>.from(
+      json["HomeTeamPlayers"].map((x) => TeamPlayer.fromJson(x)),
+    ),
+    awayTeamPlayers: List<TeamPlayer>.from(
+      json["AwayTeamPlayers"].map((x) => TeamPlayer.fromJson(x)),
+    ),
+    homeTeamTeamPersons: List<TeamTeamPerson>.from(
+      json["HomeTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x)),
+    ),
+    awayTeamTeamPersons: List<TeamTeamPerson>.from(
+      json["AwayTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x)),
+    ),
+  );
 
   Map<String, dynamic> toJson() => {
-        "MatchID": matchId,
-        "HomeTeamID": homeTeamId,
-        "HomeTeam": homeTeam,
-        "HomeTeamShortName": homeTeamShortName,
-        "HomeTeamLogotypeUrl": homeTeamLogotypeUrl,
-        "AwayTeamID": awayTeamId,
-        "AwayTeam": awayTeam,
-        "AwayTeamShortName": awayTeamShortName,
-        "AwayTeamLogotypeUrl": awayTeamLogotypeUrl,
-        "HomeTeamPlayers":
-            List<dynamic>.from(homeTeamPlayers.map((x) => x.toJson())),
-        "AwayTeamPlayers":
-            List<dynamic>.from(awayTeamPlayers.map((x) => x.toJson())),
-        "HomeTeamTeamPersons":
-            List<dynamic>.from(homeTeamTeamPersons.map((x) => x.toJson())),
-        "AwayTeamTeamPersons":
-            List<dynamic>.from(awayTeamTeamPersons.map((x) => x.toJson())),
-      };
+    "MatchID": matchId,
+    "HomeTeamID": homeTeamId,
+    "HomeTeam": homeTeam,
+    "HomeTeamShortName": homeTeamShortName,
+    "HomeTeamLogotypeUrl": homeTeamLogotypeUrl,
+    "AwayTeamID": awayTeamId,
+    "AwayTeam": awayTeam,
+    "AwayTeamShortName": awayTeamShortName,
+    "AwayTeamLogotypeUrl": awayTeamLogotypeUrl,
+    "HomeTeamPlayers": List<dynamic>.from(
+      homeTeamPlayers.map((x) => x.toJson()),
+    ),
+    "AwayTeamPlayers": List<dynamic>.from(
+      awayTeamPlayers.map((x) => x.toJson()),
+    ),
+    "HomeTeamTeamPersons": List<dynamic>.from(
+      homeTeamTeamPersons.map((x) => x.toJson()),
+    ),
+    "AwayTeamTeamPersons": List<dynamic>.from(
+      awayTeamTeamPersons.map((x) => x.toJson()),
+    ),
+  };
 }
 
 class TeamPlayer {
@@ -164,28 +172,28 @@ class TeamPlayer {
   bool? captain;
 
   factory TeamPlayer.fromJson(Map<String, dynamic> json) => TeamPlayer(
-        playerId: json["PlayerID"],
-        personId: json["PersonID"],
-        teamId: json["TeamID"],
-        name: json["Name"],
-        age: json["Age"],
-        shirtNo: json["ShirtNo"],
-        positionId: json["PositionID"],
-        position: json["Position"],
-        captain: json["Captain"],
-      );
+    playerId: json["PlayerID"],
+    personId: json["PersonID"],
+    teamId: json["TeamID"],
+    name: json["Name"],
+    age: json["Age"],
+    shirtNo: json["ShirtNo"],
+    positionId: json["PositionID"],
+    position: json["Position"],
+    captain: json["Captain"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "PlayerID": playerId,
-        "PersonID": personId,
-        "TeamID": teamId,
-        "Name": name,
-        "Age": age,
-        "ShirtNo": shirtNo,
-        "PositionID": positionId,
-        "Position": position,
-        "Captain": captain,
-      };
+    "PlayerID": playerId,
+    "PersonID": personId,
+    "TeamID": teamId,
+    "Name": name,
+    "Age": age,
+    "ShirtNo": shirtNo,
+    "PositionID": positionId,
+    "Position": position,
+    "Captain": captain,
+  };
 }
 
 class TeamTeamPerson {
@@ -204,18 +212,18 @@ class TeamTeamPerson {
   String? roleName;
 
   factory TeamTeamPerson.fromJson(Map<String, dynamic> json) => TeamTeamPerson(
-        teamId: json["TeamID"],
-        personId: json["PersonID"],
-        name: json["Name"],
-        roleId: json["RoleID"],
-        roleName: json["RoleName"],
-      );
+    teamId: json["TeamID"],
+    personId: json["PersonID"],
+    name: json["Name"],
+    roleId: json["RoleID"],
+    roleName: json["RoleName"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "TeamID": teamId,
-        "PersonID": personId,
-        "Name": name,
-        "RoleID": roleId,
-        "RoleName": roleName,
-      };
+    "TeamID": teamId,
+    "PersonID": personId,
+    "Name": name,
+    "RoleID": roleId,
+    "RoleName": roleName,
+  };
 }

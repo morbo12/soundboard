@@ -110,6 +110,12 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
         ? colorScheme.errorContainer
         : categoryInfo['containerColor'];
 
+    final Color trailingIconColor = isLoading
+        ? colorScheme.onSurfaceVariant
+        : hasError
+        ? colorScheme.onErrorContainer
+        : categoryInfo['textColor'];
+
     return Card(
       elevation: 2,
       child: InkWell(
@@ -177,20 +183,10 @@ class UploadButtonToDirState extends ConsumerState<UploadButtonToDir> {
                   ],
                 ),
               ),
-              if (!isLoading) ...[
-                Icon(
-                  hasError ? Icons.error : Icons.cloud_upload,
-                  color: hasError
-                      ? colorScheme.onErrorContainer
-                      : categoryInfo['textColor'],
-                ),
-              ] else ...[
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ],
+              Icon(
+                hasError ? Icons.error : Icons.cloud_upload,
+                color: trailingIconColor,
+              ),
             ],
           ),
         ),

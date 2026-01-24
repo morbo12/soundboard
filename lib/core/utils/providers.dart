@@ -1,6 +1,6 @@
 import 'package:cloud_text_to_speech/cloud_text_to_speech.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:soundboard/core/properties.dart';
 
 final lineupFileProvider = StateProvider<String>((ref) {
