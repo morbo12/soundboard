@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:intl/intl.dart';
 import 'package:soundboard/common/widgets/ssml_preview_dialog.dart';
+import 'package:soundboard/common/widgets/tts_loading_overlay.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
@@ -95,21 +96,37 @@ abstract class BaseSsmlEvent {
         }
       }
 
-      final textToSpeechService = ref.read(textToSpeechServiceProvider);
-      final result = await textToSpeechService.getTtsNoFile(text: finalSsml);
+      // Show loading overlay
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const TtsLoadingOverlay(),
+        );
+      }
 
-      await _updateCharCount(finalSsml);
+      try {
+        final textToSpeechService = ref.read(textToSpeechServiceProvider);
+        final result = await textToSpeechService.getTtsNoFile(text: finalSsml);
 
-      final jingleManagerAsync = ref.read(jingleManagerProvider);
-      final jingleManager = jingleManagerAsync.maybeWhen(
-        data: (manager) => manager,
-        orElse: () => throw Exception("JingleManager not available"),
-      );
+        await _updateCharCount(finalSsml);
 
-      await jingleManager.audioManager.playBytes(
-        audio: result.audio.buffer.asUint8List(),
-        ref: ref,
-      );
+        final jingleManagerAsync = ref.read(jingleManagerProvider);
+        final jingleManager = jingleManagerAsync.maybeWhen(
+          data: (manager) => manager,
+          orElse: () => throw Exception("JingleManager not available"),
+        );
+
+        await jingleManager.audioManager.playBytes(
+          audio: result.audio.buffer.asUint8List(),
+          ref: ref,
+        );
+      } finally {
+        // Close loading overlay
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      }
     } catch (e, stackTrace) {
       logger.e('Failed to play announcement', e, stackTrace);
       throw AnnouncementException(_extractErrorMessage(e));

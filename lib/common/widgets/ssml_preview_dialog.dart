@@ -648,6 +648,35 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
     return parts.join('. ');
   }
 
+  String? _buildSponsorKioskContext() {
+    final settings = SettingsBox();
+    final parts = <String>[];
+
+    // Add sponsor information
+    if (settings.sponsorEnabled) {
+      final mainSponsor = settings.mainSponsor.trim();
+      if (mainSponsor.isNotEmpty) {
+        parts.add('Huvudsponsor: $mainSponsor');
+      }
+
+      final otherSponsors = settings.otherSponsors;
+      if (otherSponsors.isNotEmpty) {
+        final sponsorList = otherSponsors.join(', ');
+        parts.add('Övriga sponsorer: $sponsorList');
+      }
+    }
+
+    // Add kiosk information
+    if (settings.kioskEnabled) {
+      final kioskMessage = settings.kioskMessage.trim();
+      if (kioskMessage.isNotEmpty) {
+        parts.add('Kiosk meddelande: $kioskMessage');
+      }
+    }
+
+    return parts.isEmpty ? null : parts.join('. ');
+  }
+
   Future<void> _enhanceWithAI() async {
     final controller = _getCurrentController();
     final currentText = controller.text.trim();
@@ -674,6 +703,10 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
           ? _buildPregameContext(ref.read(pregameStatsProvider))
           : null;
 
+      final sponsorKioskContext = _shouldUsePregameContext()
+          ? _buildSponsorKioskContext()
+          : null;
+
       // Determine type based on section
       // Default to Event for single-mode or unknown sections
       String type = 'Event';
@@ -691,6 +724,9 @@ class _SsmlPreviewDialogState extends ConsumerState<SsmlPreviewDialog> {
       final input = StringBuffer(plainText);
       if (pregameContext != null && pregameContext.isNotEmpty) {
         input.write('\nContext: $pregameContext');
+      }
+      if (sponsorKioskContext != null && sponsorKioskContext.isNotEmpty) {
+        input.write('\nSponsors & Kiosk: $sponsorKioskContext');
       }
 
       final suggestions = await aiService.generateSentences(

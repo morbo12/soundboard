@@ -115,7 +115,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify UI elements
-    expect(find.text('About Soundboard'), findsOneWidget);
+    expect(find.text('About ArenaVox'), findsOneWidget);
     expect(find.text('Version: 1.0.0'), findsOneWidget);
     expect(
       find.text(
@@ -124,7 +124,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Visit fbtools.eu'), findsOneWidget);
+    expect(find.text('Visit www.arenavox.eu'), findsOneWidget);
     expect(find.text('Close'), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
   });
@@ -170,7 +170,7 @@ void main() {
     WidgetTester tester,
   ) async {
     MockUrlLauncher.mockLaunchUrl = (Uri uri) {
-      expect(uri.toString(), equals('https://fbtools.eu'));
+      expect(uri.toString(), equals('https://www.arenavox.eu'));
       return true;
     };
 
@@ -199,13 +199,13 @@ void main() {
     await tester.tap(find.text('Show About'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Visit fbtools.eu'));
+    await tester.tap(find.text('Visit www.arenavox.eu'));
     await tester.pumpAndSettle();
 
     expect(MockUrlLauncher.wasLaunched, isTrue);
     expect(
       MockUrlLauncher.lastLaunchedUri?.toString(),
-      equals('https://fbtools.eu'),
+      equals('https://www.arenavox.eu'),
     );
   });
 
@@ -240,7 +240,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Should not throw when URL launch fails
-    await tester.tap(find.text('Visit fbtools.eu'));
+    await tester.tap(find.text('Visit www.arenavox.eu'));
     await tester.pumpAndSettle();
 
     // Dialog should still be visible
@@ -354,7 +354,7 @@ void main() {
     );
     expect(
       (imageContainer.decoration as BoxDecoration).color,
-      equals(Colors.white),
+      equals(Colors.grey[850]),
     );
 
     // Verify content column
@@ -394,7 +394,7 @@ void main() {
     expect(image.image, isA<AssetImage>());
     expect(
       (image.image as AssetImage).assetName,
-      equals('assets/icon/fbtools.eu.png'),
+      equals('assets/ArenaVox_logo.png'),
     );
     expect(image.height, equals(100));
     expect(image.width, equals(100));

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/common/widgets/ssml_preview_dialog.dart';
+import 'package:soundboard/common/widgets/tts_loading_overlay.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/utils/providers.dart';
 import 'package:soundboard/core/services/cloud_text_to_speech/providers.dart';
@@ -248,202 +249,224 @@ class _LineupState extends ConsumerState<Lineup> {
         }
       }
 
-      // Get the jingle manager from provider
-      final jingleManagerAsync = ref.read(jingleManagerProvider);
-      final jingleManager = await jingleManagerAsync.when(
-        data: (manager) => manager,
-        loading: () => throw Exception('JingleManager not loaded'),
-        error: (error, stack) => throw Exception('JingleManager error: $error'),
-      );
-
-      final textToSpeechService = ref.read(textToSpeechServiceProvider);
-      // final speech =
-      //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
-
-      final welcomeTTS = await textToSpeechService.getTtsNoFile(
-        text: introSsml,
-      );
-      final homeTeamTTS = homeTeamSsml.isNotEmpty
-          ? await textToSpeechService.getTtsNoFile(text: homeTeamSsml)
-          : null;
-      final awayTeamTTS = awayTeamSsml.isNotEmpty
-          ? await textToSpeechService.getTtsNoFile(text: awayTeamSsml)
-          : null;
-
-      ref.read(azCharCountProvider.notifier).state +=
-          selectedMatch.generateSsml(ref).length as int;
-      SettingsBox().azCharCount +=
-          selectedMatch.generateSsml(ref).length as int;
-
-      // Play background music
-
-      logger.d("[_handlePlayLineup] Starting background music");
-
-      // Find specific AwayJingle by configured file path or fallback
-      final awayJinglePath = SettingsBox().awayJingleFilePath;
-      AudioFile? awayJingle;
-
-      if (awayJinglePath.isNotEmpty) {
-        // Try to find the configured jingle by file path
-        awayJingle = jingleManager.audioManager.audioInstances
-            .where(
-              (instance) =>
-                  instance.audioCategory == AudioCategory.specialJingle &&
-                  instance.filePath == awayJinglePath,
-            )
-            .firstOrNull;
-      }
-
-      // Fallback to displayName search if configured jingle not found
-      if (awayJingle == null) {
-        logger.d(
-          "[_handlePlayLineup] Configured away jingle not found, falling back to displayName search",
-        );
-        awayJingle = jingleManager.audioManager.audioInstances
-            .where(
-              (instance) =>
-                  instance.audioCategory == AudioCategory.specialJingle &&
-                  instance.displayName == 'AwayJingle',
-            )
-            .firstOrNull;
-      }
-
-      if (awayJingle != null) {
-        await jingleManager.audioManager.playAudioFile(
-          awayJingle, // Play the specific AudioFile we found
-          ref,
-          shortFade: true,
-          isBackgroundMusic: true, // This will make it play as background music
+      // Show loading overlay
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const TtsLoadingOverlay(),
         );
       }
 
-      // wait for 7 seconds
-
-      logger.d("[_handlePlayLineup] Waiting 7 seconds");
-
-      await Future.delayed(const Duration(seconds: 7));
-
-      // Play welcome message
-
-      logger.d("[_handlePlayLineup] Playing welcome message");
-
-      await jingleManager.audioManager.playBytesAndWait(
-        audio: welcomeTTS.audio.buffer.asUint8List(),
-        ref: ref,
-      );
-
-      // wait for 7 seconds
-
-      logger.d("[_handlePlayLineup] Waiting 3 seconds");
-
-      await Future.delayed(const Duration(seconds: 3));
-
-      // Play away team lineup with background music
-
-      if (awayTeamTTS != null) {
-        logger.d("[_handlePlayLineup] Playing Away team lineup");
-
-        await jingleManager.audioManager.playBytesAndWait(
-          audio: awayTeamTTS.audio.buffer.asUint8List(),
-          ref: ref,
+      try {
+        // Get the jingle manager from provider
+        final jingleManagerAsync = ref.read(jingleManagerProvider);
+        final jingleManager = await jingleManagerAsync.when(
+          data: (manager) => manager,
+          loading: () => throw Exception('JingleManager not loaded'),
+          error: (error, stack) => throw Exception('JingleManager error: $error'),
         );
 
-        // wait for 2 seconds
+        final textToSpeechService = ref.read(textToSpeechServiceProvider);
+        // final speech =
+        //     await textToSpeechService.getTtsNoFile(text: selectedMatch.ssml);
 
-        logger.d("[_handlePlayLineup] Waiting 2 seconds");
-
-        await Future.delayed(const Duration(seconds: 2));
-
-        // Stop all audio
-        // await jingleManager.audioManager.stopAll(ref);
-
-        logger.d("[_handlePlayLineup] Fading out background music");
-
-        await jingleManager.audioManager.fadeOutNoStop(
-          ref,
-          AudioChannel.channel1,
+        final welcomeTTS = await textToSpeechService.getTtsNoFile(
+          text: introSsml,
         );
+        final homeTeamTTS = homeTeamSsml.isNotEmpty
+            ? await textToSpeechService.getTtsNoFile(text: homeTeamSsml)
+            : null;
+        final awayTeamTTS = awayTeamSsml.isNotEmpty
+            ? await textToSpeechService.getTtsNoFile(text: awayTeamSsml)
+            : null;
 
-        logger.d("[_handlePlayLineup] Stopping channel2");
+        // Close loading overlay after TTS generation is complete
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
 
-        await jingleManager.audioManager.channel2.stop();
-      }
+        ref.read(azCharCountProvider.notifier).state +=
+            selectedMatch.generateSsml(ref).length as int;
+        SettingsBox().azCharCount +=
+            selectedMatch.generateSsml(ref).length as int;
 
-      // Play home team lineup with background music
+        // Play background music
 
-      logger.d("[_handlePlayLineup] Playing Home team background music");
+        logger.d("[_handlePlayLineup] Starting background music");
 
-      // Find specific HomeJingle by configured file path or fallback
-      final homeJinglePath = SettingsBox().homeJingleFilePath;
-      AudioFile? homeJingle;
+        // Find specific AwayJingle by configured file path or fallback
+        final awayJinglePath = SettingsBox().awayJingleFilePath;
+        AudioFile? awayJingle;
 
-      if (homeJinglePath.isNotEmpty) {
-        // Try to find the configured jingle by file path
-        homeJingle = jingleManager.audioManager.audioInstances
-            .where(
-              (instance) =>
-                  instance.audioCategory == AudioCategory.specialJingle &&
-                  instance.filePath == homeJinglePath,
-            )
-            .firstOrNull;
-      }
+        if (awayJinglePath.isNotEmpty) {
+          // Try to find the configured jingle by file path
+          awayJingle = jingleManager.audioManager.audioInstances
+              .where(
+                (instance) =>
+                    instance.audioCategory == AudioCategory.specialJingle &&
+                    instance.filePath == awayJinglePath,
+              )
+              .firstOrNull;
+        }
 
-      // Fallback to displayName search if configured jingle not found
-      if (homeJingle == null) {
-        logger.d(
-          "[_handlePlayLineup] Configured home jingle not found, falling back to displayName search",
-        );
-        homeJingle = jingleManager.audioManager.audioInstances
-            .where(
-              (instance) =>
-                  instance.audioCategory == AudioCategory.specialJingle &&
-                  instance.displayName == 'HomeJingle',
-            )
-            .firstOrNull;
-      }
+        // Fallback to displayName search if configured jingle not found
+        if (awayJingle == null) {
+          logger.d(
+            "[_handlePlayLineup] Configured away jingle not found, falling back to displayName search",
+          );
+          awayJingle = jingleManager.audioManager.audioInstances
+              .where(
+                (instance) =>
+                    instance.audioCategory == AudioCategory.specialJingle &&
+                    instance.displayName == 'AwayJingle',
+              )
+              .firstOrNull;
+        }
 
-      if (homeJingle != null) {
-        await jingleManager.audioManager.playAudioFile(
-          homeJingle, // Play the specific AudioFile we found
-          ref,
-          shortFade: true,
-          isBackgroundMusic: true, // This will make it play as background music
-        );
-      }
+        if (awayJingle != null) {
+          await jingleManager.audioManager.playAudioFile(
+            awayJingle, // Play the specific AudioFile we found
+            ref,
+            shortFade: true,
+            isBackgroundMusic: true, // This will make it play as background music
+          );
+        }
 
-      if (homeTeamTTS != null) {
         // wait for 7 seconds
+
         logger.d("[_handlePlayLineup] Waiting 7 seconds");
 
         await Future.delayed(const Duration(seconds: 7));
 
-        // Play home team lineup with background music
+        // Play welcome message
 
-        logger.d("[_handlePlayLineup] Playing Home team lineup");
+        logger.d("[_handlePlayLineup] Playing welcome message");
 
         await jingleManager.audioManager.playBytesAndWait(
-          audio: homeTeamTTS.audio.buffer.asUint8List(),
+          audio: welcomeTTS.audio.buffer.asUint8List(),
           ref: ref,
         );
+
+        // wait for 7 seconds
+
+        logger.d("[_handlePlayLineup] Waiting 3 seconds");
+
+        await Future.delayed(const Duration(seconds: 3));
+
+        // Play away team lineup with background music
+
+        if (awayTeamTTS != null) {
+          logger.d("[_handlePlayLineup] Playing Away team lineup");
+
+          await jingleManager.audioManager.playBytesAndWait(
+            audio: awayTeamTTS.audio.buffer.asUint8List(),
+            ref: ref,
+          );
+
+          // wait for 2 seconds
+
+          logger.d("[_handlePlayLineup] Waiting 2 seconds");
+
+          await Future.delayed(const Duration(seconds: 2));
+
+          // Stop all audio
+          // await jingleManager.audioManager.stopAll(ref);
+
+          logger.d("[_handlePlayLineup] Fading out background music");
+
+          await jingleManager.audioManager.fadeOutNoStop(
+            ref,
+            AudioChannel.channel1,
+          );
+
+          logger.d("[_handlePlayLineup] Stopping channel2");
+
+          await jingleManager.audioManager.channel2.stop();
+        }
+
+        // Play home team lineup with background music
+
+        logger.d("[_handlePlayLineup] Playing Home team background music");
+
+        // Find specific HomeJingle by configured file path or fallback
+        final homeJinglePath = SettingsBox().homeJingleFilePath;
+        AudioFile? homeJingle;
+
+        if (homeJinglePath.isNotEmpty) {
+          // Try to find the configured jingle by file path
+          homeJingle = jingleManager.audioManager.audioInstances
+              .where(
+                (instance) =>
+                    instance.audioCategory == AudioCategory.specialJingle &&
+                    instance.filePath == homeJinglePath,
+              )
+              .firstOrNull;
+        }
+
+        // Fallback to displayName search if configured jingle not found
+        if (homeJingle == null) {
+          logger.d(
+            "[_handlePlayLineup] Configured home jingle not found, falling back to displayName search",
+          );
+          homeJingle = jingleManager.audioManager.audioInstances
+              .where(
+                (instance) =>
+                    instance.audioCategory == AudioCategory.specialJingle &&
+                    instance.displayName == 'HomeJingle',
+              )
+              .firstOrNull;
+        }
+
+        if (homeJingle != null) {
+          await jingleManager.audioManager.playAudioFile(
+            homeJingle, // Play the specific AudioFile we found
+            ref,
+            shortFade: true,
+            isBackgroundMusic: true, // This will make it play as background music
+          );
+        }
+
+        if (homeTeamTTS != null) {
+          // wait for 7 seconds
+          logger.d("[_handlePlayLineup] Waiting 7 seconds");
+
+          await Future.delayed(const Duration(seconds: 7));
+
+          // Play home team lineup with background music
+
+          logger.d("[_handlePlayLineup] Playing Home team lineup");
+
+          await jingleManager.audioManager.playBytesAndWait(
+            audio: homeTeamTTS.audio.buffer.asUint8List(),
+            ref: ref,
+          );
+        }
+
+        // wait for 5 seconds
+
+        logger.d("[_handlePlayLineup] Waiting 5 seconds");
+
+        await Future.delayed(const Duration(seconds: 5));
+
+        // Stop all audio
+
+        logger.d("[_handlePlayLineup] Stopping all audio");
+
+        await jingleManager.audioManager.stopAll(ref);
+
+        // await jingleManager.audioManager
+        //     .playBytes(audio: speech.audio.buffer.asUint8List(), ref: ref);
+      } catch (e) {
+        // Close loading overlay on error
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+        logger.d("Error generating audio: $e");
+        // You might want to show an error message to the user here
       }
-
-      // wait for 5 seconds
-
-      logger.d("[_handlePlayLineup] Waiting 5 seconds");
-
-      await Future.delayed(const Duration(seconds: 5));
-
-      // Stop all audio
-
-      logger.d("[_handlePlayLineup] Stopping all audio");
-
-      await jingleManager.audioManager.stopAll(ref);
-
-      // await jingleManager.audioManager
-      //     .playBytes(audio: speech.audio.buffer.asUint8List(), ref: ref);
     } catch (e) {
-      logger.d("Error generating audio: $e");
-      // You might want to show an error message to the user here
+      logger.d("Error in _handlePlayLineup: $e");
     }
   }
 

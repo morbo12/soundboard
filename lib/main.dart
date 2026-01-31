@@ -16,6 +16,8 @@ import 'package:soundboard/core/properties.dart'; // Local file for handling sou
 import 'package:soundboard/app.dart'; // Local main app file.
 import 'package:soundboard/features/screen_settings/data/class_slider_mappings_adapter.dart';
 import 'package:soundboard/core/utils/locale_detector.dart';
+import 'package:soundboard/core/models/team_profile.dart';
+import 'package:soundboard/core/services/profile_service.dart';
 import 'package:hive/hive.dart';
 
 // External Imports (sorted by package name length, shortest first)

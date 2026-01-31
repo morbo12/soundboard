@@ -54,16 +54,45 @@ $content
     required String voiceName,
   }) {
     try {
+      final settingsBox = SettingsBox();
       final template = Template(
-        SettingsBox().ssmlWelcomeTemplate,
+        settingsBox.ssmlWelcomeTemplate,
         lenient: true,
         htmlEscapeValues: false,
       );
+
+      // Get sponsor settings
+      final sponsorEnabled = settingsBox.sponsorEnabled;
+      final mainSponsor = settingsBox.mainSponsor;
+      final otherSponsors = settingsBox.otherSponsors;
+      final kioskEnabled = settingsBox.kioskEnabled;
+      final kioskMessage = settingsBox.kioskMessage;
+
+      // Format other sponsors list in Swedish (A, B, and C)
+      String otherSponsorsText = '';
+      if (sponsorEnabled && otherSponsors.isNotEmpty) {
+        if (otherSponsors.length == 1) {
+          otherSponsorsText = otherSponsors[0];
+        } else if (otherSponsors.length == 2) {
+          otherSponsorsText = '${otherSponsors[0]} och ${otherSponsors[1]}';
+        } else {
+          // For 3 or more: A, B, C, and D
+          final lastSponsor = otherSponsors.last;
+          final allButLast = otherSponsors.sublist(0, otherSponsors.length - 1);
+          otherSponsorsText = '${allButLast.join(', ')}, och $lastSponsor';
+        }
+      }
 
       final data = {
         'homeTeam': homeTeam,
         'awayTeam': awayTeam,
         'venue': venue,
+        'hasMainSponsor': sponsorEnabled && mainSponsor.isNotEmpty,
+        'mainSponsor': mainSponsor,
+        'hasOtherSponsors': sponsorEnabled && otherSponsors.isNotEmpty,
+        'otherSponsorsText': otherSponsorsText,
+        'kioskEnabled': kioskEnabled,
+        'kioskMessage': kioskMessage,
         ..._getSsmlHelpers(),
       };
 

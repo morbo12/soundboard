@@ -38,8 +38,21 @@ class DefaultSsmlTemplates {
     description: 'Welcome message template',
     template: '''Välkomna till {{venue}}!
 {{break:1000}}
+{{#hasMainSponsor}}
+{{homeTeam}}, tillsammans med vår huvudsponsor {{mainSponsor}}, hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan {{homeTeam}} och {{awayTeam}}
+{{/hasMainSponsor}}
+{{^hasMainSponsor}}
 {{homeTeam}} hälsar motståndarna, domarna och publiken hjärtligt välkomna till dagens match mellan {{homeTeam}} och {{awayTeam}}
-{{break:1000}}''',
+{{/hasMainSponsor}}
+{{break:1000}}
+{{#hasOtherSponsors}}
+Vi vill också tacka {{otherSponsorsText}} för att stödja föreningen.
+{{break:1000}}
+{{/hasOtherSponsors}}
+{{#kioskEnabled}}
+{{kioskMessage}}
+{{break:1000}}
+{{/kioskEnabled}}''',
   );
 
   static const lineupTemplate = SsmlTemplate(

@@ -56,19 +56,19 @@ class AboutDialogWidget extends StatelessWidget {
         final packageInfo = snapshot.data!;
 
         return AlertDialog(
-          title: const Text('About Soundboard'),
+          title: const Text('About ArenaVox'),
           content: SingleChildScrollView(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.grey[850],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: const EdgeInsets.all(8),
                   child: Image.asset(
-                    'assets/icon/fbtools.eu.png',
+                    'assets/ArenaVox_logo.png',
                     height: 100,
                     width: 100,
                   ),
@@ -90,8 +90,8 @@ class AboutDialogWidget extends StatelessWidget {
                       ),
                       const Gap(16),
                       TextButton(
-                        onPressed: () => _launchUrl('https://fbtools.eu'),
-                        child: const Text('Visit fbtools.eu'),
+                        onPressed: () => _launchUrl('https://www.arenavox.eu'),
+                        child: const Text('Visit www.arenavox.eu'),
                       ),
                     ],
                   ),

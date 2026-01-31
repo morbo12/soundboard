@@ -19,6 +19,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_language_selector.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_premium_badge.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_usage_stats_toggle.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_sponsor_kiosk_settings.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -239,6 +240,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
               'settings.items.jingles_manager.description',
             ),
             child: const JinglesManagerWidget(),
+          ),
+          const Gap(20),
+          _buildSettingItem(
+            title: l10n.translate('settings.items.sponsor_kiosk.title'),
+            description: l10n.translate(
+              'settings.items.sponsor_kiosk.description',
+            ),
+            child: const SponsorKioskSettings(),
           ),
         ];
       case 4: // API & Premium

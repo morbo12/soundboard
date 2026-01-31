@@ -33,7 +33,7 @@
     "spotify": "Spotify"
   },
   "app_bar": {
-    "title": "FBTools Soundboard"
+    "title": "ArenaVox by FBTools"
   },
   "hotkeys": {
     "goal_button_name": "Målknapp (MÅL)",
@@ -135,6 +135,10 @@
       "clear_cache": {
         "title": "Rensa cache",
         "description": "Ta bort alla uppladdade jinglar från den lokala cachen."
+      },
+      "sponsor_kiosk": {
+        "title": "Sponsor & Kiosk",
+        "description": "Konfigurera sponsorer och kioskinformation för laguppställningsutrop."
       }
     }
   },
@@ -203,6 +207,20 @@
     "no_events_yet": "Inga händelser än",
     "no_standings_data_available": "Ingen tabellinformation tillgänglig",
     "no_pregame_statistics_available": "Ingen förmatchstatistik tillgänglig"
+  },
+  "sponsor_kiosk": {
+    "title": "Sponsor & Kiosk",
+    "enable_sponsor_section": "Aktivera sponsorer",
+    "main_sponsor_label": "Huvudsponsor",
+    "main_sponsor_hint": "Ange huvudsponsorns namn",
+    "other_sponsors_label": "Övriga sponsorer",
+    "other_sponsors_hint": "Ett sponsornamn per rad",
+    "other_sponsors_description": "Lägg till flera sponsorer, en per rad. De kommer att läsas upp som: 'Sponsor A, Sponsor B, och Sponsor C'",
+    "enable_kiosk": "Kiosken är öppen",
+    "kiosk_description": "Lägg till ett meddelande om att kiosken är öppen under pausen",
+    "kiosk_message_label": "Kioskmeddelande",
+    "kiosk_message_hint": "Kiosken är öppen, välkommen att besöka oss under pausen!",
+    "kiosk_message_description": "Anpassa meddelandet om kiosken"
   },
   "music_player": {},
   "tooltips": {}

@@ -33,7 +33,7 @@
     "spotify": "Spotify"
   },
   "app_bar": {
-    "title": "FBTools Soundboard"
+    "title": "ArenaVox by FBTools"
   },
   "hotkeys": {
     "goal_button_name": "Goal Button (GOAL)",
@@ -135,6 +135,10 @@
       "clear_cache": {
         "title": "Clear Cache",
         "description": "Delete all uploaded jingles from the local cache."
+      },
+      "sponsor_kiosk": {
+        "title": "Sponsor & Kiosk",
+        "description": "Configure sponsors and kiosk information for lineup announcements."
       }
     }
   },
@@ -203,6 +207,20 @@
     "no_events_yet": "No events yet",
     "no_standings_data_available": "No standings data available",
     "no_pregame_statistics_available": "No pregame statistics available"
+  },
+  "sponsor_kiosk": {
+    "title": "Sponsor & Kiosk",
+    "enable_sponsor_section": "Enable Sponsors",
+    "main_sponsor_label": "Main Sponsor",
+    "main_sponsor_hint": "Enter main sponsor name",
+    "other_sponsors_label": "Other Sponsors",
+    "other_sponsors_hint": "One sponsor name per line",
+    "other_sponsors_description": "Add multiple sponsors, one per line. They will be announced as: 'Sponsor A, Sponsor B, and Sponsor C'",
+    "enable_kiosk": "Kiosk is Open",
+    "kiosk_description": "Add an announcement that the kiosk is open during the break",
+    "kiosk_message_label": "Kiosk Message",
+    "kiosk_message_hint": "The kiosk is open, feel free to visit us during the break!",
+    "kiosk_message_description": "Customize the kiosk announcement message"
   },
   "music_player": {},
   "tooltips": {}

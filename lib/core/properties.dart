@@ -66,6 +66,13 @@ enum Settings {
 
   // Localization
   appLanguage,
+
+  // Sponsor & Kiosk settings
+  sponsorEnabled,
+  mainSponsor,
+  otherSponsors,
+  kioskEnabled,
+  kioskMessage,
 }
 
 class SettingsBox extends EasyBox {
@@ -371,4 +378,32 @@ extension GeneralSettingsExtension on SettingsBox {
   set usageStatsEnabled(bool value) => put(Settings.usageStatsEnabled, value);
   bool get usageStatsEnabled =>
       get(Settings.usageStatsEnabled, defaultValue: true);
+
+  // Sponsor & Kiosk settings
+  set sponsorEnabled(bool value) => put(Settings.sponsorEnabled, value);
+  bool get sponsorEnabled => get(Settings.sponsorEnabled, defaultValue: false);
+
+  set mainSponsor(String value) => put(Settings.mainSponsor, value);
+  String get mainSponsor => get(Settings.mainSponsor, defaultValue: "");
+
+  set otherSponsors(List<String> value) => put(Settings.otherSponsors, value);
+  List<String> get otherSponsors {
+    final dynamic data = get(Settings.otherSponsors, defaultValue: <String>[]);
+    if (data is List<String>) {
+      return data;
+    }
+    if (data is List) {
+      return data.cast<String>();
+    }
+    return <String>[];
+  }
+
+  set kioskEnabled(bool value) => put(Settings.kioskEnabled, value);
+  bool get kioskEnabled => get(Settings.kioskEnabled, defaultValue: false);
+
+  set kioskMessage(String value) => put(Settings.kioskMessage, value);
+  String get kioskMessage => get(
+        Settings.kioskMessage,
+        defaultValue: "Kiosken är öppen, välkommen att besöka oss under pausen!",
+      );
 }

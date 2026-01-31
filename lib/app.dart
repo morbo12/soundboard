@@ -75,6 +75,10 @@ class _PlayerState extends ConsumerState<Player> {
   }
 
   Future<void> _initializeApp() async {
+    // Start timing for minimum splash screen duration
+    final splashStartTime = DateTime.now();
+    const minSplashDuration = Duration(seconds: 2);
+    
     try {
       await Future.wait([_initPackageInfo(), _initJingleManager()]);
       _initializeUsageStats();
@@ -93,6 +97,12 @@ class _PlayerState extends ConsumerState<Player> {
         _logger.e('App initialization error during startup', e);
       }
     } finally {
+      // Ensure splash screen shows for minimum duration
+      final elapsedTime = DateTime.now().difference(splashStartTime);
+      if (elapsedTime < minSplashDuration) {
+        await Future.delayed(minSplashDuration - elapsedTime);
+      }
+      
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -286,8 +296,16 @@ class _PlayerState extends ConsumerState<Player> {
     final hotkeyService = ref.watch(hotkeyServiceProvider);
 
     if (_isLoading) {
-      return const MaterialApp(
-        home: Scaffold(body: Center(child: Text('Loading...'))),
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.grey[850],
+          body: Center(
+            child: Image.asset(
+              'assets/ArenaVox_splash.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
       );
     }
 
@@ -308,7 +326,12 @@ class _PlayerState extends ConsumerState<Player> {
         child: Scaffold(
           body: isJingleManagerInitialized
               ? _buildMainContent(selectedIndex)
-              : const Center(child: Text('Loading...')),
+              : Center(
+                  child: Image.asset(
+                    'assets/ArenaVox_splash.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
           appBar: AppBar(
             toolbarHeight: 20.0,
             title: InkWell(
