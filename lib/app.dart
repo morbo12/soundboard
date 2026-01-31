@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:soundboard/about/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 
+import 'package:soundboard/common/widgets/dialogs/profile_quick_switch_dialog.dart';
 import 'package:soundboard/core/constants/message_types.dart';
+import 'package:soundboard/core/providers/profile_providers.dart';
 import 'package:soundboard/core/services/hotkey_service.dart';
 import 'package:soundboard/core/services/jingle_manager/jingle_manager_provider.dart';
 import 'package:soundboard/core/services/usage_stats_service.dart';
@@ -217,6 +220,14 @@ class _PlayerState extends ConsumerState<Player> {
     }
   }
 
+  void _showQuickSwitchDialog() {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => const ProfileQuickSwitchDialog(),
+    );
+  }
+
   void showMessage({required String message, required MessageType type}) {
     // Only show message if context is available and mounted
     if (mounted && context.mounted) {
@@ -294,6 +305,7 @@ class _PlayerState extends ConsumerState<Player> {
     final l10n = context.l10n;
     final selectedIndex = ref.watch(selectedIndexProvider);
     final hotkeyService = ref.watch(hotkeyServiceProvider);
+    final currentProfile = ref.watch(currentProfileProvider);
 
     if (_isLoading) {
       return MaterialApp(
@@ -320,7 +332,15 @@ class _PlayerState extends ConsumerState<Player> {
         focusNode: _keyboardFocusNode,
         autofocus: true,
         onKeyEvent: (KeyEvent event) {
-          // Handle hotkey events
+          // Check for Ctrl+P to open quick switch dialog
+          if (event is KeyDownEvent &&
+              HardwareKeyboard.instance.isControlPressed &&
+              event.logicalKey == LogicalKeyboardKey.keyP) {
+            _showQuickSwitchDialog();
+            return;
+          }
+          
+          // Handle other hotkey events
           hotkeyService.handleKeyEvent(event);
         },
         child: Scaffold(
@@ -334,19 +354,52 @@ class _PlayerState extends ConsumerState<Player> {
                 ),
           appBar: AppBar(
             toolbarHeight: 20.0,
-            title: InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  useSafeArea: true,
-                  barrierDismissible: true,
-                  builder: (context) => const AboutDialogWidget(),
-                );
-              },
-              child: Text(
-                '${l10n.translate('app_bar.title')} ${_packageInfo.version}',
-                style: const TextStyle(fontSize: 12),
-              ),
+            title: Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      useSafeArea: true,
+                      barrierDismissible: true,
+                      builder: (context) => const AboutDialogWidget(),
+                    );
+                  },
+                  child: Text(
+                    '${l10n.translate('app_bar.title')} ${_packageInfo.version}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                if (currentProfile != null) ...[
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          FluentIcons.person_16_filled,
+                          size: 10,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          currentProfile.name,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           bottomNavigationBar: Container(

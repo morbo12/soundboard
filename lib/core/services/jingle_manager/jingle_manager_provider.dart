@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soundboard/core/constants/message_types.dart';
+import 'package:soundboard/core/providers/profile_providers.dart';
 import 'package:soundboard/core/services/jingle_manager/class_jingle_manager.dart';
 import 'package:soundboard/core/utils/logger.dart';
 
@@ -17,9 +18,16 @@ class JingleManagerNotifier extends AsyncNotifier<JingleManager> {
 
   @override
   Future<JingleManager> build() async {
+    // Get the current profile ID
+    final currentProfile = ref.watch(currentProfileProvider);
+    final profileId = currentProfile?.id;
+    
+    _logger.d('Building JingleManager for profile: $profileId');
+    
     // Initialize the JingleManager when the provider is first accessed
     final jingleManager = JingleManager(
       showMessageCallback: _showMessageCallback,
+      profileId: profileId,
     );
 
     await jingleManager.initialize();
@@ -41,19 +49,29 @@ class JingleManagerNotifier extends AsyncNotifier<JingleManager> {
     // use a separate messaging system or state management
   }
 
-  /// Reinitialize the JingleManager
-  /// Useful for refreshing the audio files or handling configuration changes
-  Future<void> reinitialize() async {
+  /// Reinitialize the JingleManager with a specific profile ID
+  /// Useful for switching profiles
+  Future<void> reinitializeWithProfile(String? profileId) async {
+    _logger.d('Reinitializing JingleManager with profile: $profileId');
     state = const AsyncValue.loading();
     try {
       final jingleManager = JingleManager(
         showMessageCallback: _showMessageCallback,
+        profileId: profileId,
       );
       await jingleManager.initialize();
       state = AsyncValue.data(jingleManager);
     } catch (error, stackTrace) {
+      _logger.e('Failed to reinitialize JingleManager', error, stackTrace);
       state = AsyncValue.error(error, stackTrace);
     }
+  }
+
+  /// Reinitialize the JingleManager
+  /// Useful for refreshing the audio files or handling configuration changes
+  Future<void> reinitialize() async {
+    final currentProfile = ref.read(currentProfileProvider);
+    await reinitializeWithProfile(currentProfile?.id);
   }
 }
 

@@ -33,7 +33,7 @@ final class MatchEventsStreamProvider
   MatchEventsStream create() => MatchEventsStream();
 }
 
-String _$matchEventsStreamHash() => r'dcbc9176d9dec07197aaaa184d5c9845d1c26578';
+String _$matchEventsStreamHash() => r'e6bbd8c8c40cb44faa90a808e99f9196a111966e';
 
 abstract class _$MatchEventsStream
     extends $StreamNotifier<List<IbyMatchEvent>> {

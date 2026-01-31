@@ -1,103 +1,78 @@
-import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
-
-part 'team_profile.g.dart';
 
 /// Represents a team profile with individual settings, jingles, and preferences
 /// Allows managing multiple teams on one installation
-@HiveType(typeId: 100) // Use a unique typeId not conflicting with existing types
 class TeamProfile {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   String name;
-
-  @HiveField(2)
   String description;
 
   // Visual/Branding
-  @HiveField(3)
   String? colorTheme; // FlexColorScheme name
-
-  @HiveField(4)
   String? logoPath; // Optional team logo
 
   // Sponsor & Kiosk
-  @HiveField(5)
   bool sponsorEnabled;
-
-  @HiveField(6)
   String mainSponsor;
-
-  @HiveField(7)
   List<String> otherSponsors;
-
-  @HiveField(8)
   bool kioskEnabled;
-
-  @HiveField(9)
   String kioskMessage;
 
   // Lineup Jingles
-  @HiveField(10)
   String homeJingleFilePath;
-
-  @HiveField(11)
   String awayJingleFilePath;
 
   // Grid Layout
-  @HiveField(12)
   int gridColumns;
-
-  @HiveField(13)
   int gridRows;
 
   // SSML Templates
-  @HiveField(14)
   String? ssmlWelcomeTemplate;
-
-  @HiveField(15)
   String? ssmlLineupTemplate;
-
-  @HiveField(16)
   String? ssmlRefereeTemplate;
 
   // TTS Settings
-  @HiveField(17)
   String? azVoiceName;
-
-  @HiveField(18)
   double ttsVolume;
 
   // Volume Settings
-  @HiveField(19)
   double backgroundVolumeLevel;
-
-  @HiveField(20)
   double mainVolume;
+  double p1Volume;
+  double p2Volume;
+  double p3Volume;
 
   // Spotify
-  @HiveField(21)
   String? spotifyUri;
-
-  @HiveField(22)
   String? spotifyUrl;
+  double musicPlayerInitialVolume;
+
+  // API Settings
+  String apiProductKey;
+  String apiDeviceId;
+
+  // Azure TTS Extended Settings
+  String azTtsKey;
+  int azVoiceId;
+  int azRegionId;
+
+  // Venue & Federation
+  int venueId;
+  int federationId;
+
+  // Serial Port / Deej Settings
+  String serialPortName;
+  int serialBaudRate;
+  bool serialAutoConnect;
 
   // Metadata
-  @HiveField(23)
   DateTime createdAt;
-
-  @HiveField(24)
   DateTime lastUsed;
-
-  @HiveField(25)
   bool isDefault;
 
   // Jingle Assignments (stored as Map<String, dynamic> for flexibility)
-  // Key format: "row_col" (e.g., "0_0", "1_2")
-  // Value: { "filePath": "...", "displayName": "...", "category": "..." }
-  @HiveField(26)
+  // Key format: position index (e.g., "0", "1", "2")
+  // Value: GridJingleConfig JSON
   Map<String, dynamic> jingleAssignments;
 
   TeamProfile({
@@ -113,17 +88,31 @@ class TeamProfile {
     this.kioskMessage = 'Kiosken är öppen, välkommen att besöka oss under pausen!',
     this.homeJingleFilePath = '',
     this.awayJingleFilePath = '',
-    this.gridColumns = 6,
-    this.gridRows = 5,
+    this.gridColumns = 3,
+    this.gridRows = 4,
     this.ssmlWelcomeTemplate,
     this.ssmlLineupTemplate,
     this.ssmlRefereeTemplate,
     this.azVoiceName,
-    this.ttsVolume = 1.0,
-    this.backgroundVolumeLevel = 0.5,
-    this.mainVolume = 1.0,
+    this.ttsVolume = 0.3,
+    this.backgroundVolumeLevel = 0.1,
+    this.mainVolume = 0.3,
+    this.p1Volume = 0.3,
+    this.p2Volume = 0.3,
+    this.p3Volume = 0.3,
     this.spotifyUri,
     this.spotifyUrl,
+    this.musicPlayerInitialVolume = 0.1,
+    this.apiProductKey = '',
+    this.apiDeviceId = '',
+    this.azTtsKey = 'NoKey',
+    this.azVoiceId = 1,
+    this.azRegionId = 2,
+    this.venueId = 3455,
+    this.federationId = 8,
+    this.serialPortName = '',
+    this.serialBaudRate = 9600,
+    this.serialAutoConnect = false,
     DateTime? createdAt,
     DateTime? lastUsed,
     this.isDefault = false,
@@ -155,8 +144,22 @@ class TeamProfile {
     double? ttsVolume,
     double? backgroundVolumeLevel,
     double? mainVolume,
+    double? p1Volume,
+    double? p2Volume,
+    double? p3Volume,
     String? spotifyUri,
     String? spotifyUrl,
+    double? musicPlayerInitialVolume,
+    String? apiProductKey,
+    String? apiDeviceId,
+    String? azTtsKey,
+    int? azVoiceId,
+    int? azRegionId,
+    int? venueId,
+    int? federationId,
+    String? serialPortName,
+    int? serialBaudRate,
+    bool? serialAutoConnect,
     DateTime? lastUsed,
     bool? isDefault,
     Map<String, dynamic>? jingleAssignments,
@@ -183,8 +186,22 @@ class TeamProfile {
       ttsVolume: ttsVolume ?? this.ttsVolume,
       backgroundVolumeLevel: backgroundVolumeLevel ?? this.backgroundVolumeLevel,
       mainVolume: mainVolume ?? this.mainVolume,
+      p1Volume: p1Volume ?? this.p1Volume,
+      p2Volume: p2Volume ?? this.p2Volume,
+      p3Volume: p3Volume ?? this.p3Volume,
       spotifyUri: spotifyUri ?? this.spotifyUri,
       spotifyUrl: spotifyUrl ?? this.spotifyUrl,
+      musicPlayerInitialVolume: musicPlayerInitialVolume ?? this.musicPlayerInitialVolume,
+      apiProductKey: apiProductKey ?? this.apiProductKey,
+      apiDeviceId: apiDeviceId ?? this.apiDeviceId,
+      azTtsKey: azTtsKey ?? this.azTtsKey,
+      azVoiceId: azVoiceId ?? this.azVoiceId,
+      azRegionId: azRegionId ?? this.azRegionId,
+      venueId: venueId ?? this.venueId,
+      federationId: federationId ?? this.federationId,
+      serialPortName: serialPortName ?? this.serialPortName,
+      serialBaudRate: serialBaudRate ?? this.serialBaudRate,
+      serialAutoConnect: serialAutoConnect ?? this.serialAutoConnect,
       createdAt: createdAt,
       lastUsed: lastUsed ?? this.lastUsed,
       isDefault: isDefault ?? this.isDefault,

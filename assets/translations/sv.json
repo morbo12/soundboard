@@ -132,6 +132,10 @@
         "title": "Anonym användningsstatistik",
         "description": "Tillåt att anonymiserade användningshändelser skickas för att hjälpa till att förbättra appen. Du kan när som helst välja bort."
       },
+      "profile_management": {
+        "title": "Profilhantering",
+        "description": "Skapa och hantera lagprofiler. Varje profil har sina egna inställningar, jinglar och konfiguration."
+      },
       "clear_cache": {
         "title": "Rensa cache",
         "description": "Ta bort alla uppladdade jinglar från den lokala cachen."
@@ -223,5 +227,49 @@
     "kiosk_message_description": "Anpassa meddelandet om kiosken"
   },
   "music_player": {},
-  "tooltips": {}
+  "tooltips": {},
+  "profiles": {
+    "select_profile_title": "Välj profil",
+    "select_profile_subtitle": "Välj en lagprofil för att starta",
+    "create_new_profile": "Skapa ny profil",
+    "last_used": "Senast använd",
+    "default_profile_name": "Standardlag",
+    "default_profile_description": "Standardprofil med standardinställningar",
+    "switch_profile": "Byt profil",
+    "manage_profiles": "Hantera profiler",
+    "profile_name": "Profilnamn",
+    "profile_description": "Beskrivning",
+    "create": "Skapa",
+    "edit": "Redigera",
+    "delete_profile": "Ta bort profil",
+    "confirm_delete_title": "Ta bort profil?",
+    "confirm_delete_body": "Är du säker på att du vill ta bort denna profil? Denna åtgärd kan inte ångras.",
+    "cannot_delete_active": "Kan inte ta bort den aktiva profilen. Byt till en annan profil först.",
+    "profile_created": "Profil skapad",
+    "profile_updated": "Profil uppdaterad",
+    "profile_deleted": "Profil borttagen",
+    "profile_switched": "Bytte till profil",
+    "select_profile": "Välj profil",
+    "startup_description": "Välj en profil för att fortsätta. Varje profil har sina egna inställningar, jinglar och konfiguration.",
+    "switch_description": "Byt till en annan profil. Allt ljud kommer att stoppas och nya inställningar kommer att tillämpas.",
+    "no_profiles": "Inga profiler hittades",
+    "create_first_profile": "Skapa din första profil för att komma igång",
+    "create_new": "Skapa ny profil",
+    "continue": "Fortsätt",
+    "switch": "Byt",
+    "enter_name": "Ange profilnamn",
+    "current_profile": "Aktuell profil",
+    "all_profiles": "Alla profiler",
+    "duplicate": "Duplicera",
+    "quick_switch": "Snabbyte av profil",
+    "quick_switch_hint": "Tryck Ctrl+P för att snabbt byta profil",
+    "active": "Aktiv",
+    "error_switching": "Fel vid byte av profil",
+    "error_loading": "Fel vid laddning av profiler",
+    "last_used_just_now": "Nyss",
+    "last_used_minutes": "{minutes} minuter sedan",
+    "last_used_hours": "{hours} timmar sedan",
+    "last_used_days": "{days} dagar sedan",
+    "last_used_on": "Den {date}"
+  }
 }

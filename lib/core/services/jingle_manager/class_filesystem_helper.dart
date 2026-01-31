@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../../utils/logger.dart';
+import '../../services/profile_service.dart';
 
 class FileSystemHelper {
   static final _logger = const Logger('FileSystemHelper');
@@ -10,6 +11,35 @@ class FileSystemHelper {
   static const String _oldAppId = 'io.lyxell';
   // New app ID path component
   static const String _newAppId = 'eu.fbtools';
+
+  // Profile ID for current context (null means legacy mode)
+  String? _currentProfileId;
+
+  /// Set the current profile ID for this FileSystemHelper instance
+  void setProfileId(String? profileId) {
+    _currentProfileId = profileId;
+    _logger.d('Profile ID set to: $profileId');
+  }
+
+  /// Get the current profile ID
+  String? get currentProfileId => _currentProfileId;
+
+  /// Check if we should use profile-scoped directories
+  /// Returns true only if:
+  /// 1. A profile ID is set, AND
+  /// 2. There are multiple profiles (multi-profile mode is enabled)
+  bool _shouldUseProfileScoping() {
+    if (_currentProfileId == null) {
+      return false; // No profile ID means legacy mode
+    }
+    
+    // Check if there are multiple profiles
+    final profileService = ProfileService();
+    final isMultiProfile = profileService.isMultiProfileMode();
+    
+    _logger.d('Profile scoping check: profileId=$_currentProfileId, multiProfile=$isMultiProfile');
+    return isMultiProfile;
+  }
 
   // Gets the old application cache directory path
   Future<String?> _getOldCacheDirectoryPath() async {
@@ -115,13 +145,31 @@ class FileSystemHelper {
 
   // Gets the application cache directory and appends the specified subdirectory.
   // Creates it if it doesn't exist.
+  // Uses profile-scoped paths ONLY if multi-profile mode is enabled (2+ profiles)
+  // Otherwise uses legacy root-level paths for backward compatibility
   Future<Directory> createDirectory(String subDirName) async {
     final Directory appCacheDir = await getApplicationCacheDirectory();
-    final Directory specifiedDir = Directory(
-      '${appCacheDir.path}/$subDirName/',
-    );
+    
+    String dirPath;
+    if (_shouldUseProfileScoping()) {
+      // Multi-profile mode: AppCache/profiles/{profileId}/{subDirName}
+      dirPath = path.join(
+        appCacheDir.path,
+        'profiles',
+        _currentProfileId!,
+        subDirName,
+      );
+      _logger.d('Using profile-scoped path: $dirPath');
+    } else {
+      // Single-profile mode (backward compatible): AppCache/{subDirName}
+      dirPath = path.join(appCacheDir.path, subDirName);
+      _logger.d('Using legacy path: $dirPath');
+    }
+    
+    final Directory specifiedDir = Directory(dirPath);
     if (!await specifiedDir.exists()) {
-      await specifiedDir.create();
+      await specifiedDir.create(recursive: true);
+      _logger.d('Created directory: $dirPath');
     }
     return specifiedDir;
   }

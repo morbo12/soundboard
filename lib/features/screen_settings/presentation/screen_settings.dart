@@ -20,6 +20,7 @@ import 'package:soundboard/features/screen_settings/presentation/widgets/widget_
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_premium_badge.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_usage_stats_toggle.dart';
 import 'package:soundboard/features/screen_settings/presentation/widgets/widget_sponsor_kiosk_settings.dart';
+import 'package:soundboard/features/screen_settings/presentation/widgets/widget_profile_management.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -277,6 +278,14 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
         ];
       case 5: // System
         return [
+          _buildSettingItem(
+            title: l10n.translate('settings.items.profile_management.title'),
+            description: l10n.translate(
+              'settings.items.profile_management.description',
+            ),
+            child: const ProfileManagementWidget(),
+          ),
+          const Gap(20),
           _buildSettingItem(
             title: l10n.translate('settings.items.clear_cache.title'),
             description: l10n.translate(

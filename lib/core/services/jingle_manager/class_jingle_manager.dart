@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:soundboard/core/constants/globals.dart';
 import 'package:soundboard/core/constants/message_types.dart';
 import 'package:soundboard/core/services/jingle_manager/class_filesystem_helper.dart';
+import 'package:soundboard/core/services/profile_service.dart';
+import 'package:soundboard/core/utils/profile_audio_manager.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audio.dart';
 import 'package:soundboard/core/services/jingle_manager/class_audiocategory.dart';
 import 'package:soundboard/features/screen_home/application/audioplayer/data/class_audiomanager.dart';
@@ -39,23 +41,54 @@ class JingleManager {
   final FileSystemHelper fileSystemHelper = FileSystemHelper();
   Function({required MessageType type, required String message})
   showMessageCallback;
+  
+  // Current profile ID
+  String? _profileId;
+  
   // Function(String) showErrorMessageCallback;
 
   JingleManager({
     required this.showMessageCallback,
+    String? profileId,
     // required this.showErrorMessageCallback
-  }) {
-    logger.d("INIT: AudioSources 2");
+  }) : _profileId = profileId {
+    logger.d("INIT: AudioSources 2 for profile: $profileId");
+    // Set profile ID on the file system helper
+    fileSystemHelper.setProfileId(profileId);
+  }
+
+  /// Get the current profile ID
+  String? get profileId => _profileId;
+
+  /// Update the profile ID and reinitialize directories
+  Future<void> setProfileId(String? profileId) async {
+    if (_profileId == profileId) return; // No change
+    
+    logger.d("Switching profile from $_profileId to $profileId");
+    _profileId = profileId;
+    fileSystemHelper.setProfileId(profileId);
+    
+    // Reinitialize directories for the new profile
+    await _initializeDirectories();
+    await initializeJingleFilesDirs();
   }
 
   Future<void> initialize() async {
-    logger.d("Initializing DIRS");
+    logger.d("Initializing DIRS for profile: $_profileId");
 
     try {
-      // Check for migration before initializing directories
-      logger.d("Checking for migration");
+      // Check for old app ID migration before initializing directories
+      logger.d("Checking for app ID migration");
       await _checkAndHandleMigration();
-      logger.d("Migration checked");
+      logger.d("App ID migration checked");
+      
+      // Check for legacy audio files (pre-profile system) and migrate if needed
+      if (_profileId != null) {
+        logger.d("Checking for legacy audio files");
+        await _checkAndMigrateLegacyAudio();
+        logger.d("Legacy audio migration checked");
+      }
+      
       await _initializeDirectories();
       logger.d("Directories initialized");
       // Copy any bundled jingles from assets into the cache directories
@@ -78,6 +111,61 @@ class JingleManager {
         type: MessageType.error,
         message: "Error: Failed to initialize directories and files.",
       );
+    }
+  }
+
+  Future<void> _checkAndMigrateLegacyAudio() async {
+    try {
+      // Only migrate if we're in multi-profile mode
+      // (single profile uses legacy paths, so no migration needed)
+      final profileService = ProfileService();
+      if (!profileService.isMultiProfileMode()) {
+        logger.d("Single profile mode - using legacy paths, no migration needed");
+        return;
+      }
+      
+      // Check if we have legacy audio files at the root level
+      final hasLegacy = await ProfileAudioManager.hasLegacyAudioFiles();
+      
+      if (hasLegacy && _profileId != null) {
+        logger.d("Legacy audio files detected in multi-profile mode, asking user to migrate");
+        
+        // Show a dialog to the user asking if they want to migrate
+        final shouldMigrate = await showDialog<bool>(
+          context: navigatorKey.currentContext!,
+          builder: (context) => AlertDialog(
+            title: const Text('Migrate Audio Files'),
+            content: const Text(
+              'You now have multiple profiles. Your existing audio files need to be moved to the current profile directory.\n\nWould you like to migrate them now?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Skip'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Migrate'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldMigrate == true) {
+          logger.d("User chose to migrate legacy audio");
+          // Perform the migration
+          await ProfileAudioManager.migrateLegacyAudioToProfile(_profileId!);
+          showMessageCallback(
+            type: MessageType.normal,
+            message: "Audio files migrated successfully!",
+          );
+        } else {
+          logger.d("User skipped legacy audio migration");
+        }
+      }
+    } catch (e, stackTrace) {
+      logger.e("Error during legacy audio migration check", e, stackTrace);
+      // Don't block initialization if migration fails
     }
   }
 

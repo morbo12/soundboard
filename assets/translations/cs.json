@@ -132,6 +132,10 @@
         "title": "Anonymní statistiky používání",
         "description": "Povolit odesílání anonymizovaných událostí používání pro zlepšení aplikace. Kdykoliv se můžete odhlásit."
       },
+      "profile_management": {
+        "title": "Správa profilů",
+        "description": "Vytvářejte a spravujte týmové profily. Každý profil má vlastní nastavení, znělky a konfiguraci."
+      },
       "clear_cache": {
         "title": "Vymazat cache",
         "description": "Smazat všechny nahrané znělky z místní cache."
@@ -205,5 +209,49 @@
     "no_pregame_statistics_available": "Nejsou k dispozici žádné předzápasové statistiky"
   },
   "music_player": {},
-  "tooltips": {}
+  "tooltips": {},
+  "profiles": {
+    "select_profile_title": "Vybrat profil",
+    "select_profile_subtitle": "Vyberte týmový profil pro start",
+    "create_new_profile": "Vytvořit nový profil",
+    "last_used": "Naposledy použit",
+    "default_profile_name": "Výchozí tým",
+    "default_profile_description": "Výchozí profil se standardním nastavením",
+    "switch_profile": "Přepnout profil",
+    "manage_profiles": "Spravovat profily",
+    "profile_name": "Název profilu",
+    "profile_description": "Popis",
+    "create": "Vytvořit",
+    "edit": "Upravit",
+    "delete_profile": "Smazat profil",
+    "confirm_delete_title": "Smazat profil?",
+    "confirm_delete_body": "Opravdu chcete smazat tento profil? Tuto akci nelze vrátit zpět.",
+    "cannot_delete_active": "Nelze smazat aktivní profil. Nejprve přepněte na jiný profil.",
+    "profile_created": "Profil vytvořen",
+    "profile_updated": "Profil aktualizován",
+    "profile_deleted": "Profil smazán",
+    "profile_switched": "Přepnuto na profil",
+    "select_profile": "Vybrat profil",
+    "startup_description": "Vyberte profil pro pokračování. Každý profil má vlastní nastavení, zvonky a konfiguraci.",
+    "switch_description": "Přepnout na jiný profil. Veškerý zvuk bude zastaven a nové nastavení bude aplikováno.",
+    "no_profiles": "Nenalezeny žádné profily",
+    "create_first_profile": "Vytvořte svůj první profil pro začátek",
+    "create_new": "Vytvořit nový profil",
+    "continue": "Pokračovat",
+    "switch": "Přepnout",
+    "enter_name": "Zadejte název profilu",
+    "current_profile": "Aktuální profil",
+    "all_profiles": "Všechny profily",
+    "duplicate": "Duplikovat",
+    "quick_switch": "Rychlé přepnutí profilu",
+    "quick_switch_hint": "Stiskněte Ctrl+P pro rychlé přepnutí profilů",
+    "active": "Aktivní",
+    "error_switching": "Chyba při přepínání profilu",
+    "error_loading": "Chyba při načítání profilů",
+    "last_used_just_now": "Právě teď",
+    "last_used_minutes": "Před {minutes} minutami",
+    "last_used_hours": "Před {hours} hodinami",
+    "last_used_days": "Před {days} dny",
+    "last_used_on": "Dne {date}"
+  }
 }
