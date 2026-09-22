@@ -2,7 +2,8 @@ class APIConstants {
   static const String baseUrl = 'https://api.innebandy.se/';
 
   static const String startKit = 'StatsAppApi/api/startkit';
-  static const String apiRoot = 'v2/api';
+  // 2026-09-22: IBIS moved all endpoints under the unauthenticated public root.
+  static const String apiRoot = 'v2/api/public';
   static const String season = '${apiRoot}/seasons';
   // static const String getMatchesInVenue = '${apiRoot}/venues/{venueId}/matches';
   static const String matchLineup = '${apiRoot}/matches/{matchId}/lineups';

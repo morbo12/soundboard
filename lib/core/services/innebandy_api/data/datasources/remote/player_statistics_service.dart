@@ -23,7 +23,10 @@ class PlayerStatisticsService {
 
     final response = await _apiClient.authenticatedGet(path);
     if (response.statusCode == 200) {
-      final playerStatistics = PlayerStatistics.fromJson(response.data);
+      // 2026-09-22: public API returns a bare list now; accept both shapes.
+      final playerStatistics = PlayerStatistics.fromResponseData(
+        response.data,
+      );
       // Update the player statistics provider
       ref.read(playerStatisticsProvider.notifier).state = playerStatistics;
       return playerStatistics;

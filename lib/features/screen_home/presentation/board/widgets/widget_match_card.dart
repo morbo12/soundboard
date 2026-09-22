@@ -247,15 +247,19 @@ class MatchCard extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      match.competitionName,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    // 2026-09-22: IBIS public API no longer sends
+                    // CompetitionName, so hide the header text when empty.
+                    child: match.competitionName.isNotEmpty
+                        ? Text(
+                            match.competitionName,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(

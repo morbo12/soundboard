@@ -11,6 +11,18 @@ class MatchService {
 
   MatchService(this._apiClient);
 
+  /// 2026-09-22: The IBIS public API ignores the $filter/$orderby query
+  /// parameters and always returns the full match list. The parameters are
+  /// still sent (they might work again), but results are filtered and sorted
+  /// client-side as well so behaviour stays correct either way.
+  List<IbyMatch> _filterAndSortByDate(List<IbyMatch> matches, String? date) {
+    final filtered = (date == null || date.isEmpty)
+        ? matches
+        : matches.where((m) => m.matchDateTime.startsWith(date)).toList();
+    filtered.sort((a, b) => a.matchDateTime.compareTo(b.matchDateTime));
+    return filtered;
+  }
+
   Future<List<IbyMatch>> getMatchesInVenue({
     required int seasonId,
     required int venueId,
@@ -29,9 +41,10 @@ class MatchService {
     );
 
     if (response.statusCode == 200) {
-      return (response.data as List)
+      final matches = (response.data as List)
           .map((json) => IbyMatch.fromJson(json))
           .toList();
+      return _filterAndSortByDate(matches, date);
     } else {
       throw Exception("Failed to get matches in venue");
     }
@@ -86,9 +99,10 @@ class MatchService {
     );
 
     if (response.statusCode == 200) {
-      return (response.data as List)
+      final matches = (response.data as List)
           .map((json) => IbyMatch.fromJson(json))
           .toList();
+      return _filterAndSortByDate(matches, date);
     } else {
       throw Exception("Failed to get matches in competition");
     }

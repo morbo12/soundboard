@@ -1,15 +1,26 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// The imports below are used by the disabled authentication code
+// (getAccessToken / authenticatedGet). Kept so authentication can be
+// re-enabled easily if IBIS reintroduces it.
+// ignore: unused_import
 import 'package:http/http.dart' as http;
 import 'package:soundboard/core/services/innebandy_api/core/config/access_token_data.dart';
 import 'package:soundboard/core/services/innebandy_api/core/config/api_config.dart';
 import 'package:soundboard/core/services/innebandy_api/core/config/api_constants.dart';
+// Used by the disabled authentication code (getAccessToken). Kept so
+// authentication can be re-enabled easily if IBIS reintroduces it.
+// ignore: unused_import
 import 'package:soundboard/core/services/innebandy_api/data/datasources/remote/api_client_provider.dart';
 import 'package:soundboard/core/utils/logger.dart';
+// ignore: unused_import
 import 'dart:convert';
 
 class APIClient {
   late Dio _dio;
+  // Only used by the disabled authentication code (getAccessToken). Kept so
+  // authentication can be re-enabled easily if IBIS reintroduces it.
+  // ignore: unused_field
   final Ref _ref;
   final Logger logger = const Logger('APIClient');
 
@@ -47,51 +58,60 @@ class APIClient {
   }
 
   Future<AccessTokenData> getAccessToken() async {
-    final cachedToken = _ref.read(accessTokenProvider);
+    // DISABLED 2026-09-22: IBIS public API (v2/api/public) no longer requires
+    // authentication and the StatsAppApi/api/startkit endpoint must not be
+    // called anymore. Code kept for reference in case authentication is
+    // reintroduced by IBIS.
+    //
+    // final cachedToken = _ref.read(accessTokenProvider);
+    //
+    // if (cachedToken != null &&
+    //     DateTime.now().isBefore(
+    //       DateTime.parse(cachedToken.accessTokenExpiration),
+    //     )) {
+    //   logger.d(
+    //     "Token is NOT expired: NOW: ${DateTime.now()} - Token: ${cachedToken.accessTokenExpiration}",
+    //   );
+    //   return cachedToken;
+    // }
+    //
+    // logger.d("Token is expired or null. Fetching new token.");
+    // final response = await http.get(
+    //   Uri.parse('${APIConstants.baseUrl}${APIConstants.startKit}'),
+    //   headers: {
+    //     'accept': 'application/json, text/plain, */*',
+    //     'accept-encoding': 'gzip, deflate, br, zstd',
+    //     'accept-language':
+    //         'sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,da;q=0.6,de;q=0.5,no;q=0.4',
+    //     'dnt': '1',
+    //     'origin': 'https://stats.innebandy.se',
+    //     'referer': 'https://stats.innebandy.se/',
+    //     'sec-ch-ua':
+    //         '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand)";v="24"',
+    //     'sec-ch-ua-mobile': '?0',
+    //     'sec-ch-ua-platform': '"Windows"',
+    //     'sec-fetch-dest': 'empty',
+    //     'sec-fetch-mode': 'cors',
+    //     'sec-fetch-site': 'same-site',
+    //     'user-agent':
+    //         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+    //   },
+    // );
+    //
+    // if (response.statusCode == 200) {
+    //   final newToken = AccessTokenData.fromJson(json.decode(response.body));
+    //   _ref.read(accessTokenProvider.notifier).state = newToken;
+    //   logger.d('New access token: ${newToken.accessToken}');
+    //   return newToken;
+    // } else {
+    //   throw Exception(
+    //     'Failed to get access token : ${response.body} ${response.request}',
+    //   );
+    // }
 
-    if (cachedToken != null &&
-        DateTime.now().isBefore(
-          DateTime.parse(cachedToken.accessTokenExpiration),
-        )) {
-      logger.d(
-        "Token is NOT expired: NOW: ${DateTime.now()} - Token: ${cachedToken.accessTokenExpiration}",
-      );
-      return cachedToken;
-    }
-
-    logger.d("Token is expired or null. Fetching new token.");
-    final response = await http.get(
-      Uri.parse('${APIConstants.baseUrl}${APIConstants.startKit}'),
-      headers: {
-        'accept': 'application/json, text/plain, */*',
-        'accept-encoding': 'gzip, deflate, br, zstd',
-        'accept-language':
-            'sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7,da;q=0.6,de;q=0.5,no;q=0.4',
-        'dnt': '1',
-        'origin': 'https://stats.innebandy.se',
-        'referer': 'https://stats.innebandy.se/',
-        'sec-ch-ua':
-            '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand)";v="24"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-        'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final newToken = AccessTokenData.fromJson(json.decode(response.body));
-      _ref.read(accessTokenProvider.notifier).state = newToken;
-      logger.d('New access token: ${newToken.accessToken}');
-      return newToken;
-    } else {
-      throw Exception(
-        'Failed to get access token : ${response.body} ${response.request}',
-      );
-    }
+    // Placeholder token so callers keep compiling while authentication is
+    // disabled. Never sent to the API (see authenticatedGet).
+    return AccessTokenData(accessToken: '', accessTokenExpiration: '');
   }
 
   Future<Response> authenticatedGet(
@@ -99,10 +119,14 @@ class APIClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    final token = await getAccessToken();
-    options ??= Options();
-    options.headers ??= {};
-    options.headers!['Authorization'] = 'Bearer ${token.accessToken}';
+    // DISABLED 2026-09-22: IBIS public API (v2/api/public) endpoints are
+    // unauthenticated. Bearer token inclusion disabled, not removed. Restore
+    // the code below when the API requires authentication again.
+    //
+    // final token = await getAccessToken();
+    // options ??= Options();
+    // options.headers ??= {};
+    // options.headers!['Authorization'] = 'Bearer ${token.accessToken}';
     return get(path, queryParameters: queryParameters, options: options);
   }
 
