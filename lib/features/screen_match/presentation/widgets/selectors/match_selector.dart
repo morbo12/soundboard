@@ -137,7 +137,10 @@ class MatchSelector extends ConsumerWidget {
                 ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
                 : null,
             title: Text(
-              '${match.homeTeam} vs ${match.awayTeam} (${match.competitionName})',
+              // 2026-09-22: IBIS public API no longer sends CompetitionName
+              // in match payloads, so only show it when available.
+              '${match.homeTeam} vs ${match.awayTeam}'
+              '${match.competitionName.isNotEmpty ? ' (${match.competitionName})' : ''}',
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,

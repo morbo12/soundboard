@@ -6,10 +6,28 @@ class PlayerStatistics {
   factory PlayerStatistics.fromJson(Map<String, dynamic> json) {
     return PlayerStatistics(
       playerStatisticsRows:
-          (json['PlayerStatisticsRows'] as List)
-              .map((row) => PlayerStatisticsRow.fromJson(row))
-              .toList(),
+          (json['PlayerStatisticsRows'] as List?)
+              ?.map((row) => PlayerStatisticsRow.fromJson(row))
+              .toList() ??
+          [],
     );
+  }
+
+  /// 2026-09-22: The IBIS public API returns a bare JSON array (e.g. `[]`
+  /// before the season starts) instead of the previous
+  /// `{"PlayerStatisticsRows": [...]}` wrapper. Accept both shapes.
+  factory PlayerStatistics.fromResponseData(dynamic data) {
+    if (data is List) {
+      return PlayerStatistics(
+        playerStatisticsRows: data
+            .map((row) => PlayerStatisticsRow.fromJson(row))
+            .toList(),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      return PlayerStatistics.fromJson(data);
+    }
+    return PlayerStatistics(playerStatisticsRows: []);
   }
 
   Map<String, dynamic> toJson() {
@@ -68,28 +86,30 @@ class PlayerStatisticsRow {
   });
 
   factory PlayerStatisticsRow.fromJson(Map<String, dynamic> json) {
+    // 2026-09-22: IBIS public API rows may omit fields that were always
+    // present before. Missing values get neutral defaults.
     return PlayerStatisticsRow(
-      playerId: json['PlayerID'],
-      playerName: json['PlayerName'],
-      seasonId: json['SeasonID'],
-      seasonName: json['SeasonName'],
-      associationId: json['AssociationID'],
-      associationName: json['AssociationName'],
-      teamId: json['TeamID'],
-      teamName: json['TeamName'],
-      teamShortName: json['TeamShortName'],
-      matchesPlayed: json['MatchesPlayed'],
-      goalsScored: json['GoalsScored'],
-      assists: json['Assists'],
-      points: json['Points'],
-      penaltyMinutes: json['PenaltyMinutes'],
-      goalsScoredPp: json['GoalsScoredPp'],
-      goalsScoredBp: json['GoalsScoredBp'],
-      assistsPp: json['AssistsPp'],
-      assistsBp: json['AssistsBp'],
-      pointsPp: json['PointsPp'],
-      pointsBp: json['PointsBp'],
-      imageUrl: json['ImageUrl'],
+      playerId: json['PlayerID'] ?? 0,
+      playerName: json['PlayerName'] ?? '',
+      seasonId: json['SeasonID'] ?? 0,
+      seasonName: json['SeasonName'] ?? '',
+      associationId: json['AssociationID'] ?? 0,
+      associationName: json['AssociationName'] ?? '',
+      teamId: json['TeamID'] ?? 0,
+      teamName: json['TeamName'] ?? '',
+      teamShortName: json['TeamShortName'] ?? '',
+      matchesPlayed: json['MatchesPlayed'] ?? 0,
+      goalsScored: json['GoalsScored'] ?? 0,
+      assists: json['Assists'] ?? 0,
+      points: json['Points'] ?? 0,
+      penaltyMinutes: json['PenaltyMinutes'] ?? 0,
+      goalsScoredPp: json['GoalsScoredPp'] ?? 0,
+      goalsScoredBp: json['GoalsScoredBp'] ?? 0,
+      assistsPp: json['AssistsPp'] ?? 0,
+      assistsBp: json['AssistsBp'] ?? 0,
+      pointsPp: json['PointsPp'] ?? 0,
+      pointsBp: json['PointsBp'] ?? 0,
+      imageUrl: json['ImageUrl'] ?? '',
     );
   }
 

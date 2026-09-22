@@ -44,9 +44,9 @@ class StandingsRow {
   final List<int> lastGames;
   final int teamStatusId;
   final String teamStatusName;
-  final DateTime timeStamp;
-  final DateTime createdTs;
-  final DateTime updatedTs;
+  final DateTime? timeStamp;
+  final DateTime? createdTs;
+  final DateTime? updatedTs;
 
   StandingsRow({
     required this.standingsRowId,
@@ -81,36 +81,45 @@ class StandingsRow {
   });
 
   factory StandingsRow.fromJson(Map<String, dynamic> json) {
+    // 2026-09-22: The IBIS public API standings rows no longer include
+    // StandingsRowID, CompetitionID, TeamShortName, TeamStatusName,
+    // TimeStamp, CreatedTS or UpdatedTS. Missing fields get neutral
+    // defaults instead of crashing on null.
+    DateTime? parseDate(dynamic value) =>
+        value == null ? null : DateTime.parse(value as String);
+
     return StandingsRow(
-      standingsRowId: json['StandingsRowID'],
-      competitionId: json['CompetitionID'],
-      teamId: json['TeamID'],
-      teamName: json['TeamName'],
-      teamShortName: json['TeamShortName'],
-      teamLogotypeUrl: json['TeamLogotypeUrl'],
-      playedMatchesHome: json['PlayedMatchesHome'],
-      playedMatchesAway: json['PlayedMatchesAway'],
-      winsHome: json['WinsHome'],
-      winsAway: json['WinsAway'],
-      sdWinsHome: json['SdWinsHome'],
-      sdWinsAway: json['SdWinsAway'],
-      drawsHome: json['DrawsHome'],
-      drawsAway: json['DrawsAway'],
-      lossesHome: json['LossesHome'],
-      lossesAway: json['LossesAway'],
-      goalsScoredHome: json['GoalsScoredHome'],
-      goalsScoredAway: json['GoalsScoredAway'],
-      goalsAgainstHome: json['GoalsAgainstHome'],
-      goalsAgainstAway: json['GoalsAgainstAway'],
-      scoringDiff: json['ScoringDiff'],
-      points: json['Points'],
-      position: json['Position'],
-      lastGames: List<int>.from(json['LastGames']),
-      teamStatusId: json['TeamStatusID'],
-      teamStatusName: json['TeamStatusName'],
-      timeStamp: DateTime.parse(json['TimeStamp']),
-      createdTs: DateTime.parse(json['CreatedTS']),
-      updatedTs: DateTime.parse(json['UpdatedTS']),
+      standingsRowId: json['StandingsRowID'] ?? 0,
+      competitionId: json['CompetitionID'] ?? 0,
+      teamId: json['TeamID'] ?? 0,
+      teamName: json['TeamName'] ?? '',
+      teamShortName: json['TeamShortName'] ?? '',
+      teamLogotypeUrl: json['TeamLogotypeUrl'] ?? '',
+      playedMatchesHome: json['PlayedMatchesHome'] ?? 0,
+      playedMatchesAway: json['PlayedMatchesAway'] ?? 0,
+      winsHome: json['WinsHome'] ?? 0,
+      winsAway: json['WinsAway'] ?? 0,
+      sdWinsHome: json['SdWinsHome'] ?? 0,
+      sdWinsAway: json['SdWinsAway'] ?? 0,
+      drawsHome: json['DrawsHome'] ?? 0,
+      drawsAway: json['DrawsAway'] ?? 0,
+      lossesHome: json['LossesHome'] ?? 0,
+      lossesAway: json['LossesAway'] ?? 0,
+      goalsScoredHome: json['GoalsScoredHome'] ?? 0,
+      goalsScoredAway: json['GoalsScoredAway'] ?? 0,
+      goalsAgainstHome: json['GoalsAgainstHome'] ?? 0,
+      goalsAgainstAway: json['GoalsAgainstAway'] ?? 0,
+      scoringDiff: json['ScoringDiff'] ?? 0,
+      points: json['Points'] ?? 0,
+      position: json['Position'] ?? 0,
+      lastGames: (json['LastGames'] as List<dynamic>?)
+          ?.map((e) => e as int)
+          .toList() ?? [],
+      teamStatusId: json['TeamStatusID'] ?? 0,
+      teamStatusName: json['TeamStatusName'] ?? '',
+      timeStamp: parseDate(json['TimeStamp']),
+      createdTs: parseDate(json['CreatedTS']),
+      updatedTs: parseDate(json['UpdatedTS']),
     );
   }
 
@@ -142,9 +151,9 @@ class StandingsRow {
       'LastGames': lastGames,
       'TeamStatusID': teamStatusId,
       'TeamStatusName': teamStatusName,
-      'TimeStamp': timeStamp.toIso8601String(),
-      'CreatedTS': createdTs.toIso8601String(),
-      'UpdatedTS': updatedTs.toIso8601String(),
+      'TimeStamp': timeStamp?.toIso8601String(),
+      'CreatedTS': createdTs?.toIso8601String(),
+      'UpdatedTS': updatedTs?.toIso8601String(),
     };
   }
 

@@ -191,9 +191,17 @@ class IbyMatch {
   });
 
   factory IbyMatch.fromJson(Map<String, dynamic> json) {
+    // 2026-09-22: The IBIS public API (v2/api/public) dropped/changed several
+    // fields (e.g. CompetitionName removed, VenueLatitude/VenueLongitude
+    // removed, Referee1/Referee2 nullable). All parsing is null-safe so that
+    // missing fields no longer crash with
+    // "type 'Null' is not a subtype of type 'String'".
+    double? toDouble(dynamic value) =>
+        value == null ? null : (value as num).toDouble();
+
     return IbyMatch(
-      matchId: json['MatchID'],
-      matchNo: json['MatchNo'],
+      matchId: json['MatchID'] ?? 0,
+      matchNo: json['MatchNo'] ?? '',
       seasonId: json['SeasonID'],
       federationId: json['FederationID'],
       categoryId: json['CategoryID'],
@@ -201,21 +209,21 @@ class IbyMatch {
       ageCategoryId: json['AgeCategoryID'],
       ageCategoryName: json['AgeCategoryName'],
       competitionId: json['CompetitionID'],
-      competitionName: json['CompetitionName'],
+      competitionName: json['CompetitionName'] ?? '',
       competitionTypeId: json['CompetitionTypeID'],
       homeTeamId: json['HomeTeamID'],
-      homeTeam: json['HomeTeam'],
+      homeTeam: json['HomeTeam'] ?? '',
       homeTeamShortName: json['HomeTeamShortName'],
       homeTeamLogotypeUrl: json['HomeTeamLogotypeUrl'],
       awayTeamId: json['AwayTeamID'],
-      awayTeam: json['AwayTeam'],
+      awayTeam: json['AwayTeam'] ?? '',
       awayTeamShortName: json['AwayTeamShortName'],
       awayTeamLogotypeUrl: json['AwayTeamLogotypeUrl'],
-      matchDateTime: json['MatchDateTime'],
+      matchDateTime: json['MatchDateTime'] ?? '',
       venueId: json['VenueID'],
       venue: json['Venue'],
-      venueLatitude: json['VenueLatitude'].toDouble(),
-      venueLongitude: json['VenueLongitude'].toDouble(),
+      venueLatitude: toDouble(json['VenueLatitude']),
+      venueLongitude: toDouble(json['VenueLongitude']),
       mainVenueId: json['MainVenueID'],
       mainVenue: json['MainVenue'],
       referee1Id: json['Referee1ID'],
@@ -237,7 +245,7 @@ class IbyMatch {
       round: json['Round'],
       roundName: json['RoundName'],
       matchDescription: json['MatchDescription'],
-      matchStatus: json['MatchStatus'],
+      matchStatus: json['MatchStatus'] ?? 0,
       goalsHomeTeam: json['GoalsHomeTeam'],
       goalsAwayTeam: json['GoalsAwayTeam'],
       homeMatchTeamId: json['HomeMatchTeamID'],

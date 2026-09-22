@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-09-22
+
+### Changed
+
+- Migrated all IBIS API calls to the new unauthenticated public root (`v2/api/public`)
+- Disabled the `StatsAppApi/api/startkit` token call and the Bearer token inclusion for IBIS API requests (code kept, not removed, for easy re-enable)
+- Match listings are now filtered and sorted client-side since the public API ignores `$filter`/`$orderby` (the query parameters are still sent)
+
+### Fixed
+
+- Match list crash "type 'Null' is not a subtype of type 'String'" caused by removed/changed fields in the IBIS public API payloads (`CompetitionName`, venue coordinates, nullable referees)
+- Null-safe parsing of lineups (null player lists, missing team metadata), standings rows (removed legacy fields), player statistics (bare JSON array response) and pregame stats
+- Competition name is now hidden in match cards and dialogs when the API no longer provides it
+
+### Added
+
+- Regression tests validating IBIS public API parsing against captured endpoint payloads (`test/fixtures/ibis/`)
+
 ## [0.4.6] - 2026-01-24
 
 ### Added

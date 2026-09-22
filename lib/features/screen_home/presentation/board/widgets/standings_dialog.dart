@@ -58,13 +58,17 @@ class StandingsDialog extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    competitionName,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
+                  // 2026-09-22: IBIS public API no longer sends
+                  // CompetitionName, so hide the header text when empty.
+                  child: competitionName.isNotEmpty
+                      ? Text(
+                          competitionName,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),

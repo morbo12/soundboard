@@ -100,27 +100,40 @@ class IbyMatchLineup {
   List<TeamTeamPerson> awayTeamTeamPersons;
 
   factory IbyMatchLineup.fromJson(Map<String, dynamic> json) => IbyMatchLineup(
-    matchId: json["MatchID"],
-    homeTeamId: json["HomeTeamID"],
-    homeTeam: json["HomeTeam"],
-    homeTeamShortName: json["HomeTeamShortName"],
-    homeTeamLogotypeUrl: json["HomeTeamLogotypeUrl"],
-    awayTeamId: json["AwayTeamID"],
-    awayTeam: json["AwayTeam"],
-    awayTeamShortName: json["AwayTeamShortName"],
-    awayTeamLogotypeUrl: json["AwayTeamLogotypeUrl"],
-    homeTeamPlayers: List<TeamPlayer>.from(
-      json["HomeTeamPlayers"].map((x) => TeamPlayer.fromJson(x)),
-    ),
-    awayTeamPlayers: List<TeamPlayer>.from(
-      json["AwayTeamPlayers"].map((x) => TeamPlayer.fromJson(x)),
-    ),
-    homeTeamTeamPersons: List<TeamTeamPerson>.from(
-      json["HomeTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x)),
-    ),
-    awayTeamTeamPersons: List<TeamTeamPerson>.from(
-      json["AwayTeamTeamPersons"].map((x) => TeamTeamPerson.fromJson(x)),
-    ),
+    // 2026-09-22: The IBIS public API lineups endpoint now returns null
+    // player lists and omits team metadata for matches without a published
+    // lineup (e.g. {"HomeTeamPlayers":null,"AwayTeamPlayers":null,...}).
+    // All parsing is null-safe to avoid
+    // "type 'Null' is not a subtype of type ..." crashes.
+    matchId: json["MatchID"] ?? 0,
+    homeTeamId: json["HomeTeamID"] ?? 0,
+    homeTeam: json["HomeTeam"] ?? '',
+    homeTeamShortName: json["HomeTeamShortName"] ?? '',
+    homeTeamLogotypeUrl: json["HomeTeamLogotypeUrl"] ?? '',
+    awayTeamId: json["AwayTeamID"] ?? 0,
+    awayTeam: json["AwayTeam"] ?? '',
+    awayTeamShortName: json["AwayTeamShortName"] ?? '',
+    awayTeamLogotypeUrl: json["AwayTeamLogotypeUrl"] ?? '',
+    homeTeamPlayers:
+        (json["HomeTeamPlayers"] as List<dynamic>?)
+            ?.map((x) => TeamPlayer.fromJson(x))
+            .toList() ??
+        [],
+    awayTeamPlayers:
+        (json["AwayTeamPlayers"] as List<dynamic>?)
+            ?.map((x) => TeamPlayer.fromJson(x))
+            .toList() ??
+        [],
+    homeTeamTeamPersons:
+        (json["HomeTeamTeamPersons"] as List<dynamic>?)
+            ?.map((x) => TeamTeamPerson.fromJson(x))
+            .toList() ??
+        [],
+    awayTeamTeamPersons:
+        (json["AwayTeamTeamPersons"] as List<dynamic>?)
+            ?.map((x) => TeamTeamPerson.fromJson(x))
+            .toList() ??
+        [],
   );
 
   Map<String, dynamic> toJson() => {
