@@ -12,6 +12,11 @@ class SeasonService {
     if (response.statusCode == 200) {
       var data = response.data.where((val) => val["IsCurrentSeason"] == true);
       // dev.log('access token is -> $data');
+      if (data.isEmpty) {
+        throw Exception(
+          "Failed to get season: empty match list in current season response",
+        );
+      }
       final seasonID = data.first["SeasonID"];
 
       // Handle edge case: During June 20 - September 1st, return previous season ID

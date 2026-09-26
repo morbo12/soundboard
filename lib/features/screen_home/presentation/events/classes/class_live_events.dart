@@ -30,6 +30,7 @@ class MatchEventsStream extends _$MatchEventsStream {
   // Timer intervals
   static const Duration _activeDuration = Duration(seconds: 3);
   static const Duration _pausedDuration = Duration(seconds: 30);
+  static const Duration _notStartedDuration = Duration(seconds: 60);
 
   Stream<List<IbyMatchEvent>> build() {
     ref.onDispose(() {
@@ -74,13 +75,29 @@ class MatchEventsStream extends _$MatchEventsStream {
     final currentMatch = ref.read(selectedMatchProvider);
     _lastKnownStatus = currentMatch.matchStatus;
 
-    // Start timer for both active (2) and paused (3) matches
+    // Start timer for any match that is not finished yet
     // Match statuses: 0=N/A, 1=Ej påbörjad, 2=Spel pågår, 3=Paus, 4=Färdigspelad
-    if (currentMatch.matchStatus == 2 || currentMatch.matchStatus == 3) {
+    if (currentMatch.matchStatus == 4) {
+      _logger.d(
+        'Not starting periodic updates for match $matchId (status: 4 - finished)',
+      );
+    } else if (currentMatch.matchStatus == 0 ||
+        currentMatch.matchStatus == 1 ||
+        currentMatch.matchStatus == 2 ||
+        currentMatch.matchStatus == 3) {
+      // The initial fetch's null->status transition may run stopStreaming()
+      // inside _fetchAndUpdateMatch, which resets _currentMatchId and would
+      // break the "already streaming" guard above - re-set it around timer start.
+      _currentMatchId = matchId;
+      if (currentMatch.matchStatus == 0 || currentMatch.matchStatus == 1) {
+        _logger.d(
+          'Match $matchId not started yet (status: ${currentMatch.matchStatus}), waiting for start',
+        );
+      }
       _startTimerWithInterval(matchId, matchService, currentMatch.matchStatus);
     } else {
       _logger.d(
-        'Not starting periodic updates for match $matchId (status: ${currentMatch.matchStatus} - not active or paused)',
+        'Match $matchId unknown status ${currentMatch.matchStatus}, not starting periodic updates',
       );
     }
   }
@@ -89,14 +106,27 @@ class MatchEventsStream extends _$MatchEventsStream {
     // Stop existing timer before starting new one
     _timer?.cancel();
 
-    final interval = status == 2 ? _activeDuration : _pausedDuration;
+    // Match statuses: 0=N/A, 1=Ej påbörjad, 2=Spel pågår, 3=Paus, 4=Färdigspelad
+    final Duration interval;
+    switch (status) {
+      case 2:
+        interval = _activeDuration;
+      case 3:
+        interval = _pausedDuration;
+      default:
+        interval = _notStartedDuration;
+    }
 
     _timer = Timer.periodic(
       interval,
       (_) => _fetchAndUpdateMatch(matchId, service),
     );
 
-    final statusText = status == 2 ? 'active' : 'paused';
+    final statusText = switch (status) {
+      2 => 'active',
+      3 => 'paused',
+      _ => 'waiting for start',
+    };
     _logger.d(
       'Started periodic updates for match $matchId (status: $status - $statusText, interval: ${interval.inSeconds}s)',
     );
@@ -265,7 +295,7 @@ class MatchEventsStream extends _$MatchEventsStream {
 
   Future<void> _fetchAndUpdateMatch(int matchId, MatchService service) async {
     try {
-      final match = await service.getMatch(matchId: matchId);
+      final match = await service.getMatch(matchId: matchId, liveData: true);
       ref.read(selectedMatchProvider.notifier).state = match;
       _streamController.add(match.events ?? []);
 
@@ -284,18 +314,25 @@ class MatchEventsStream extends _$MatchEventsStream {
           // Match is active or paused - adjust timer interval
           _logger.d('Match $matchId status changed, adjusting timer interval');
           _startTimerWithInterval(matchId, service, match.matchStatus);
-        } else {
-          // Match is not started or other status - stop streaming
+        } else if (match.matchStatus == 0 || match.matchStatus == 1) {
+          // Match not started yet (or transient unauth 0 while active) - keep
+          // polling slowly waiting for start instead of killing the stream
           _logger.d(
-            'Match $matchId no longer active/paused, stopping streaming',
+            'Match $matchId status changed, waiting for start (status: ${match.matchStatus})',
+          );
+          _startTimerWithInterval(matchId, service, match.matchStatus);
+        } else {
+          // Unknown status (negative or > 4) - stop streaming
+          _logger.d(
+            'Match $matchId unknown status ${match.matchStatus}, stopping streaming',
           );
           stopStreaming(clearEvents: true);
         }
 
         _lastKnownStatus = match.matchStatus;
       }
-    } catch (e) {
-      _logger.e('Error fetching match', e);
+    } catch (e, s) {
+      _logger.e('Error fetching match', e, s);
     }
   }
 

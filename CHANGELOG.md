@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-09-26
+
+### Fixed
+
+- Crash "type 'Null' is not a subtype of type 'int'/'String'" when parsing live match events — IBIS omits `MatchID`, `CompetitionID`, `PersonID`, `MatchTeamName`, `TimeStamp` and `UpdatedTS` in event payloads; missing fields now get neutral defaults instead of throwing
+- Goal and penalty announcements, live event cards and manual event scoring now attribute the correct team: events without a `MatchTeamName` get it backfilled from `HomeMatchTeamID`/`AwayMatchTeamID`
+- Late-starting matches were never detected: the live stream now keeps polling at a 60s "waiting for start" interval while a match is not started yet and survives transient `MatchStatus=0` responses instead of stopping the stream and clearing events
+- Standings parsing accepts bare-array responses and responses without `StandingsRows`; malformed date strings in standings rows no longer throw
+- Intermediate result rows no longer crash on missing `MatchID`/`Period`/goals fields
+- Match list and season lookups no longer crash on null/empty API responses
+
+### Changed
+
+- Re-enabled IBIS authentication for live match data: a Bearer token from `StatsAppApi/api/startkit` is attached to the live match fetch only (the API withholds live status/goals/events without it during ongoing games). All other endpoints stay unauthenticated
+- Token handling hardened: expiration parsed defensively, token-endpoint failures cool down for 30s (no hammering on persistent 401s), auth failures surface as explicit errors instead of silent empty data, and `Bearer` tokens are redacted from Dio logs in all build modes
+- API parsing/fetch errors now log stack traces
+
+### Added
+
+- Regression tests for IBIS payload hardening: null/omitted fields in match events, lineup null-shell objects, standings rows with omitted keys, and bare-array player statistics responses (`test/unit/`)
+
 ## [0.4.7] - 2026-09-22
 
 ### Changed

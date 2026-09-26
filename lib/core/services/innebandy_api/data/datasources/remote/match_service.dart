@@ -41,7 +41,7 @@ class MatchService {
     );
 
     if (response.statusCode == 200) {
-      final matches = (response.data as List)
+      final matches = (response.data as List? ?? [])
           .map((json) => IbyMatch.fromJson(json))
           .toList();
       return _filterAndSortByDate(matches, date);
@@ -64,9 +64,15 @@ class MatchService {
     }
   }
 
-  Future<IbyMatch> getMatch({required int matchId}) async {
+  Future<IbyMatch> getMatch({
+    required int matchId,
+    bool liveData = false,
+  }) async {
     final path = APIConstants.match.replaceAll('{matchId}', matchId.toString());
-    final response = await _apiClient.authenticatedGet(path);
+    final response = await _apiClient.authenticatedGet(
+      path,
+      attachAuthToken: liveData,
+    );
 
     if (response.statusCode == 200) {
       return IbyMatch.fromJson(response.data);
@@ -99,7 +105,7 @@ class MatchService {
     );
 
     if (response.statusCode == 200) {
-      final matches = (response.data as List)
+      final matches = (response.data as List? ?? [])
           .map((json) => IbyMatch.fromJson(json))
           .toList();
       return _filterAndSortByDate(matches, date);
