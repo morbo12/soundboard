@@ -13,10 +13,10 @@ class IbyMatchIntermediateResult {
 
   factory IbyMatchIntermediateResult.fromJson(Map<String, dynamic> json) {
     return IbyMatchIntermediateResult(
-      matchId: json['MatchID'],
-      period: json['Period'],
-      goalsHomeTeam: json['GoalsHomeTeam'],
-      goalsAwayTeam: json['GoalsAwayTeam'],
+      matchId: json['MatchID'] ?? 0,
+      period: json['Period'] ?? 0,
+      goalsHomeTeam: json['GoalsHomeTeam'] ?? 0,
+      goalsAwayTeam: json['GoalsAwayTeam'] ?? 0,
     );
   }
 

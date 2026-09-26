@@ -57,36 +57,73 @@ class IbyMatchEvent {
     this.updatedTS,
   });
 
+  static DateTime _parseDateTime(Object? rawValue) =>
+      DateTime.tryParse(rawValue?.toString() ?? '') ??
+      DateTime.fromMillisecondsSinceEpoch(0);
+
   factory IbyMatchEvent.fromJson(Map<String, dynamic> json) {
     return IbyMatchEvent(
-      matchEventId: json['MatchEventID'],
-      matchId: json['MatchID'],
-      competitionId: json['CompetitionID'],
-      matchEventTypeId: json['MatchEventTypeID'],
-      matchEventType: json['MatchEventType'],
-      period: json['Period'],
-      periodName: json['PeriodName'],
-      minute: json['Minute'],
-      second: json['Second'],
-      playerId: json['PlayerID'],
-      playerName: json['PlayerName'],
+      matchEventId: json['MatchEventID'] ?? 0,
+      matchId: json['MatchID'] ?? 0,
+      competitionId: json['CompetitionID'] ?? 0,
+      matchEventTypeId: json['MatchEventTypeID'] ?? 0,
+      matchEventType: json['MatchEventType'] ?? '',
+      period: json['Period'] ?? 0,
+      periodName: json['PeriodName'] ?? '',
+      minute: json['Minute'] ?? 0,
+      second: json['Second'] ?? 0,
+      playerId: json['PlayerID'] ?? 0,
+      playerName: json['PlayerName'] ?? '',
       playerShirtNo: json['PlayerShirtNo'],
-      playerAssistId: json['PlayerAssistID'],
-      playerAssistName: json['PlayerAssistName'],
+      playerAssistId: json['PlayerAssistID'] ?? 0,
+      playerAssistName: json['PlayerAssistName'] ?? '',
       playerAssistShirtNo: json['PlayerAssistShirtNo'],
-      personId: json['PersonID'],
-      personName: json['PersonName'],
-      penaltyCode: json['PenaltyCode'],
-      penaltyName: json['PenaltyName'],
-      matchTeamId: json['MatchTeamID'],
-      matchTeamName: json['MatchTeamName'],
+      personId: json['PersonID'] ?? 0,
+      personName: json['PersonName'] ?? '',
+      penaltyCode: json['PenaltyCode'] ?? '',
+      penaltyName: json['PenaltyName'] ?? '',
+      matchTeamId: json['MatchTeamID'] ?? 0,
+      matchTeamName: json['MatchTeamName'] ?? '',
       matchTeamShortName: json['MatchTeamShortName'],
-      goalsHomeTeam: json['GoalsHomeTeam'],
-      goalsAwayTeam: json['GoalsAwayTeam'],
-      timeStamp: DateTime.parse(json['TimeStamp']),
-      createdTS: DateTime.parse(json['CreatedTS']),
-      updatedTS:
-          json['UpdatedTS'] != null ? DateTime.parse(json['UpdatedTS']) : null,
+      goalsHomeTeam: json['GoalsHomeTeam'] ?? 0,
+      goalsAwayTeam: json['GoalsAwayTeam'] ?? 0,
+      timeStamp: _parseDateTime(json['TimeStamp']),
+      createdTS: _parseDateTime(json['CreatedTS']),
+      updatedTS: json['UpdatedTS'] != null
+          ? DateTime.tryParse(json['UpdatedTS'].toString())
+          : null,
+    );
+  }
+
+  IbyMatchEvent copyWith({String? matchTeamName}) {
+    return IbyMatchEvent(
+      matchEventId: matchEventId,
+      matchId: matchId,
+      competitionId: competitionId,
+      matchEventTypeId: matchEventTypeId,
+      matchEventType: matchEventType,
+      period: period,
+      periodName: periodName,
+      minute: minute,
+      second: second,
+      playerId: playerId,
+      playerName: playerName,
+      playerShirtNo: playerShirtNo,
+      playerAssistId: playerAssistId,
+      playerAssistName: playerAssistName,
+      playerAssistShirtNo: playerAssistShirtNo,
+      personId: personId,
+      personName: personName,
+      penaltyCode: penaltyCode,
+      penaltyName: penaltyName,
+      matchTeamId: matchTeamId,
+      matchTeamName: matchTeamName ?? this.matchTeamName,
+      matchTeamShortName: matchTeamShortName,
+      goalsHomeTeam: goalsHomeTeam,
+      goalsAwayTeam: goalsAwayTeam,
+      timeStamp: timeStamp,
+      createdTS: createdTS,
+      updatedTS: updatedTS,
     );
   }
 }

@@ -101,8 +101,8 @@ class PeriodScores extends ConsumerWidget {
           }
         }
         return "0 - 0";
-      } catch (e) {
-        logger.d('Error getting period score: $e');
+      } catch (e, s) {
+        logger.d('Error getting period score: $e', e, s);
         return "- - -"; // Return a fallback format indicating error
       }
     }

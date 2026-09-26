@@ -3,12 +3,22 @@ class Standings {
 
   Standings({required this.standingsRows});
 
-  factory Standings.fromJson(Map<String, dynamic> json) {
+  // 2026-09-26: The IBIS public API may return a bare JSON array, the old
+  // {"StandingsRows": [...]} wrapper (with possibly-absent/null key), or
+  // anything else. Normalize all shapes without hard `as List` casts.
+  factory Standings.fromJson(Object? json) {
+    Iterable<Map> rawRows;
+    if (json is List) {
+      rawRows = json.whereType<Map>();
+    } else if (json is Map) {
+      rawRows = (json['StandingsRows'] as List? ?? []).whereType<Map>();
+    } else {
+      rawRows = const [];
+    }
     return Standings(
-      standingsRows:
-          (json['StandingsRows'] as List)
-              .map((row) => StandingsRow.fromJson(row))
-              .toList(),
+      standingsRows: rawRows
+          .map((row) => StandingsRow.fromJson(Map<String, dynamic>.from(row)))
+          .toList(),
     );
   }
 
@@ -86,7 +96,7 @@ class StandingsRow {
     // TimeStamp, CreatedTS or UpdatedTS. Missing fields get neutral
     // defaults instead of crashing on null.
     DateTime? parseDate(dynamic value) =>
-        value == null ? null : DateTime.parse(value as String);
+        value == null ? null : DateTime.tryParse(value.toString());
 
     return StandingsRow(
       standingsRowId: json['StandingsRowID'] ?? 0,

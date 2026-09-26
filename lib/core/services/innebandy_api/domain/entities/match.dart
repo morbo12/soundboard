@@ -199,6 +199,32 @@ class IbyMatch {
     double? toDouble(dynamic value) =>
         value == null ? null : (value as num).toDouble();
 
+    final int? homeMatchTeamId = json['HomeMatchTeamID'];
+    final int? awayMatchTeamId = json['AwayMatchTeamID'];
+    final String homeTeam = json['HomeTeam'] ?? '';
+    final String awayTeam = json['AwayTeam'] ?? '';
+
+    // Parse events and backfill empty team names BEFORE construction so no
+    // post-construction mutation of match.events is needed.
+    final List<IbyMatchEvent>? events = json['Events'] != null
+        ? List<IbyMatchEvent>.from(
+            json['Events'].map((event) => IbyMatchEvent.fromJson(event)),
+          )
+        : null;
+    final List<IbyMatchEvent>? eventsWithBackfilledTeamName = events
+        ?.map(
+          (event) => event.matchTeamName.isEmpty
+              ? _withBackfilledTeamName(
+                  event,
+                  homeMatchTeamId,
+                  homeTeam,
+                  awayMatchTeamId,
+                  awayTeam,
+                )
+              : event,
+        )
+        .toList();
+
     return IbyMatch(
       matchId: json['MatchID'] ?? 0,
       matchNo: json['MatchNo'] ?? '',
@@ -237,11 +263,7 @@ class IbyMatch {
             )
           : null,
       spectators: json['Spectators'],
-      events: json['Events'] != null
-          ? List<IbyMatchEvent>.from(
-              json['Events'].map((event) => IbyMatchEvent.fromJson(event)),
-            )
-          : null,
+      events: eventsWithBackfilledTeamName,
       round: json['Round'],
       roundName: json['RoundName'],
       matchDescription: json['MatchDescription'],
@@ -281,6 +303,24 @@ class IbyMatch {
     );
   }
 
+  static IbyMatchEvent _withBackfilledTeamName(
+    IbyMatchEvent event,
+    int? homeMatchTeamId,
+    String homeTeam,
+    int? awayMatchTeamId,
+    String awayTeam,
+  ) {
+    final String? teamName;
+    if (homeMatchTeamId != null && event.matchTeamId == homeMatchTeamId) {
+      teamName = homeTeam;
+    } else if (awayMatchTeamId != null && event.matchTeamId == awayMatchTeamId) {
+      teamName = awayTeam;
+    } else {
+      teamName = null;
+    }
+    return teamName == null ? event : event.copyWith(matchTeamName: teamName);
+  }
+
   /// Fetches the lineup for this match and updates both the instance and provider.
   ///
   /// This method handles errors gracefully and ensures the lineup is available
@@ -294,8 +334,8 @@ class IbyMatch {
       ref.read(lineupProvider.notifier).state = lineup!;
 
       logger.d("Successfully fetched lineup for match $matchId");
-    } catch (e) {
-      logger.e("Failed to fetch lineup for match $matchId: $e");
+    } catch (e, s) {
+      logger.e("Failed to fetch lineup for match $matchId: $e", e, s);
       rethrow; // Re-throw to allow caller to handle the error
     }
   }
@@ -316,8 +356,8 @@ class IbyMatch {
     try {
       final lineup = await matchService.getLineupOfMatch(matchId: matchId);
       return lineup;
-    } catch (e) {
-      logger.e("API call failed for match lineup $matchId: $e");
+    } catch (e, s) {
+      logger.e("API call failed for match lineup $matchId: $e", e, s);
       rethrow;
     }
   }
